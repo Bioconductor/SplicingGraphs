@@ -8,13 +8,10 @@ chrX	.	gene	1	34	.	+	.	ID=geneA
 
 chrX	.	mRNA	1	26	.	+	.	ID=A1;Parent=geneA
 chrX	.	mRNA	1	34	.	+	.	ID=A2;Parent=geneA
-chrX	.	mRNA	8	34	.	+	.	ID=A3;Parent=geneA
 
-chrX	.	exon	1	6	.	+	.	ID=Ax1;Parent=A1,A2
-chrX	.	exon	8	12	.	+	.	ID=Ax2;Parent=A3
-chrX	.	exon	16	20	.	+	.	ID=Ax3;Parent=A2
-chrX	.	exon	24	26	.	+	.	ID=Ax4;Parent=A1
-chrX	.	exon	30	34	.	+	.	ID=Ax5;Parent=A2,A3
+chrX	.	exon	1	6	.	+	.	ID=Ax1;Parent=A1
+chrX	.	exon	1	12	.	+	.	ID=Ax2;Parent=A2
+chrX	.	exon	24	26	.	+	.	ID=Ax3;Parent=A1
 
 #######
 # geneB
@@ -24,8 +21,27 @@ chrX	.	gene	51	84	.	+	.	ID=geneB
 
 chrX	.	mRNA	51	76	.	+	.	ID=B1;Parent=geneB
 chrX	.	mRNA	51	84	.	+	.	ID=B2;Parent=geneB
+chrX	.	mRNA	58	84	.	+	.	ID=B3;Parent=geneB
 
-chrX	.	exon	51	56	.	+	.	ID=Bx1;Parent=B1
-chrX	.	exon	51	62	.	+	.	ID=Bx2;Parent=B2
-chrX	.	exon	74	76	.	+	.	ID=Bx3;Parent=B1
+chrX	.	exon	51	56	.	+	.	ID=Bx1;Parent=B1,B2
+chrX	.	exon	58	62	.	+	.	ID=Bx2;Parent=B3
+chrX	.	exon	66	70	.	+	.	ID=Bx3;Parent=B2
+chrX	.	exon	74	76	.	+	.	ID=Bx4;Parent=B1
+chrX	.	exon	80	84	.	+	.	ID=Bx5;Parent=B2,B3
+
+#######
+# geneC
+#######
+
+chrX	.	gene	105	160	.	+	.	ID=geneC
+
+chrX	.	mRNA	105	160	.	+	.	ID=C1;Parent=geneC
+chrX	.	mRNA	105	160	.	+	.	ID=C2;Parent=geneC
+
+chrX	.	exon	105	110	.	+	.	ID=Cx1;Parent=C1,C2
+chrX	.	exon	115	120	.	+	.	ID=Cx2;Parent=C1
+chrX	.	exon	125	130	.	+	.	ID=Cx3;Parent=C1,C2
+chrX	.	exon	135	140	.	+	.	ID=Cx4;Parent=C2
+chrX	.	exon	135	150	.	+	.	ID=Cx5;Parent=C1
+chrX	.	exon	155	160	.	+	.	ID=Cx6;Parent=C1,C2
 

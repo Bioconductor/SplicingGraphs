@@ -160,7 +160,7 @@ TODO
 ##    and plot it
 ## ---------------------------------------------------------------------
 
-toy_genes_gff <- system.file("extdata", "toy_genes.gff3", package="SpliceGraph")
+toy_genes_gff <- system.file("extdata", "toy_genes.gff3", package="SplicingGraphs")
 
 ## Note that you can display the content of the file with
 cat(readLines(toy_genes_gff), sep="\n")
@@ -223,11 +223,11 @@ if (FALSE) {
   ## get the original exon ids
   mcols(unlist(sgA))$exon_ids
 
-  ## access the splice events via the metadata slot
+  ## access the splicing events via the metadata slot
   spliceEvents <- metadata(sgA)$spliceEvents
   spliceEvents
 
-  ## count the splice events
+  ## count the splicing events
   table(spliceEvents$eventType)
 
   ## assignment of edges to bubbles
