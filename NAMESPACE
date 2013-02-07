@@ -1,0 +1,30 @@
+import(methods)
+import(utils)
+
+importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
+                   plot.igraph, igraph.to.graphNEL)
+
+
+import(BiocGenerics)
+import(IRanges)
+import(GenomicRanges)
+import(GenomicFeatures)
+import(Rsamtools)
+
+export(
+  Spath,
+  Sgdf,
+  Sgraph,
+  uninformativeSSids,
+  Sgdf2,
+  Sgraph2,
+  plotSgraph, plotSgraph2,
+  splicingGraphs
+)
+
+exportMethods(
+  Spath,
+  Sgdf,
+  Sgraph,
+  uninformativeSSids
+)

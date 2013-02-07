@@ -1,0 +1,31 @@
+##gff-version 3
+
+#######
+# geneA
+#######
+
+chrX	.	gene	1	34	.	+	.	ID=geneA
+
+chrX	.	mRNA	1	26	.	+	.	ID=A1;Parent=geneA
+chrX	.	mRNA	1	34	.	+	.	ID=A2;Parent=geneA
+chrX	.	mRNA	8	34	.	+	.	ID=A3;Parent=geneA
+
+chrX	.	exon	1	6	.	+	.	ID=Ax1;Parent=A1,A2
+chrX	.	exon	8	12	.	+	.	ID=Ax2;Parent=A3
+chrX	.	exon	16	20	.	+	.	ID=Ax3;Parent=A2
+chrX	.	exon	24	26	.	+	.	ID=Ax4;Parent=A1
+chrX	.	exon	30	34	.	+	.	ID=Ax5;Parent=A2,A3
+
+#######
+# geneB
+#######
+
+chrX	.	gene	51	84	.	+	.	ID=geneB
+
+chrX	.	mRNA	51	76	.	+	.	ID=B1;Parent=geneB
+chrX	.	mRNA	51	84	.	+	.	ID=B2;Parent=geneB
+
+chrX	.	exon	51	56	.	+	.	ID=Bx1;Parent=B1
+chrX	.	exon	51	62	.	+	.	ID=Bx2;Parent=B2
+chrX	.	exon	74	76	.	+	.	ID=Bx3;Parent=B1
+
