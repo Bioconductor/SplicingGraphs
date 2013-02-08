@@ -19,7 +19,11 @@ export(
   Sgdf2,
   Sgraph2,
   plotSgraph, plotSgraph2,
-  splicingGraphs
+  splicingGraphs,
+
+  toy_genes_gff,
+  toy_reads_sam,
+  toy_reads_bam
 )
 
 exportMethods(

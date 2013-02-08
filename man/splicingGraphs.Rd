@@ -160,7 +160,8 @@ TODO
 ##    and plot it
 ## ---------------------------------------------------------------------
 
-toy_genes_gff <- system.file("extdata", "toy_genes.gff3", package="SplicingGraphs")
+toy_genes_gff <- system.file("extdata", "toy_genes.gff3",
+                             package="SplicingGraphs")
 
 ## Note that you can display the content of the file with
 cat(readLines(toy_genes_gff), sep="\n")
