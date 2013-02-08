@@ -3,6 +3,9 @@
 \alias{Spath}
 \alias{Spath,GRangesList-method}
 
+\alias{UAhc}
+\alias{UAhc,GRangesList-method}
+
 \alias{Sgdf}
 \alias{Sgdf,ANY-method}
 \alias{Sgdf,IntegerList-method}
@@ -40,7 +43,8 @@ splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 
 ## Related utilities
 Spath(x, gene_id=NA)
-Sgdf(x, gene_id=NA, keep.dup.edges=FALSE)
+UAhc(x, gene_id=NA)
+Sgdf(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
 Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
@@ -66,6 +70,9 @@ plotSgraph2(x, gene_id=NA)
     TODO
   }
   \item{gene_id}{
+    TODO
+  }
+  \item{UAhc}{
     TODO
   }
   \item{keep.dup.edges}{
@@ -143,11 +150,11 @@ TODO
 
 \seealso{
   \itemize{
-    \item The \link[GenomicRanges]{GRangesList} class in the GenomicRanges
-          package.
     \item \code{\link[GenomicFeatures]{exonsBy}},
           \code{\link[GenomicFeatures]{transcriptsBy}}, and the
           \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
+          package.
+    \item The \link[GenomicRanges]{GRangesList} class in the GenomicRanges
           package.
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
@@ -190,8 +197,10 @@ ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
 ## TranscriptDb object:
 #ex_by_tx2 <- splicingGraphs(toy_genes_txdb)  # not ready yet
 
-## 'ex_by_tx2' has 1 element per transcript and its names are the ids
-## of the corresponding gene:
+## 'ex_by_tx2' has 1 element per transcript, and each transcript is
+## assigned a name that is the id of the gene it belongs to. All the
+## transcripts belonging to a given gene are guaranteed to be
+## consecutive elements in 'ex_by_tx2'.
 names(ex_by_tx2)
 
 ## ---------------------------------------------------------------------

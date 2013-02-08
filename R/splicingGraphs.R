@@ -29,15 +29,59 @@ setMethod("Spath", "GRangesList",
             stop("'gene_id' must be a single string (or NA)")
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
-        if (!is.na(gene_id)) {
-            x_names <- names(x)
-            if (is.null(x_names))
-                stop("'x' must have names when 'gene_id' is supplied")
-            x <- x[x_names == gene_id]
-            if (length(x) == 0L)
-                stop("invalid 'gene_id'")
+        x_names <- names(x)
+        ans <- mcols(x)[ , "Spath"]  # CompressedIntegerList
+        if (is.null(x_names)) {
+            if (!is.na(gene_id))
+                stop("the 'gene_id' arg is not supported ",
+                     "when 'x' is unnamed (in which case all its elements ",
+                     "(i.e. transcripts) are considered to belong to the ",
+                     "same gene)")
+            return(ans) 
         }
-        mcols(x)[ , "Spath"]  # CompressedIntegerList
+        if (is.na(gene_id))
+            stop("'gene_id' must be supplied when 'x' has names")
+        ans <- ans[x_names == gene_id]
+        if (length(ans) == 0L)
+            stop("invalid 'gene_id'")
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### UAhc() accessor
+###
+
+setGeneric("UAhc", signature="x",
+    function(x, gene_id=NA) standardGeneric("UAhc")
+)
+
+setMethod("UAhc", "GRangesList",
+    function(x, gene_id=NA)
+    {
+        if (!isSingleStringOrNA(gene_id))
+            stop("'gene_id' must be a single string (or NA)")
+        if (length(x) == 0L)
+            stop("'x' must be of length >= 1")
+        x_names <- names(x)
+        ans <- mcols(x)[["UAhc"]]  # integer vector
+        if (is.null(x_names)) {
+            if (!is.na(gene_id))
+                stop("the 'gene_id' arg is not supported ",
+                     "when 'x' is unnamed (in which case all its elements ",
+                     "(i.e. transcripts) are considered to belong to the ",
+                     "same gene)")
+            return(ans) 
+        }
+        if (is.na(gene_id))
+            stop("'gene_id' must be supplied when 'x' has names")
+        if (is.null(ans))
+            return(ans)
+        ans <- ans[x_names == gene_id]
+        if (length(ans) == 0L)
+            stop("invalid 'gene_id'")
+        ans
     }
 )
 
@@ -45,14 +89,21 @@ setMethod("Spath", "GRangesList",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sgdf() accessor
 ###
-### Returns the splicing graph in a 4-col DataFrame with 1 row per edge.
+### Returns the splicing graph in a DataFrame with 1 row per edge.
 ###
 
 ### 'spath' must be an IntegerList containing all the splicing paths for a
 ### given gene. Should have been obtained thru the Spath() accessor.
-### Returns a 4-col data.frame representing the splicing graph.
-.make_Sgdf0_from_Spath <- function(spath)
+### Returns a 4-col (or 5-col if 'UAhc' is supplied) data.frame representing
+### the splicing graph.
+.make_Sgdf0_from_Spath <- function(spath, UAhc=NULL)
 {
+    if (!is.null(UAhc)) {
+        if (!is.integer(UAhc))
+            stop("'UAhc' must be an integer vector or NULL")
+        if (length(UAhc) != length(spath))
+            stop("when not NULL, 'UAhc' must have the same length as 'spath'")
+    }
     sgdf0s <- lapply(seq_along(spath),
                      function(i) {
                          SSids <- spath[[i]]
@@ -80,12 +131,15 @@ setMethod("Spath", "GRangesList",
                                     ex_or_in=ex_or_in,
                                     stringsAsFactors=FALSE)
                      })
+    nedges_per_tx <- sapply(sgdf0s, nrow)
     sgdf0 <- do.call(rbind, sgdf0s)
     tx_id <- names(spath)
     if (is.null(tx_id))
         tx_id <- seq_along(spath)
-    tx_id <- rep.int(factor(tx_id, levels=tx_id), sapply(sgdf0s, nrow))
+    tx_id <- rep.int(factor(tx_id, levels=tx_id), nedges_per_tx)
     sgdf0$tx_id <- tx_id
+    if (!is.null(UAhc))
+        sgdf0$UAhc <- rep.int(UAhc, nedges_per_tx)
     sgdf0
 }
 
@@ -106,37 +160,46 @@ setMethod("Spath", "GRangesList",
         stop("invalid splicing graph")
     sgdf <- DataFrame(sgdf0[sm == seq_along(sm), , drop=FALSE])
     sgdf$tx_id <- splitAsList(tx_id, sm)
+    UAhc <- sgdf$UAhc
+    if (!is.null(UAhc))
+        sgdf$UAhc <- sum(splitAsList(sgdf0$UAhc, sm))
     sgdf
 }
 
 setGeneric("Sgdf", signature="x",
-    function(x, gene_id=NA, keep.dup.edges=FALSE) standardGeneric("Sgdf")
+    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+        standardGeneric("Sgdf")
 )
 
 setMethod("Sgdf", "ANY",
-    function(x, gene_id=NA, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
     {
         spath <- Spath(x, gene_id=gene_id)
-        Sgdf(spath, keep.dup.edges=keep.dup.edges)
+        if (is.null(UAhc))
+            UAhc <- UAhc(x, gene_id=gene_id)
+        Sgdf(spath, UAhc=UAhc, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("Sgdf", "IntegerList",
-    function(x, gene_id=NA, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        sgdf0 <- .make_Sgdf0_from_Spath(x)
+        sgdf0 <- .make_Sgdf0_from_Spath(x, UAhc=UAhc)
         Sgdf(sgdf0, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("Sgdf", "data.frame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is a data.frame")
+        if (!is.null(UAhc))
+            stop("the 'UAhc' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
@@ -246,49 +309,17 @@ setMethod("Sgdf", "data.frame",
     cbind(x=x, y=y)
 }
 
-### 'sgdf0' must be a data.frame as returned by:
+### 'sgdf' must be a data.frame as returned by:
 ###     Sgdf( , keep.dup.edges=TRUE)
-### Valid extra cols are: "label", "label.color", "lty", "color", and "width".
-### They are interpreted as graphical parameters for the edges.
-### Returns a data.frame ready to be passed to the 'd' argument to
-### graph.data.frame().
-.make_igraph_edges_from_Sgdf0 <- function(sgdf0)
-{
-    if (!is.data.frame(sgdf0))
-        stop("'sgdf0' must be a data.frame")
-    required_colnames <- c("from", "to", "ex_or_in", "tx_id")
-    extra_colnames <- c("label", "label.color", "lty", "color", "width")
-    extract_colnames <- c(required_colnames,
-                          intersect(extra_colnames, colnames(sgdf0)))
-    ans <- sgdf0[ , extract_colnames, drop=FALSE]
-    ex_or_in <- ans[ , "ex_or_in"]
-    ex_or_in_levels <- levels(ex_or_in)
-    if (!identical(ex_or_in_levels, .EX_OR_IN_LEVELS2)
-     && !identical(ex_or_in_levels, .EX_OR_IN_LEVELS))
-        stop("\"ex_or_in\" column has invalid levels")
-    if (!("label" %in% extract_colnames))
-        ans$label <- ans$tx_id
-    if (!("label.color" %in% extract_colnames))
-        ans$label.color <- "blue"
-    if (!("lty" %in% extract_colnames))
-        ans$lty <- c("solid", "solid", "dashed", "solid")[ex_or_in]
-    if (!("color" %in% extract_colnames))
-        ans$color <- c("green3", "darkgrey", "grey", "black")[ex_or_in]
-    ans
-}
-
-### 'sgdf' must be a DataFrame as returned by:
+### or a DataFrame as returned by:
 ###     Sgdf( , keep.dup.edges=FALSE)
-### Valid extra cols are: "label", "label.color", "lty", "color", and "width".
-### They are interpreted as graphical parameters for the edges.
-### Returns a data.frame ready to be passed to the 'd' argument to
-### graph.data.frame().
-.make_igraph_edges_from_Sgdf <- function(sgdf)
+### Valid extra cols are: "label", "label.color", "lty", "color", "width"
+### and "UAhc". They are used to set graphical parameters on the edges.
+.precook_igraph_edges_from_Sgdf <- function(sgdf)
 {
-    if (!is(sgdf, "DataFrame"))
-        stop("'sgdf' must be a DataFrame")
     required_colnames <- c("from", "to", "ex_or_in", "tx_id")
-    extra_colnames <- c("label", "label.color", "lty", "color", "width")
+    extra_colnames <- c("label", "label.color", "lty", "color",
+                        "width", "UAhc")
     extract_colnames <- c(required_colnames,
                           intersect(extra_colnames, colnames(sgdf)))
     ans <- sgdf[ , extract_colnames, drop=FALSE]
@@ -297,19 +328,28 @@ setMethod("Sgdf", "data.frame",
     if (!identical(ex_or_in_levels, .EX_OR_IN_LEVELS2)
      && !identical(ex_or_in_levels, .EX_OR_IN_LEVELS))
         stop("\"ex_or_in\" column has invalid levels")
-    if (!("label" %in% extract_colnames))
-        ans$label <- sapply(ans$tx_id, paste, collapse=",")
-    ans$tx_id <- NULL
     if (!("label.color" %in% extract_colnames))
         ans$label.color <- "blue"
     if (!("lty" %in% extract_colnames))
         ans$lty <- c("solid", "solid", "dashed", "solid")[ex_or_in]
     if (!("color" %in% extract_colnames))
         ans$color <- c("green3", "darkgrey", "grey", "black")[ex_or_in]
-    ## Turning 'ans' into an ordinary data.frame. (Looks like 'as.data.frame()'
-    ## on a DataFrame ignores the 'stringsAsFactors' arg so we use
-    ## 'data.frame(as.list())' instead.)
-    data.frame(as.list(ans), stringsAsFactors=FALSE)
+    if (!("width" %in% extract_colnames) && "UAhc" %in% extract_colnames) {
+        min_UAhc <- min(ans$UAhc)
+        if (min_UAhc < 0L) {
+            warning("'UAhc' column contains negative values. Cannot use ",
+                    "it to set the widths of the edges.")
+        } else {
+            max_UAhc <- max(ans$UAhc)
+            if (max_UAhc <= 0L) {
+                warning("'UAhc' column has no positive values. Cannot use ",
+                        "it to set the widths of the edges.")
+            } else {
+                ans$width <- 20.0 * ans$UAhc / max(ans$UAhc)
+            }
+        }
+    }
+    ans
 }
 
 .make_igraph <- function(d)
@@ -339,15 +379,34 @@ setMethod("Sgdf", "data.frame",
     g
 }
 
+### 'sgdf0' must be a data.frame as returned by:
+###     Sgdf( , keep.dup.edges=TRUE)
 .make_igraph_from_Sgdf0 <- function(sgdf0, gene_id=NA)
 {
-    d <- .make_igraph_edges_from_Sgdf0(sgdf0)
+    if (!is.data.frame(sgdf0))
+        stop("'sgdf0' must be a data.frame")
+    d <- .precook_igraph_edges_from_Sgdf(sgdf0)
+    if (!("label" %in% colnames(d)))
+        d$label <- d$tx_id
     .make_igraph(d)
 }
 
+### 'sgdf' must be a DataFrame as returned by:
+###     Sgdf( , keep.dup.edges=FALSE)
+### or by:
+###     Sgdf2( )
 .make_igraph_from_Sgdf <- function(sgdf, gene_id=NA)
 {
-    d <- .make_igraph_edges_from_Sgdf(sgdf)
+    if (!is(sgdf, "DataFrame"))
+        stop("'sgdf' must be a DataFrame")
+    d <- .precook_igraph_edges_from_Sgdf(sgdf)
+    if (!("label" %in% colnames(d)))
+        d$label <- sapply(d$tx_id, paste, collapse=",")
+    d$tx_id <- NULL
+    ## Turning 'd' into an ordinary data.frame. (Looks like 'as.data.frame()'
+    ## on a DataFrame ignores the 'stringsAsFactors' arg so we use
+    ## 'data.frame(as.list())' instead.)
+    d <- data.frame(as.list(d), stringsAsFactors=FALSE)
     .make_igraph(d)
 }
 
@@ -677,7 +736,8 @@ plotSgraph2 <- function(x, gene_id=NA)
 ### 'grouping' is an optional object that represents the grouping by gene of
 ### the top-level elements (i.e. transcripts) in 'exbytx'. It can be either:
 ###   (a) Missing (i.e. NULL). In that case, all the transcripts in 'exbytx'
-###       are considered to belong to the same gene.
+###       are considered to belong to the same gene and the GRangesList object
+###       returned by splicingGraphs() will be unnamed.
 ###   (b) A list of integer or character vectors, or an IntegerList, or a
 ###       CharacterList object, of length the number of genes to process,
 ###       and where 'grouping[[i]]' is a valid subscript in 'exbytx' pointing
@@ -797,6 +857,7 @@ splicingGraphs <- function(exbytx, grouping=NULL, check.introns=TRUE)
         stop("'exbytx' must be a GRangesList object")
     if (is.null(grouping)) {
         ans <- .setSplicingGraphInfo(exbytx, check.introns=check.introns)
+        names(ans) <- NULL
         return(ans)
     }
     grouping <- .normargGrouping(grouping, exbytx)

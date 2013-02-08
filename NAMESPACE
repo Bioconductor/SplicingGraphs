@@ -13,6 +13,7 @@ import(Rsamtools)
 
 export(
   Spath,
+  UAhc,
   Sgdf,
   Sgraph,
   uninformativeSSids,
@@ -28,6 +29,7 @@ export(
 
 exportMethods(
   Spath,
+  UAhc,
   Sgdf,
   Sgraph,
   uninformativeSSids
