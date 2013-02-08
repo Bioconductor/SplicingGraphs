@@ -156,21 +156,17 @@ TODO
 
 \examples{
 ## ---------------------------------------------------------------------
-## 1. Load a gene model (made of 2 toy genes) as a TranscriptDb object,
-##    and plot it
+## 1. Load a toy gene model as a TranscriptDb object and plot it
 ## ---------------------------------------------------------------------
 
-toy_genes_gff <- system.file("extdata", "toy_genes.gff3",
-                             package="SplicingGraphs")
-
-## Note that you can display the content of the file with
-cat(readLines(toy_genes_gff), sep="\n")
+## Note that you can display the content of the file with:
+cat(readLines(toy_genes_gff()), sep="\n")
 
 suppressWarnings(
-  toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff)
+  toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
 )
 
-## Plot the gene model
+## Plot the gene model:
 if (interactive()) {
   library(Gviz)
   grtrack <- GeneRegionTrack(toy_genes_txdb, name="toy genes")
@@ -183,10 +179,10 @@ if (interactive()) {
 ##    GRangesList object
 ## ---------------------------------------------------------------------
 
-## Extract the exons grouped by transcript
+## Extract the exons grouped by transcript:
 ex_by_tx <- exonsBy(toy_genes_txdb, by="tx")
 
-## Extract the transcript grouped by gene
+## Extract the transcript grouped by gene:
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 
 ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
