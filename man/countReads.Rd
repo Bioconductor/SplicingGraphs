@@ -74,12 +74,17 @@ ov1 <- ov0[ov0_is_comp]
 ## ---------------------------------------------------------------------
 
 ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]
-UAhc <- countSubjectHits(ov2)
-mcols(ex_by_tx)$UAhc <- UAhc
+UATXHcount <- countSubjectHits(ov2)
+mcols(ex_by_tx)$UATXHcount <- UATXHcount
 
 ## Compute the splicing graphs (1 per gene), and plot them:
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
 names(ex_by_tx2)
 plotSgraph(ex_by_tx2, "geneA")
+
+## ---------------------------------------------------------------------
+## 3. 
+## ---------------------------------------------------------------------
+
 }

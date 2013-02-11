@@ -3,8 +3,8 @@
 \alias{Spath}
 \alias{Spath,GRangesList-method}
 
-\alias{UAhc}
-\alias{UAhc,GRangesList-method}
+\alias{UATXHcount}
+\alias{UATXHcount,GRangesList-method}
 
 \alias{Sgdf}
 \alias{Sgdf,ANY-method}
@@ -43,8 +43,8 @@ splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 
 ## Related utilities
 Spath(x, gene_id=NA)
-UAhc(x, gene_id=NA)
-Sgdf(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+UATXHcount(x, gene_id=NA)
+Sgdf(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
 Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
@@ -72,7 +72,7 @@ plotSgraph2(x, gene_id=NA)
   \item{gene_id}{
     TODO
   }
-  \item{UAhc}{
+  \item{UATXHcount}{
     TODO
   }
   \item{keep.dup.edges}{

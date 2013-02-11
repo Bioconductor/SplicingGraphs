@@ -50,14 +50,14 @@ setMethod("Spath", "GRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### UAhc() accessor
+### UATXHcount() accessor
 ###
 
-setGeneric("UAhc", signature="x",
-    function(x, gene_id=NA) standardGeneric("UAhc")
+setGeneric("UATXHcount", signature="x",
+    function(x, gene_id=NA) standardGeneric("UATXHcount")
 )
 
-setMethod("UAhc", "GRangesList",
+setMethod("UATXHcount", "GRangesList",
     function(x, gene_id=NA)
     {
         if (!isSingleStringOrNA(gene_id))
@@ -65,7 +65,7 @@ setMethod("UAhc", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        ans <- mcols(x)[["UAhc"]]  # integer vector
+        ans <- mcols(x)[["UATXHcount"]]  # integer vector
         if (is.null(x_names)) {
             if (!is.na(gene_id))
                 stop("the 'gene_id' arg is not supported ",
@@ -94,15 +94,15 @@ setMethod("UAhc", "GRangesList",
 
 ### 'spath' must be an IntegerList containing all the splicing paths for a
 ### given gene. Should have been obtained thru the Spath() accessor.
-### Returns a 4-col (or 5-col if 'UAhc' is supplied) data.frame representing
+### Returns a 4-col (or 5-col if 'UATXHcount' is supplied) data.frame representing
 ### the splicing graph.
-.make_Sgdf0_from_Spath <- function(spath, UAhc=NULL)
+.make_Sgdf0_from_Spath <- function(spath, UATXHcount=NULL)
 {
-    if (!is.null(UAhc)) {
-        if (!is.integer(UAhc))
-            stop("'UAhc' must be an integer vector or NULL")
-        if (length(UAhc) != length(spath))
-            stop("when not NULL, 'UAhc' must have the same length as 'spath'")
+    if (!is.null(UATXHcount)) {
+        if (!is.integer(UATXHcount))
+            stop("'UATXHcount' must be an integer vector or NULL")
+        if (length(UATXHcount) != length(spath))
+            stop("when not NULL, 'UATXHcount' must have the same length as 'spath'")
     }
     sgdf0s <- lapply(seq_along(spath),
                      function(i) {
@@ -138,8 +138,8 @@ setMethod("UAhc", "GRangesList",
         tx_id <- seq_along(spath)
     tx_id <- rep.int(factor(tx_id, levels=tx_id), nedges_per_tx)
     sgdf0$tx_id <- tx_id
-    if (!is.null(UAhc))
-        sgdf0$UAhc <- rep.int(UAhc, nedges_per_tx)
+    if (!is.null(UATXHcount))
+        sgdf0$UATXHcount <- rep.int(UATXHcount, nedges_per_tx)
     sgdf0
 }
 
@@ -160,46 +160,46 @@ setMethod("UAhc", "GRangesList",
         stop("invalid splicing graph")
     sgdf <- DataFrame(sgdf0[sm == seq_along(sm), , drop=FALSE])
     sgdf$tx_id <- splitAsList(tx_id, sm)
-    UAhc <- sgdf$UAhc
-    if (!is.null(UAhc))
-        sgdf$UAhc <- sum(splitAsList(sgdf0$UAhc, sm))
+    UATXHcount <- sgdf$UATXHcount
+    if (!is.null(UATXHcount))
+        sgdf$UATXHcount <- sum(splitAsList(sgdf0$UATXHcount, sm))
     sgdf
 }
 
 setGeneric("Sgdf", signature="x",
-    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
         standardGeneric("Sgdf")
 )
 
 setMethod("Sgdf", "ANY",
-    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
         spath <- Spath(x, gene_id=gene_id)
-        if (is.null(UAhc))
-            UAhc <- UAhc(x, gene_id=gene_id)
-        Sgdf(spath, UAhc=UAhc, keep.dup.edges=keep.dup.edges)
+        if (is.null(UATXHcount))
+            UATXHcount <- UATXHcount(x, gene_id=gene_id)
+        Sgdf(spath, UATXHcount=UATXHcount, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("Sgdf", "IntegerList",
-    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        sgdf0 <- .make_Sgdf0_from_Spath(x, UAhc=UAhc)
+        sgdf0 <- .make_Sgdf0_from_Spath(x, UATXHcount=UATXHcount)
         Sgdf(sgdf0, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("Sgdf", "data.frame",
-    function(x, gene_id=NA, UAhc=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is a data.frame")
-        if (!is.null(UAhc))
-            stop("the 'UAhc' arg is not supported ",
+        if (!is.null(UATXHcount))
+            stop("the 'UATXHcount' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
@@ -314,12 +314,12 @@ setMethod("Sgdf", "data.frame",
 ### or a DataFrame as returned by:
 ###     Sgdf( , keep.dup.edges=FALSE)
 ### Valid extra cols are: "label", "label.color", "lty", "color", "width"
-### and "UAhc". They are used to set graphical parameters on the edges.
+### and "UATXHcount". They are used to set graphical parameters on the edges.
 .precook_igraph_edges_from_Sgdf <- function(sgdf)
 {
     required_colnames <- c("from", "to", "ex_or_in", "tx_id")
     extra_colnames <- c("label", "label.color", "lty", "color",
-                        "width", "UAhc")
+                        "width", "UATXHcount")
     extract_colnames <- c(required_colnames,
                           intersect(extra_colnames, colnames(sgdf)))
     ans <- sgdf[ , extract_colnames, drop=FALSE]
@@ -334,18 +334,18 @@ setMethod("Sgdf", "data.frame",
         ans$lty <- c("solid", "solid", "dashed", "solid")[ex_or_in]
     if (!("color" %in% extract_colnames))
         ans$color <- c("green3", "darkgrey", "grey", "black")[ex_or_in]
-    if (!("width" %in% extract_colnames) && "UAhc" %in% extract_colnames) {
-        min_UAhc <- min(ans$UAhc)
-        if (min_UAhc < 0L) {
-            warning("'UAhc' column contains negative values. Cannot use ",
+    if (!("width" %in% extract_colnames) && "UATXHcount" %in% extract_colnames) {
+        min_UATXHcount <- min(ans$UATXHcount)
+        if (min_UATXHcount < 0L) {
+            warning("'UATXHcount' column contains negative values. Cannot use ",
                     "it to set the widths of the edges.")
         } else {
-            max_UAhc <- max(ans$UAhc)
-            if (max_UAhc <= 0L) {
-                warning("'UAhc' column has no positive values. Cannot use ",
+            max_UATXHcount <- max(ans$UATXHcount)
+            if (max_UATXHcount <= 0L) {
+                warning("'UATXHcount' column has no positive values. Cannot use ",
                         "it to set the widths of the edges.")
             } else {
-                ans$width <- 20.0 * ans$UAhc / max(ans$UAhc)
+                ans$width <- 20.0 * ans$UATXHcount / max(ans$UATXHcount)
             }
         }
     }
