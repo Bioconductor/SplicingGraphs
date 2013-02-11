@@ -4,44 +4,58 @@
 # geneA
 #######
 
-chrX	.	gene	11	90	.	+	.	ID=geneA
+chrX	.	gene	11	100	.	+	.	ID=geneA
 
-chrX	.	mRNA	11	90	.	+	.	ID=A1;Parent=geneA
+chrX	.	mRNA	11	100	.	+	.	ID=A1;Parent=geneA
 chrX	.	mRNA	11	40	.	+	.	ID=A2;Parent=geneA
 
 chrX	.	exon	11	40	.	+	.	ID=Ax1;Parent=A1
 chrX	.	exon	11	50	.	+	.	ID=Ax2;Parent=A2
-chrX	.	exon	71	90	.	+	.	ID=Ax3;Parent=A1
+chrX	.	exon	71	100	.	+	.	ID=Ax3;Parent=A1
 
 #######
 # geneB
 #######
 
-chrX	.	gene	201	290	.	+	.	ID=geneB
+chrX	.	gene	201	300	.	-	.	ID=geneB
 
-chrX	.	mRNA	201	250	.	+	.	ID=B1;Parent=geneB
-chrX	.	mRNA	201	290	.	+	.	ID=B2;Parent=geneB
-chrX	.	mRNA	241	290	.	+	.	ID=B3;Parent=geneB
+chrX	.	mRNA	201	300	.	-	.	ID=B1;Parent=geneB
+chrX	.	mRNA	215	270	.	-	.	ID=B2;Parent=geneB
 
-chrX	.	exon	201	215	.	+	.	ID=Bx1;Parent=B1,B2
-chrX	.	exon	221	230	.	+	.	ID=Bx2;Parent=B3
-chrX	.	exon	241	250	.	+	.	ID=Bx3;Parent=B2
-chrX	.	exon	261	270	.	+	.	ID=Bx4;Parent=B1
-chrX	.	exon	276	290	.	+	.	ID=Bx5;Parent=B2,B3
+chrX	.	exon	251	300	.	-	.	ID=Bx1;Parent=B1
+chrX	.	exon	201	230	.	-	.	ID=Bx2;Parent=B1
+chrX	.	exon	251	270	.	-	.	ID=Bx3;Parent=B2
+chrX	.	exon	216	230	.	-	.	ID=Bx4;Parent=B2
 
 #######
 # geneC
 #######
 
-chrX	.	gene	405	460	.	+	.	ID=geneC
+chrX	.	gene	401	500	.	+	.	ID=geneC
 
-chrX	.	mRNA	405	460	.	+	.	ID=C1;Parent=geneC
-chrX	.	mRNA	405	460	.	+	.	ID=C2;Parent=geneC
+chrX	.	mRNA	401	450	.	+	.	ID=C1;Parent=geneC
+chrX	.	mRNA	401	500	.	+	.	ID=C2;Parent=geneC
+chrX	.	mRNA	441	500	.	+	.	ID=C3;Parent=geneC
 
-chrX	.	exon	405	410	.	+	.	ID=Cx1;Parent=C1,C2
-chrX	.	exon	415	420	.	+	.	ID=Cx2;Parent=C1
-chrX	.	exon	425	430	.	+	.	ID=Cx3;Parent=C1,C2
-chrX	.	exon	435	440	.	+	.	ID=Cx4;Parent=C2
-chrX	.	exon	435	450	.	+	.	ID=Cx5;Parent=C1
-chrX	.	exon	455	460	.	+	.	ID=Cx6;Parent=C1,C2
+chrX	.	exon	401	415	.	+	.	ID=Cx1;Parent=C1,C2
+chrX	.	exon	421	430	.	+	.	ID=Cx2;Parent=C3
+chrX	.	exon	441	455	.	+	.	ID=Cx3;Parent=C2
+chrX	.	exon	466	480	.	+	.	ID=Cx4;Parent=C1
+chrX	.	exon	481	500	.	+	.	ID=Cx5;Parent=C2,C3
+
+#######
+# geneD
+#######
+
+chrX	.	gene	601	700	.	+	.	ID=geneD
+
+chrX	.	mRNA	601	700	.	+	.	ID=D1;Parent=geneD
+chrX	.	mRNA	601	700	.	+	.	ID=D2;Parent=geneD
+
+chrX	.	exon	601	610	.	+	.	ID=Dx1;Parent=D1,D2
+chrX	.	exon	616	625	.	+	.	ID=Dx2;Parent=D1
+chrX	.	exon	631	640	.	+	.	ID=Dx3;Parent=D1,D2
+chrX	.	exon	651	660	.	+	.	ID=Dx4;Parent=D2
+chrX	.	exon	671	680	.	+	.	ID=Dx5;Parent=D1
+chrX	.	exon	686	700	.	+	.	ID=Dx6;Parent=D1,D2
 
