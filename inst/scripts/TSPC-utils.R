@@ -40,3 +40,67 @@ makeSgdfWithHits <- function(grl, ex_by_tx2)
     Sgdf(ex_by_tx2, inbytx=in_by_tx2)
 }
 
+makeTSPCsgdf <- function(subdir_path)
+{
+    subdir_basename <- basename(subdir_path)
+    filenames <- list.files(subdir_path)
+    filenames_nchar <- nchar(filenames)
+
+    ## Load the gene model.
+    suffixes <- substr(filenames, filenames_nchar-10L, filenames_nchar)
+    models_filename <- filenames[suffixes == "_models.txt"]
+    models_path <- file.path(subdir_path, models_filename)
+    message("Reading ", models_path, " ... ", appendLF=FALSE)
+    ex_by_tx <- loadModels(models_path)
+    message("OK")
+
+    ## Compute the splicing graph.
+    ex_by_tx2 <- splicingGraphs(ex_by_tx)
+
+    ## Load and process the BAM files.
+    flag0 <- scanBamFlag(#isProperPair=TRUE,
+                         isNotPrimaryRead=FALSE,
+                         isNotPassingQualityControls=FALSE,
+                         isDuplicate=FALSE)
+    param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
+
+    suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
+    bam_filenames <- filenames[suffixes == ".bam"]
+    prefixes <- substr(bam_filenames, 1L, nchar(subdir_basename)+1L)
+    stopifnot(all(prefixes == paste0(subdir_basename, "-")))
+    sample_names <- substr(bam_filenames, nchar(prefixes)+1L,
+                                          nchar(bam_filenames)-4L)
+    nbam <- length(bam_filenames)
+    X <- seq_len(nbam)
+    names(X) <- sample_names
+    nhits <- sapply(X, function(i) {
+        bam_filename <- bam_filenames[i]
+        sample_name <- sample_names[i]
+        message("Processing BAM file ", i, "/", nbam,
+                " (sample ", sample_name, ") ... ", appendLF=FALSE)
+        bam_filepath <- file.path(subdir_path, bam_filename)
+        gal <- readGappedAlignments(bam_filepath, use.names=TRUE,
+                                    param=param0)
+        is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
+        if (!any(is_paired)) {
+            ## The aligner reported 2 *primary* alignments for single-end read
+            ## s100208_3_83_5646_14773 in file BAI1-SOC_5991_294171.bam, which
+            ## doesn't make sense. However, the reported mapping quality for
+            ## those 2 alignments is 3 which is very low. So let's get rid of
+            ## alignments that have a quality <= 3.
+            mapq <- mcols(gal)$mapq
+            gal <- gal[is.na(mapq) | mapq > 3]
+            grl <- grglist(gal, order.as.in.query=TRUE)
+        } else {
+            stopifnot(all(is_paired))
+            galp <- readGappedAlignmentPairs(bam_filepath, use.names=TRUE,
+                                             param=param0)
+            grl <- grglist(galp, order.as.in.query=TRUE)
+        }
+        sgdf <- makeSgdfWithHits(grl, ex_by_tx2)
+        message("OK")
+        sgdf[ , "nhits"]
+    })
+    DataFrame(Sgdf(ex_by_tx2), nhits)
+}
+
