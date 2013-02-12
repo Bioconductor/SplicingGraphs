@@ -56,21 +56,25 @@ makeTSPCsgdf <- function(subdir_path)
 
     ## Compute the splicing graph.
     ex_by_tx2 <- splicingGraphs(ex_by_tx)
+    ans <- Sgdf(ex_by_tx2)
+
+    ## Find the BAM files.
+    suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
+    bam_filenames <- filenames[suffixes == ".bam"]
+    nbam <- length(bam_filenames)
+    if (nbam == 0L)
+        return(ans)
 
     ## Load and process the BAM files.
+    prefixes <- substr(bam_filenames, 1L, nchar(subdir_basename)+1L)
+    stopifnot(all(prefixes == paste0(subdir_basename, "-")))
+    sample_names <- substr(bam_filenames, nchar(prefixes)+1L,
+                                          nchar(bam_filenames)-4L)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
                          isNotPrimaryRead=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
-
-    suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
-    bam_filenames <- filenames[suffixes == ".bam"]
-    prefixes <- substr(bam_filenames, 1L, nchar(subdir_basename)+1L)
-    stopifnot(all(prefixes == paste0(subdir_basename, "-")))
-    sample_names <- substr(bam_filenames, nchar(prefixes)+1L,
-                                          nchar(bam_filenames)-4L)
-    nbam <- length(bam_filenames)
     X <- seq_len(nbam)
     names(X) <- sample_names
     nhits <- sapply(X, function(i) {
@@ -101,6 +105,6 @@ makeTSPCsgdf <- function(subdir_path)
         message("OK")
         sgdf[ , "nhits"]
     })
-    DataFrame(Sgdf(ex_by_tx2), nhits)
+    cbind(ans, DataFrame(nhits))
 }
 

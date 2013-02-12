@@ -6,10 +6,9 @@ TSPC_subdirs <- c("BAI1", "CYB561", "DAPL1", "ITGB8", "KIAA0319L",
 
 #stopifnot(identical(file.path(TSPC_path, TSPC_subdirs), setdiff(list.dirs(TSPC_path), TSPC_path)))
 
-### No BAM files for KIAA0319L and TREM2.
 ### Transcripts T-4 and T-5 in MUC16 both have their 2nd exon included in
 ### their 3rd exon ==> splicing graph theory doesn't apply.
-exclude_subdirs <- c("KIAA0319L", "TREM2", "MUC16")
+exclude_subdirs <- "MUC16"
 
 keep_subdirs <- setdiff(TSPC_subdirs, exclude_subdirs)
 subdir_paths <- file.path(TSPC_path, keep_subdirs)
