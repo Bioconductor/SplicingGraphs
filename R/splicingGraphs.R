@@ -22,6 +22,7 @@ setGeneric("Spath", signature="x",
     function(x, gene_id=NA) standardGeneric("Spath")
 )
 
+### Should return a CompressedIntegerList.
 setMethod("Spath", "GRangesList",
     function(x, gene_id=NA)
     {
@@ -30,7 +31,7 @@ setMethod("Spath", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        ans <- mcols(x)[ , "Spath"]  # CompressedIntegerList
+        ans <- mcols(x)[ , "Spath"]
         if (is.null(x_names)) {
             if (!is.na(gene_id))
                 stop("the 'gene_id' arg is not supported ",
@@ -57,6 +58,7 @@ setGeneric("UATXHcount", signature="x",
     function(x, gene_id=NA) standardGeneric("UATXHcount")
 )
 
+### Should return an integer vector or a NULL.
 setMethod("UATXHcount", "GRangesList",
     function(x, gene_id=NA)
     {
@@ -65,7 +67,7 @@ setMethod("UATXHcount", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        ans <- mcols(x)[["UATXHcount"]]  # integer vector
+        ans <- mcols(x)[["UATXHcount"]]
         if (is.null(x_names)) {
             if (!is.na(gene_id))
                 stop("the 'gene_id' arg is not supported ",
@@ -81,6 +83,43 @@ setMethod("UATXHcount", "GRangesList",
         ans <- ans[x_names == gene_id]
         if (length(ans) == 0L)
             stop("invalid 'gene_id'")
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .hits() accessor (not exported)
+###
+
+setGeneric(".hits", signature="x",
+    function(x, gene_id=NA) standardGeneric(".hits")
+)
+
+### Should return a CompressedCharacterList or a NULL.
+setMethod(".hits", "GRangesList",
+    function(x, gene_id=NA)
+    {
+        if (!isSingleStringOrNA(gene_id))
+            stop("'gene_id' must be a single string (or NA)")
+        if (length(x) == 0L)
+            stop("'x' must be of length >= 1")
+        x_names <- names(x)
+        if (is.null(x_names)) {
+            if (!is.na(gene_id))
+                stop("the 'gene_id' arg is not supported ",
+                     "when 'x' is unnamed (in which case all its elements ",
+                     "(i.e. transcripts) are considered to belong to the ",
+                     "same gene)")
+            ans <- mcols(unlist(x, use.names=FALSE))[["hits"]]
+            return(ans) 
+        }
+        if (is.na(gene_id))
+            stop("'gene_id' must be supplied when 'x' has names")
+        x <- x[x_names == gene_id]
+        if (length(x) == 0L)
+            stop("invalid 'gene_id'")
+        ans <- mcols(unlist(x, use.names=FALSE))[["hits"]]
         ans
     }
 )
@@ -148,7 +187,7 @@ setMethod("UATXHcount", "GRangesList",
 ### the tx_id col in a CompressedFactorList (even though this container
 ### doesn't formally exist and a CompressedIntegerList is actually what's
 ### being used).
-.make_Sgdf_from_Sgdf0 <- function(sgdf0)
+.make_Sgdf_from_Sgdf0 <- function(sgdf0, ex_hits=NULL, in_hits=NULL)
 {
     from <- sgdf0[ , "from"]
     to <- sgdf0[ , "to"]
@@ -158,34 +197,88 @@ setMethod("UATXHcount", "GRangesList",
     sm <- match(edges, edges)
     if (!all(ex_or_in == ex_or_in[sm]))
         stop("invalid splicing graph")
-    sgdf <- DataFrame(sgdf0[sm == seq_along(sm), , drop=FALSE])
+    is_not_dup <- sm == seq_along(sm)
+    sgdf <- DataFrame(sgdf0[is_not_dup, , drop=FALSE])
     sgdf$tx_id <- splitAsList(tx_id, sm)
     UATXHcount <- sgdf$UATXHcount
     if (!is.null(UATXHcount))
         sgdf$UATXHcount <- sum(splitAsList(sgdf0$UATXHcount, sm))
+    if (is.null(ex_hits) && is.null(in_hits))
+        return(sgdf)
+    hits <- relist(character(0), PartitioningByEnd(NG=length(sm)))
+    if (!is.null(ex_hits)) {
+        if (!is(ex_hits, "CharacterList"))
+            stop("'ex_hits' must be a CharacterList object")
+        ex_idx <- which(ex_or_in == "ex")
+        if (length(ex_idx) != length(ex_hits))
+            stop("'ex_hits' is incompatible with 'sgdf0'")
+        hits[ex_idx] <- ex_hits
+    }
+    if (!is.null(in_hits)) {
+        if (!is(in_hits, "CharacterList"))
+            stop("'in_hits' must be a CharacterList object")
+        in_idx <- which(ex_or_in == "in")
+        if (length(in_idx) != length(in_hits))
+            stop("'in_hits' is incompatible with 'sgdf0'")
+        hits[in_idx] <- in_hits
+    }
+    ## TODO: This is quite inefficient. Improve it.
+    for (i in which(!is_not_dup))
+        hits[[sm[i]]] <- unique(hits[[sm[i]]], hits[[i]])
+    sgdf$hits <- hits[is_not_dup]
+    sgdf$nhits <- elementLengths(sgdf$hits)
     sgdf
 }
 
 setGeneric("Sgdf", signature="x",
-    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
         standardGeneric("Sgdf")
 )
 
 setMethod("Sgdf", "ANY",
-    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
     {
         spath <- Spath(x, gene_id=gene_id)
         if (is.null(UATXHcount))
             UATXHcount <- UATXHcount(x, gene_id=gene_id)
-        Sgdf(spath, UATXHcount=UATXHcount, keep.dup.edges=keep.dup.edges)
+        if (is.null(inbytx))
+            return(Sgdf(spath, UATXHcount=UATXHcount,
+                               keep.dup.edges=keep.dup.edges))
+        if (!is(inbytx, "GRangesList"))
+            stop("'inbytx' must be NULL or a GRangesList object")
+        if (!is(x, "GRangesList"))
+            stop("'x' must be a GRangesList object ",
+                 "when 'inbytx' is a GRangesList object")
+        if (length(inbytx) != length(x))
+            stop("'inbytx' must have the same length as 'x'")
+        if (!identical(elementLengths(inbytx) + 1L, elementLengths(x)))
+            stop("the shape of 'inbytx' is not compatible ",
+                 "with the shape of 'x'")
+        if (!identical(keep.dup.edges, FALSE))
+            stop("'keep.dup.edges' must be FALSE when 'inbytx' is supplied")
+        sgdf0 <- Sgdf(spath, UATXHcount=UATXHcount, keep.dup.edges=TRUE)
+        ex_or_in <- sgdf0[ , "ex_or_in"]
+        ex_hits <- .hits(x, gene_id=gene_id)
+        if (is.null(ex_hits))
+            stop("'x' must have a \"hits\" inner metadata column ",
+                 "when 'inbytx' is a GRangesList object. May be ",
+                 "you forgot to pass it thru assignSubfeatureHits()?")
+        in_hits <- .hits(inbytx, gene_id=gene_id)
+        if (is.null(in_hits))
+            stop("'inbytx' has no \"hits\" inner metadata column. May be ",
+                 "you forgot to pass it thru assignSubfeatureHits()?")
+        .make_Sgdf_from_Sgdf0(sgdf0, ex_hits=ex_hits, in_hits=in_hits)
     }
 )
 
 setMethod("Sgdf", "IntegerList",
-    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is an IntegerList")
+        if (!is.null(inbytx))
+            stop("the 'inbytx' arg is not supported ",
                  "when 'x' is an IntegerList")
         sgdf0 <- .make_Sgdf0_from_Spath(x, UATXHcount=UATXHcount)
         Sgdf(sgdf0, keep.dup.edges=keep.dup.edges)
@@ -193,13 +286,16 @@ setMethod("Sgdf", "IntegerList",
 )
 
 setMethod("Sgdf", "data.frame",
-    function(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!is.null(UATXHcount))
             stop("the 'UATXHcount' arg is not supported ",
+                 "when 'x' is a data.frame")
+        if (!is.null(inbytx))
+            stop("the 'inbytx' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
@@ -334,7 +430,8 @@ setMethod("Sgdf", "data.frame",
         ans$lty <- c("solid", "solid", "dashed", "solid")[ex_or_in]
     if (!("color" %in% extract_colnames))
         ans$color <- c("green3", "darkgrey", "grey", "black")[ex_or_in]
-    if (!("width" %in% extract_colnames) && "UATXHcount" %in% extract_colnames) {
+    if (!("width" %in% extract_colnames)
+     && "UATXHcount" %in% extract_colnames) {
         min_UATXHcount <- min(ans$UATXHcount)
         if (min_UATXHcount < 0L) {
             warning("'UATXHcount' column contains negative values. Cannot use ",

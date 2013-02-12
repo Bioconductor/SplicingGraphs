@@ -44,7 +44,7 @@ splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 ## Related utilities
 Spath(x, gene_id=NA)
 UATXHcount(x, gene_id=NA)
-Sgdf(x, gene_id=NA, UATXHcount=NULL, keep.dup.edges=FALSE)
+Sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
 Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
@@ -73,6 +73,9 @@ plotSgraph2(x, gene_id=NA)
     TODO
   }
   \item{UATXHcount}{
+    TODO
+  }
+  \item{inbytx}{
     TODO
   }
   \item{keep.dup.edges}{
