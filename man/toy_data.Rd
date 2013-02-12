@@ -37,7 +37,33 @@ toy_reads_bam()
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## Load the toy gene model as a TranscriptDb object and plot it
+## ---------------------------------------------------------------------
 toy_genes_gff()
+
+## Note that you can display the content of the file with:
+cat(readLines(toy_genes_gff()), sep="\n")
+
+library(GenomicFeatures)
+suppressWarnings(
+  toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+)
+
+## Plot the gene model:
+if (interactive()) {
+  library(Gviz)
+  grtrack <- GeneRegionTrack(toy_genes_txdb, name="toy genes")
+  gatrack <- GenomeAxisTrack()
+  plotTracks(list(gatrack, grtrack))
+}
+
+## ---------------------------------------------------------------------
+## Load the toy reads
+## ---------------------------------------------------------------------
+## The reads are single-end reads. They were aligned to the exact same
+## reference genome that the above toy gene model is based on.
 toy_reads_sam()
 toy_reads_bam()
+readGappedAlignments(toy_reads_bam(), use.names=TRUE)
 }

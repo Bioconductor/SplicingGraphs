@@ -51,11 +51,28 @@ chrX	.	gene	601	700	.	+	.	ID=geneD
 
 chrX	.	mRNA	601	700	.	+	.	ID=D1;Parent=geneD
 chrX	.	mRNA	601	700	.	+	.	ID=D2;Parent=geneD
+chrX	.	mRNA	601	700	.	+	.	ID=D3;Parent=geneD
+chrX	.	mRNA	601	675	.	+	.	ID=D4;Parent=geneD
 
-chrX	.	exon	601	610	.	+	.	ID=Dx1;Parent=D1,D2
-chrX	.	exon	616	625	.	+	.	ID=Dx2;Parent=D1
-chrX	.	exon	631	640	.	+	.	ID=Dx3;Parent=D1,D2
-chrX	.	exon	651	660	.	+	.	ID=Dx4;Parent=D2
-chrX	.	exon	671	680	.	+	.	ID=Dx5;Parent=D1
-chrX	.	exon	686	700	.	+	.	ID=Dx6;Parent=D1,D2
+chrX	.	exon	601	620	.	+	.	ID=Dx1;Parent=D1,D2
+chrX	.	exon	601	630	.	+	.	ID=Dx2;Parent=D3,D4
+chrX	.	exon	651	700	.	+	.	ID=Dx3;Parent=D1,D3
+chrX	.	exon	666	675	.	+	.	ID=Dx4;Parent=D2,D4
+chrX	.	exon	691	700	.	+	.	ID=Dx5;Parent=D2
+
+#######
+# geneE
+#######
+
+chrX	.	gene	801	900	.	+	.	ID=geneE
+
+chrX	.	mRNA	801	900	.	+	.	ID=E1;Parent=geneE
+chrX	.	mRNA	801	900	.	+	.	ID=E2;Parent=geneE
+
+chrX	.	exon	801	810	.	+	.	ID=Ex1;Parent=E1,E2
+chrX	.	exon	816	825	.	+	.	ID=Ex2;Parent=E1
+chrX	.	exon	831	840	.	+	.	ID=Ex3;Parent=E1,E2
+chrX	.	exon	851	860	.	+	.	ID=Ex4;Parent=E2
+chrX	.	exon	871	880	.	+	.	ID=Ex5;Parent=E1
+chrX	.	exon	886	900	.	+	.	ID=Ex6;Parent=E1,E2
 

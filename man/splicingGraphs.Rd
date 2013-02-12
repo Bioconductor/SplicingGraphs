@@ -166,23 +166,13 @@ TODO
 
 \examples{
 ## ---------------------------------------------------------------------
-## 1. Load a toy gene model as a TranscriptDb object and plot it
+## 1. Load a toy gene model as a TranscriptDb object
 ## ---------------------------------------------------------------------
 
-## Note that you can display the content of the file with:
-cat(readLines(toy_genes_gff()), sep="\n")
-
+library(GenomicFeatures)
 suppressWarnings(
   toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
 )
-
-## Plot the gene model:
-if (interactive()) {
-  library(Gviz)
-  grtrack <- GeneRegionTrack(toy_genes_txdb, name="toy genes")
-  gatrack <- GenomeAxisTrack()
-  plotTracks(list(gatrack, grtrack))
-}
 
 ## ---------------------------------------------------------------------
 ## 2. Compute all the splicing graphs (1 graph per gene) into a single
