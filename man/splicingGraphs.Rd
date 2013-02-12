@@ -182,14 +182,14 @@ if (interactive()) {
 }
 
 ## ---------------------------------------------------------------------
-## 2. Compute all the splicing graphs (1 per gene) into a single
+## 2. Compute all the splicing graphs (1 graph per gene) into a single
 ##    GRangesList object
 ## ---------------------------------------------------------------------
 
 ## Extract the exons grouped by transcript:
 ex_by_tx <- exonsBy(toy_genes_txdb, by="tx")
 
-## Extract the transcript grouped by gene:
+## Extract the transcripts grouped by gene:
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 
 ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)

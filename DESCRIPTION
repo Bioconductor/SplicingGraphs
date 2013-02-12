@@ -15,5 +15,6 @@ Imports: methods, utils, igraph,
 	 GenomicFeatures, Rsamtools
 Suggests: graph, Rgraphviz, Gviz, TxDb.Mmusculus.UCSC.mm9.knownGene, RUnit
 Collate: splicingGraphs.R
+	 countReads.R
 	 toy_data.R
 biocViews: Genetics, Annotation, HighThroughputSequencing

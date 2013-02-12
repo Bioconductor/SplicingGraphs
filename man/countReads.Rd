@@ -1,6 +1,7 @@
 \name{countReads}
 
 \alias{countReads}
+\alias{assignSubfeatureHits}
 
 \title{
   Tools for assigning read counts to splicing graphs
@@ -32,8 +33,28 @@
 
 \examples{
 ## ---------------------------------------------------------------------
-## 1. Load toy reads and a toy gene model, and find the hits that are
-##    "compatible" with the splicing of the transcripts
+## 1. Load a toy gene model and compute the splicing graphs
+## ---------------------------------------------------------------------
+
+## Load a toy gene model as a TranscriptDb object. It is important to
+## use a gene model based on the exact same reference genome that was
+## used to align the reads.
+toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+
+## Extract the exons grouped by transcript:
+ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
+
+## Extract the transcripts grouped by gene:
+tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
+
+## Compute the splicing graphs (1 graph per gene):
+ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
+names(ex_by_tx2)
+plotSgraph(ex_by_tx2, "geneA")
+
+## ---------------------------------------------------------------------
+## 2. Load toy reads and find the hits that are "compatible" with the
+##    splicing of the transcripts
 ## ---------------------------------------------------------------------
 
 ## Load toy reads (single-end) from a BAM file. We filter out secondary
@@ -46,45 +67,43 @@ param0 <- ScanBamParam(flag=flag0)
 gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
 gal
 
-## Load a toy gene model as a TranscriptDb object. It is important to
-## use a gene model based on the exact same reference genome that was
-## used to align the reads.
-toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
-
-## Extract the exons grouped by transcript:
-ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
-
 ## Find the overlaps between the reads and the transcripts:
 grl <- grglist(gal, order.as.in.query=TRUE)
-ov0 <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
+ov0 <- findOverlaps(grl, ex_by_tx2, ignore.strand=TRUE)
 
-## Nb of hits per read, per transcript:
+## Nb of hits:
 head(countQueryHits(ov0))  # per read
 head(countSubjectHits(ov0))  # per transcript
 
 ## Keep only overlaps that are "compatible" with the splicing of the
 ## transcripts:
-ovenc0 <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
+ovenc0 <- encodeOverlaps(grl, ex_by_tx2, hits=ov0,
                          flip.query.if.wrong.strand=TRUE)
 ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
 ov1 <- ov0[ov0_is_comp]
 
 ## ---------------------------------------------------------------------
-## 2. Count unambiguous hits per transcript (UnAmbiguous hit counts)
+## 3. Count nb of unambiguous compatible hits per transcript
 ## ---------------------------------------------------------------------
 
 ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]
 UATXHcount <- countSubjectHits(ov2)
-mcols(ex_by_tx)$UATXHcount <- UATXHcount
+mcols(ex_by_tx2)$UATXHcount <- UATXHcount
 
-## Compute the splicing graphs (1 per gene), and plot them:
-tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
-ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
 names(ex_by_tx2)
 plotSgraph(ex_by_tx2, "geneA")
 
 ## ---------------------------------------------------------------------
-## 3. 
+## 4. Count nb of compatible hits per edge (NOTE: the same read can be
+##    compatible with more than 1 edge e.g. a junction read with 1 gap
+##    can be compatible with 3 edges or more)
 ## ---------------------------------------------------------------------
+
+## Assign compatible hits for each exon:
+ex_by_tx2 <- assignSubfeatureHits(grl, ex_by_tx2, ov1, ignore.strand=TRUE)
+
+## Assign compatible hits for each intron:
+in_by_tx2 <- psetdiff(range(ex_by_tx2), ex_by_tx2)
+in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
 
 }

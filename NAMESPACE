@@ -22,6 +22,8 @@ export(
   plotSgraph, plotSgraph2,
   splicingGraphs,
 
+  assignSubfeatureHits,
+
   toy_genes_gff,
   toy_reads_sam,
   toy_reads_bam
