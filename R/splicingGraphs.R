@@ -307,103 +307,8 @@ setMethod("Sgdf", "data.frame",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Various attempts at converting a Splicing graph data frame (Sgdf) into
-### something plottable.
+### .make_igraph_from_Sgdf()
 ###
-
-### ABANDONNED!
-### grapNEL objects (defined in the graph package) don't allow more than 1
-### edge between the same 2 nodes. Bummer :-(
-#.make_graphNEL_from_Sgdf <- function(sgdf)
-#{
-#    library(graph)
-#    from <- sgdf[ , "from"]
-#    to <- sgdf[ , "to"]
-#    ex_or_in <- sgdf[ , "ex_or_in"]
-#    ex_or_in_levels <- levels(ex_or_in)
-#    if (!identical(ex_or_in_levels, .EX_OR_IN_LEVELS2)
-#     && !identical(ex_or_in_levels, .EX_OR_IN_LEVELS))
-#        stop("\"ex_or_in\" column has invalid levels")
-#    weights <- .EDGE_WEIGHTS[ex_or_in]
-#    nodes <- unique(c(from, to))
-#    nodes <- sort(as.integer(setdiff(nodes, c("R", "L"))))
-#    nodes <- c("R", as.character(nodes), "L")
-#    graph_nel <- graph::graphNEL(nodes, edgemode="directed")
-#    graph::addEdge(from, to, graph_nel, weights)
-#}
-
-### ABANDONNED!
-### Attempt to do the plotting thru an Ragraph object (as a way to circumvent
-### the limitation that grapNEL objects don't allow more than 1 edge between
-### the same 2 nodes). Pb is that, even though Ragraph objects (defined in
-### Rgraphviz) do allow more than 1 edge between the same 2 nodes, the standard
-### way to set data on the edges of an Ragraph object is to use `edgeData<-`,
-### which unfortunately requires the edges to be specified by the 2 nodes they
-### connect. Therefore it is impossible to set different data on the various
-### edges between the same 2 nodes, which is a problem if we want to set
-### different plotting attributes on them like color, line width, or line
-### style.
-#.make_Ragraph_from_Sgdf <- function(sgdf, gene_id=NA)
-#{
-#    library(Rgraphviz)
-#    graph_nel <- .make_graphNEL_from_Sgdf(sgdf)
-#    pNodes <- Rgraphviz::buildNodeList(graph_nel)
-#    pEdges <- Rgraphviz::buildEdgeList(graph_nel, "distinct")
-#    from <- sgdf[ , "from"]
-#    to <- sgdf[ , "to"]
-#    edges <- paste(from, to, sep="~")
-#    if (!all(edges %in% names(pEdges)))
-#        stop("internal error: the list of pEdge objects returned by ",
-#             "buildEdgeList() doesn't have the expected names")
-#    pEdges <- pEdges[edges]
-#    Rgraphviz::agopen(name=gene_id, nodes=pNodes, edges=pEdges,
-#                      edgeMode="directed")
-#}
-
-### Experimental. Not ready yet!
-.layout.Sgraph <- function(graph)
-{
-    ## Compute the 'x' col.
-    vertices <- get.data.frame(graph, what="vertices")
-    nodes <- vertices$name
-    nnodes <- length(nodes)
-    if (!identical(nodes[c(1L, nnodes)], c("R", "L")))
-        stop("first and last nodes are expected to be \"R\" and \"L\", ",
-             "respectively")
-    max_SSid <- graph$max_SSid
-    if (is.null(max_SSid)) {
-        nxslot <- nnodes
-        xslot <- seq_len(nxslot) - 1L
-    } else {
-        nxslot <- as.integer(max_SSid) + 2L
-        xslot <- c(0L, as.integer(nodes[-c(1L, nnodes)]), nxslot - 1L)
-    }
-    x <- xslot * 2.0/(nxslot-1L) - 1.0
-
-    ## Compute the 'y' col.
-    edges <- get.data.frame(graph, what="edges")
-    nedges <- nrow(edges)
-    nin <- tabulate(factor(edges$to, levels=nodes), nbins=nnodes)
-    nout <- tabulate(factor(edges$from, levels=nodes), nbins=nnodes)
-    ## A sanity check.
-    if (nin[1L] != 0L || nout[nnodes] != 0L)
-        stop("\"R\" or \"L\" nodes cannot have incoming or outgoing edges, ",
-             "respectively")
-    nin_cumsum <- cumsum(nin)
-    nout_cumsum <- cumsum(nout)
-    ## A sanity check.
-    if (nin_cumsum[nnodes] != nedges || nout_cumsum[nnodes] != nedges)
-        stop("The sum of all the incoming edges for all nodes should be ",
-             "equal to the total nb of edges. Same for the outgoing edges.")
-    ## Nb of edges passing by.
-    nbypass <- cumsum(c(0L, nout[-nnodes]) - nin)
-    set.seed(33L)
-    yslot <- sapply(nbypass+1L, sample, 1L)
-    y <- yslot * 2.0/(nbypass+2L) - 1.0
-
-    ## Return the layout matrix.
-    cbind(x=x, y=y)
-}
 
 ### 'sgdf' must be a data.frame as returned by:
 ###     Sgdf( , keep.dup.edges=TRUE)
@@ -471,7 +376,7 @@ setMethod("Sgdf", "data.frame",
 
     ## Set its layout attribute.
     g$layout <- layout.kamada.kawai.deterministic
-    #g$layout <- .layout.Sgraph
+    #g$layout <- layout.Sgraph
 
     g
 }
@@ -507,14 +412,6 @@ setMethod("Sgdf", "data.frame",
     .make_igraph(d)
 }
 
-### FIXME: Node and edge attributes are lost. Then plotting is poor...
-.make_graphNEL_from_igraph <- function(igraph)
-{
-    warning("'as.graphNEL' not fully supported yet (node and edge ",
-            "attributes are lost)")
-    igraph.to.graphNEL(igraph)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sgraph() accessor
@@ -523,20 +420,20 @@ setMethod("Sgdf", "data.frame",
 ###
 
 setGeneric("Sgraph", signature="x",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
         standardGeneric("Sgraph")
 )
 
 setMethod("Sgraph", "ANY",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
     {
         sgdf <- Sgdf(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
-        Sgraph(sgdf, as.graphNEL=as.graphNEL)
+        Sgraph(sgdf, as.Ragraph=as.Ragraph)
     }
 )
 
 setMethod("Sgraph", "data.frame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -545,12 +442,12 @@ setMethod("Sgraph", "data.frame",
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a data.frame")
         igraph <- .make_igraph_from_Sgdf0(x)
-        Sgraph(igraph, as.graphNEL=as.graphNEL)
+        Sgraph(igraph, as.Ragraph=as.Ragraph)
     }
 )
 
 setMethod("Sgraph", "DataFrame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -559,12 +456,12 @@ setMethod("Sgraph", "DataFrame",
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a DataFrame")
         igraph <- .make_igraph_from_Sgdf(x)
-        Sgraph(igraph, as.graphNEL=as.graphNEL)
+        Sgraph(igraph, as.Ragraph=as.Ragraph)
     }
 )
 
 setMethod("Sgraph", "igraph",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -572,11 +469,11 @@ setMethod("Sgraph", "igraph",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is an igraph object")
-        if (!isTRUEorFALSE(as.graphNEL))
-            stop("'as.graphNEL' must be TRUE or FALSE")
-        if (!as.graphNEL)
+        if (!isTRUEorFALSE(as.Ragraph))
+            stop("'as.Ragraph' must be TRUE or FALSE")
+        if (!as.Ragraph)
             return(x)  # no-op
-        .make_graphNEL_from_igraph(x)
+        make_Ragraph_from_igraph(x)
     }
 )
 
@@ -678,49 +575,11 @@ Sgdf2 <- function(x, gene_id=NA)
 ### Same as Sgraph() except that uninformative nodes (i.e. SSids) are removed.
 ###
 
-Sgraph2 <- function(x, gene_id=NA, as.graphNEL=FALSE)
+Sgraph2 <- function(x, gene_id=NA, as.Ragraph=FALSE)
 {
     if (!is(x, "DataFrame"))
         x <- Sgdf2(x, gene_id=gene_id)
-    Sgraph(x, as.graphNEL=as.graphNEL)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### plotSgraph() and plotSgraph2()
-###
-
-### ABANDONNED!
-### 'x' should be the graphNEL returned by .make_graphNEL_from_Sgdf()
-#.plot_graphNEL <- function(x, gene_id=NA)
-#{
-#    library(Rgraphviz)
-#    parameters <- list(nodes=list(col="grey", lty=1, lwd=2,
-#                       fontsize=12, height=50,
-#                       width=50, fill="#33CC66", shape="ellipse",
-#                       fixedsize=FALSE),
-#                       graph=list(main=
-#                       paste("Splicing graph for gene id:", gene_id)),
-#                       edges=list(col="grey", lwd=1.7, labels=NA,
-#                       lty=1))
-#    x <- Rgraphviz::layoutGraph(x)
-#    graph::nodeRenderInfo(x) <- list(fill=c(R="#FF6666", L="#FF6666"))
-#    Rgraphviz::renderGraph(x, recipEdges="distinct", graph.pars=parameters,
-#                           name="")
-#}
-
-plotSgraph <- function(x, gene_id=NA, keep.dup.edges=FALSE)
-{
-    if (!is(x, "igraph"))
-        x <- Sgraph(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
-    plot.igraph(x, main=gene_id)
-}
-
-plotSgraph2 <- function(x, gene_id=NA)
-{
-    if (!is(x, "igraph"))
-        x <- Sgraph2(x, gene_id=gene_id)
-    plot.igraph(x, main=gene_id)
+    Sgraph(x, as.Ragraph=as.Ragraph)
 }
 
 

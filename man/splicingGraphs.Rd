@@ -25,9 +25,6 @@
 
 \alias{Sgraph2}
 
-\alias{plotSgraph}
-\alias{plotSgraph2}
-
 \alias{splicingGraphs}
 
 \title{
@@ -45,12 +42,10 @@ splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 Spath(x, gene_id=NA)
 UATXHcount(x, gene_id=NA)
 Sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
-Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.graphNEL=FALSE)
+Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
-Sgraph2(x, gene_id=NA, as.graphNEL=FALSE)
-plotSgraph(x, gene_id=NA, keep.dup.edges=FALSE)
-plotSgraph2(x, gene_id=NA)
+Sgraph2(x, gene_id=NA, as.Ragraph=FALSE)
 }
 
 \arguments{
@@ -81,7 +76,7 @@ plotSgraph2(x, gene_id=NA)
   \item{keep.dup.edges}{
     TODO
   }
-  \item{as.graphNEL}{
+  \item{as.Ragraph}{
     TODO
   }
 }
@@ -204,7 +199,14 @@ sgdfA <- Sgdf(ex_by_tx2, gene_id="geneA")
 sgdfA
 
 if (interactive()) {
-  plotSgraph(sgdfA)
+  ## By default Sgraph() returns an igraph object so we need the igraph
+  ## package to plot it.
+  library(igraph)
+  plot(Sgraph(sgdfA))
+
+  ## Plotting an Ragraph (Rgraphviz package) instead of an igraph object.
+  ## The graphviz layout engine seems to to a better job...
+  plot(Sgraph(sgdfA, as.Ragraph=TRUE))
 }
 
 ## ---------------------------------------------------------------------
@@ -234,13 +236,13 @@ if (FALSE) {
 }
 
 ## ---------------------------------------------------------------------
-## 5. Repeating 3. for geneB
+## 5. Plotting the other toy genes
 ## ---------------------------------------------------------------------
 
-sgdfB <- Sgdf(ex_by_tx2, gene_id="geneB")
-sgdfB
-
 if (interactive()) {
-  plotSgraph(sgdfB)
+  plot(Sgraph(ex_by_tx2, gene_id="geneB", as.Ragraph=TRUE))
+  plot(Sgraph(ex_by_tx2, gene_id="geneC", as.Ragraph=TRUE))
+  plot(Sgraph(ex_by_tx2, gene_id="geneD", as.Ragraph=TRUE))
+  plot(Sgraph(ex_by_tx2, gene_id="geneE", as.Ragraph=TRUE))
 }
 }

@@ -7,6 +7,10 @@
   Loading an plotting the TSPC splicing graph data frames
 }
 
+\description{
+  TODO
+}
+
 \examples{
 ## 1 splicing graph data frame per gene, except for gene MUC16.
 ## Transcripts T-4 and T-5 in gene MUC16 both have their 2nd exon included
@@ -34,13 +38,13 @@ dim(TREM2sgdf)
 
 ## Plot the splicing graphs:
 library(Rgraphviz)
-plot(Sgraph(BAI1sgdf, as.graphNEL=TRUE))
-plot(Sgraph(CYB561sgdf, as.graphNEL=TRUE))
-plot(Sgraph(DAPL1sgdf, as.graphNEL=TRUE))
-plot(Sgraph(ITGB8sgdf, as.graphNEL=TRUE))
-plot(Sgraph(KIAA0319Lsgdf, as.graphNEL=TRUE))
-plot(Sgraph(LGSNsgdf, as.graphNEL=TRUE))
-plot(Sgraph(MKRN3sgdf, as.graphNEL=TRUE))
-plot(Sgraph(ST14sgdf, as.graphNEL=TRUE))
-plot(Sgraph(TREM2sgdf, as.graphNEL=TRUE))
+plot(Sgraph(BAI1sgdf, as.Ragraph=TRUE))
+plot(Sgraph(CYB561sgdf, as.Ragraph=TRUE))
+plot(Sgraph(DAPL1sgdf, as.Ragraph=TRUE))
+plot(Sgraph(ITGB8sgdf, as.Ragraph=TRUE))
+plot(Sgraph(KIAA0319Lsgdf, as.Ragraph=TRUE))
+plot(Sgraph(LGSNsgdf, as.Ragraph=TRUE))
+plot(Sgraph(MKRN3sgdf, as.Ragraph=TRUE))
+plot(Sgraph(ST14sgdf, as.Ragraph=TRUE))
+plot(Sgraph(TREM2sgdf, as.Ragraph=TRUE))
 }

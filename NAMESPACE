@@ -9,8 +9,10 @@ import(BiocGenerics)
 import(IRanges)
 import(GenomicRanges)
 
-import(graph)
-import(Rgraphviz)
+importFrom(graph, nodeDataDefaults, nodeData,
+                  edgeDataDefaults, edgeNames, edgeData)
+
+importFrom(Rgraphviz, agopen)
 
 import(GenomicFeatures)
 import(Rsamtools)
@@ -23,7 +25,6 @@ export(
   uninformativeSSids,
   Sgdf2,
   Sgraph2,
-  plotSgraph, plotSgraph2,
   splicingGraphs,
 
   assignSubfeatureHits,

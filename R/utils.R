@@ -1,3 +1,57 @@
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### A layout function for igraph objects.
+###
+
+### Experimental. Not ready yet!
+layout.Sgraph <- function(graph)
+{
+    ## Compute the 'x' col.
+    vertices <- get.data.frame(graph, what="vertices")
+    nodes <- vertices$name
+    nnodes <- length(nodes)
+    if (!identical(nodes[c(1L, nnodes)], c("R", "L")))
+        stop("first and last nodes are expected to be \"R\" and \"L\", ",
+             "respectively")
+    max_SSid <- graph$max_SSid
+    if (is.null(max_SSid)) {
+        nxslot <- nnodes
+        xslot <- seq_len(nxslot) - 1L
+    } else {
+        nxslot <- as.integer(max_SSid) + 2L
+        xslot <- c(0L, as.integer(nodes[-c(1L, nnodes)]), nxslot - 1L)
+    }
+    x <- xslot * 2.0/(nxslot-1L) - 1.0
+
+    ## Compute the 'y' col.
+    edges <- get.data.frame(graph, what="edges")
+    nedges <- nrow(edges)
+    nin <- tabulate(factor(edges$to, levels=nodes), nbins=nnodes)
+    nout <- tabulate(factor(edges$from, levels=nodes), nbins=nnodes)
+    ## A sanity check.
+    if (nin[1L] != 0L || nout[nnodes] != 0L)
+        stop("\"R\" or \"L\" nodes cannot have incoming or outgoing edges, ",
+             "respectively")
+    nin_cumsum <- cumsum(nin)
+    nout_cumsum <- cumsum(nout)
+    ## A sanity check.
+    if (nin_cumsum[nnodes] != nedges || nout_cumsum[nnodes] != nedges)
+        stop("The sum of all the incoming edges for all nodes should be ",
+             "equal to the total nb of edges. Same for the outgoing edges.")
+    ## Nb of edges passing by.
+    nbypass <- cumsum(c(0L, nout[-nnodes]) - nin)
+    set.seed(33L)
+    yslot <- sapply(nbypass+1L, sample, 1L)
+    y <- yslot * 2.0/(nbypass+2L) - 1.0
+
+    ## Return the layout matrix.
+    cbind(x=x, y=y)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### make_Ragraph_from_igraph()
+###
+
 ### Safer than using sub().
 .safeTranslateEdgeNames <- function(edge_names, old.sep="|", new.sep="~")
 {
@@ -9,7 +63,7 @@
 
 ### Mappings from igraph attribute names to Rgraphviz attribute names.
 .IGRAPH_2_RGRAPHVIZ_EDGE_ATTRNAMES <- c(
-    width="weight",
+    width="lwd",
     label.color="fontcolor"
     #lty="style"
 )
@@ -81,10 +135,15 @@
     edge_attrs
 }
 
-make_Ragraph_from_graphNEL <- function(graph_nel, gene_id=NA)
+.make_Ragraph_from_graphNEL <- function(graph_nel, gene_id=NA)
 {
     node_attrs <- .make_Ragraph_nodeAttrs_from_graphNEL(graph_nel)
     edge_attrs <- .make_Ragraph_edgeAttrs_from_graphNEL(graph_nel)
     agopen(graph_nel, name=gene_id, nodeAttrs=node_attrs, edgeAttrs=edge_attrs)
+}
+
+make_Ragraph_from_igraph <- function(igraph, gene_id=NA)
+{
+    .make_Ragraph_from_graphNEL(igraph.to.graphNEL(igraph), gene_id=gene_id)
 }
 
