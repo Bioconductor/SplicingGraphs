@@ -8,6 +8,10 @@ importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
 import(BiocGenerics)
 import(IRanges)
 import(GenomicRanges)
+
+import(graph)
+import(Rgraphviz)
+
 import(GenomicFeatures)
 import(Rsamtools)
 
