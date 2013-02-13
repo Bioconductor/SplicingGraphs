@@ -13,7 +13,7 @@ Depends: BiocGenerics, IRanges (>= 1.17.31), GenomicRanges,
 Imports: methods, utils, igraph,
 	 BiocGenerics, IRanges, GenomicRanges,
 	 graph, Rgraphviz, GenomicFeatures, Rsamtools
-Suggests: Gviz, TxDb.Mmusculus.UCSC.mm9.knownGene, RUnit
+Suggests: igraph, Gviz, TxDb.Mmusculus.UCSC.mm9.knownGene, RUnit
 Collate: utils.R
 	 splicingGraphs.R
 	 countReads.R

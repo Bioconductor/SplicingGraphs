@@ -50,7 +50,7 @@ tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 ## Compute the splicing graphs (1 graph per gene):
 ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
 names(ex_by_tx2)
-plot(Sgraph(ex_by_tx2, "geneA", as.Ragraph=TRUE))
+plot(Sgraph(ex_by_tx2, gene_id="geneA"))
 
 ## ---------------------------------------------------------------------
 ## 2. Load toy reads and find the hits that are "compatible" with the
@@ -91,7 +91,7 @@ UATXHcount <- countSubjectHits(ov2)
 mcols(ex_by_tx2)$UATXHcount <- UATXHcount
 
 names(ex_by_tx2)
-plot(Sgraph(ex_by_tx2, "geneA", as.Ragraph=TRUE))
+plot(Sgraph(ex_by_tx2, gene_id="geneA"))
 
 ## ---------------------------------------------------------------------
 ## 4. Count nb of compatible hits per edge (NOTE: the same read can be
@@ -106,5 +106,5 @@ ex_by_tx2 <- assignSubfeatureHits(grl, ex_by_tx2, ov1, ignore.strand=TRUE)
 in_by_tx2 <- psetdiff(range(ex_by_tx2), ex_by_tx2)
 in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
 
-Sgdf(ex_by_tx2, "geneA", inbytx=in_by_tx2)
+Sgdf(ex_by_tx2, gene_id="geneA", inbytx=in_by_tx2)
 }

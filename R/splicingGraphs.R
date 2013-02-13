@@ -420,20 +420,20 @@ setMethod("Sgdf", "data.frame",
 ###
 
 setGeneric("Sgraph", signature="x",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
         standardGeneric("Sgraph")
 )
 
 setMethod("Sgraph", "ANY",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
     {
         sgdf <- Sgdf(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
-        Sgraph(sgdf, as.Ragraph=as.Ragraph)
+        Sgraph(sgdf, as.igraph=as.igraph)
     }
 )
 
 setMethod("Sgraph", "data.frame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -442,12 +442,12 @@ setMethod("Sgraph", "data.frame",
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a data.frame")
         igraph <- .make_igraph_from_Sgdf0(x)
-        Sgraph(igraph, as.Ragraph=as.Ragraph)
+        Sgraph(igraph, as.igraph=as.igraph)
     }
 )
 
 setMethod("Sgraph", "DataFrame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -456,12 +456,12 @@ setMethod("Sgraph", "DataFrame",
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a DataFrame")
         igraph <- .make_igraph_from_Sgdf(x)
-        Sgraph(igraph, as.Ragraph=as.Ragraph)
+        Sgraph(igraph, as.igraph=as.igraph)
     }
 )
 
 setMethod("Sgraph", "igraph",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -469,10 +469,14 @@ setMethod("Sgraph", "igraph",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is an igraph object")
-        if (!isTRUEorFALSE(as.Ragraph))
-            stop("'as.Ragraph' must be TRUE or FALSE")
-        if (!as.Ragraph)
+        if (!isTRUEorFALSE(as.igraph))
+            stop("'as.igraph' must be TRUE or FALSE")
+        if (as.igraph) {
+            ## Need to load the igraph package so the user can display, plot,
+            ## and manipulate the returned object.
+            library(igraph)
             return(x)  # no-op
+        }
         make_Ragraph_from_igraph(x)
     }
 )
@@ -575,11 +579,11 @@ Sgdf2 <- function(x, gene_id=NA)
 ### Same as Sgraph() except that uninformative nodes (i.e. SSids) are removed.
 ###
 
-Sgraph2 <- function(x, gene_id=NA, as.Ragraph=FALSE)
+Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 {
     if (!is(x, "DataFrame"))
         x <- Sgdf2(x, gene_id=gene_id)
-    Sgraph(x, as.Ragraph=as.Ragraph)
+    Sgraph(x, as.igraph=as.igraph)
 }
 
 

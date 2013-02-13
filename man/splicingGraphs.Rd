@@ -42,10 +42,10 @@ splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 Spath(x, gene_id=NA)
 UATXHcount(x, gene_id=NA)
 Sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
-Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.Ragraph=FALSE)
+Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
-Sgraph2(x, gene_id=NA, as.Ragraph=FALSE)
+Sgraph2(x, gene_id=NA, as.igraph=FALSE)
 }
 
 \arguments{
@@ -76,7 +76,7 @@ Sgraph2(x, gene_id=NA, as.Ragraph=FALSE)
   \item{keep.dup.edges}{
     TODO
   }
-  \item{as.Ragraph}{
+  \item{as.igraph}{
     TODO
   }
 }
@@ -199,14 +199,9 @@ sgdfA <- Sgdf(ex_by_tx2, gene_id="geneA")
 sgdfA
 
 if (interactive()) {
-  ## By default Sgraph() returns an igraph object so we need the igraph
-  ## package to plot it.
-  library(igraph)
+  ## Edges are labeled with the transcript ids (or names), in blue.
+  ## The green arrows are edges corresponding to exons.
   plot(Sgraph(sgdfA))
-
-  ## Plotting an Ragraph (Rgraphviz package) instead of an igraph object.
-  ## The graphviz layout engine seems to to a better job...
-  plot(Sgraph(sgdfA, as.Ragraph=TRUE))
 }
 
 ## ---------------------------------------------------------------------
@@ -240,9 +235,9 @@ if (FALSE) {
 ## ---------------------------------------------------------------------
 
 if (interactive()) {
-  plot(Sgraph(ex_by_tx2, gene_id="geneB", as.Ragraph=TRUE))
-  plot(Sgraph(ex_by_tx2, gene_id="geneC", as.Ragraph=TRUE))
-  plot(Sgraph(ex_by_tx2, gene_id="geneD", as.Ragraph=TRUE))
-  plot(Sgraph(ex_by_tx2, gene_id="geneE", as.Ragraph=TRUE))
+  plot(Sgraph(ex_by_tx2, gene_id="geneB"))
+  plot(Sgraph(ex_by_tx2, gene_id="geneC"))
+  plot(Sgraph(ex_by_tx2, gene_id="geneD"))
+  plot(Sgraph(ex_by_tx2, gene_id="geneE"))
 }
 }

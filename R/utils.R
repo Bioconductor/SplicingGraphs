@@ -107,18 +107,24 @@ layout.Sgraph <- function(graph)
 .make_Ragraph_edgeAttrs_from_graphNEL <- function(graph_nel)
 {
     attr_names <- names(edgeDataDefaults(graph_nel))
-    edge_names <- edgeNames(graph_nel)
-    if (length(attr_names) == 0L || length(edge_names) == 0L)
-        return(list())
-    if (anyDuplicated(edge_names))
-        warning("graphNEL object has more than 1 edge between the same ",
-                "2 nodes. Plotting attributes for those edges (e.g. label, ",
-                "color, line width, line style, etc...) are likely to be ",
-                "wrong.")
     edge_data <- edgeData(graph_nel)
-    stopifnot(identical(.safeTranslateEdgeNames(names(edge_data)),
-                        edge_names))  # sanity check
-    names(edge_data) <- edge_names
+    edge_data_names <- names(edge_data)
+    if (length(attr_names) == 0L || length(edge_data_names) == 0L)
+        return(list())
+    if (anyDuplicated(edge_data_names))
+        warning("graph object has more than 1 edge between the same ",
+                "2 nodes. Because setting plotting attributes for those ",
+                "edges (e.g. label, color, line width, line style, etc...) ",
+                "is not fully supported yet, they will end up with the same ",
+                "attributes. Which is unlikely to be what you want.")
+    edge_data_names <- .safeTranslateEdgeNames(edge_data_names)
+
+    ## edgeNames() is broken on graphNEL objects that have more than 1 edge
+    ## between the same 2 nodes, hence the use of unique() in the sanity check.
+    edge_names <- edgeNames(graph_nel)
+    stopifnot(identical(unique(edge_data_names), edge_names))  # sanity check
+
+    names(edge_data) <- edge_data_names
     edge_attrs <- lapply(attr_names,
                          function(attr_name)
                              unlist(lapply(edge_data, `[[`, attr_name),
@@ -128,8 +134,8 @@ layout.Sgraph <- function(graph)
     is_null <- sapply(edge_attrs, is.null)
     edge_attrs <- edge_attrs[!is_null]
 
-    edge_fontsize <- rep.int("10", length(edge_names))
-    names(edge_fontsize) <- edge_names
+    edge_fontsize <- rep.int("10", length(edge_data_names))
+    names(edge_fontsize) <- edge_data_names
     edge_attrs$fontsize <- edge_fontsize
 
     edge_attrs
