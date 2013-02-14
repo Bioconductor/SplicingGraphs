@@ -175,7 +175,7 @@ suppressWarnings(
 ## ---------------------------------------------------------------------
 
 ## Extract the exons grouped by transcript:
-ex_by_tx <- exonsBy(toy_genes_txdb, by="tx")
+ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
 
 ## Extract the transcripts grouped by gene:
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")

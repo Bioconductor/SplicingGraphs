@@ -141,7 +141,8 @@ setMethod(".hits", "GRangesList",
         if (!is.integer(UATXHcount))
             stop("'UATXHcount' must be an integer vector or NULL")
         if (length(UATXHcount) != length(spath))
-            stop("when not NULL, 'UATXHcount' must have the same length as 'spath'")
+            stop("when not NULL, 'UATXHcount' must have ",
+                 "the same length as 'spath'")
     }
     sgdf0s <- lapply(seq_along(spath),
                      function(i) {
@@ -581,9 +582,7 @@ Sgdf2 <- function(x, gene_id=NA)
 
 Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 {
-    if (!is(x, "DataFrame"))
-        x <- Sgdf2(x, gene_id=gene_id)
-    Sgraph(x, as.igraph=as.igraph)
+    Sgraph(Sgdf2(x, gene_id=gene_id), as.igraph=as.igraph)
 }
 
 
