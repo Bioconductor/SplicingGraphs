@@ -31,7 +31,8 @@ export(
 
   toy_genes_gff,
   toy_reads_sam,
-  toy_reads_bam
+  toy_reads_bam,
+  plotToyReads
 )
 
 exportMethods(

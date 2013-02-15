@@ -4,6 +4,7 @@
 \alias{toy_genes_gff}
 \alias{toy_reads_sam}
 \alias{toy_reads_bam}
+\alias{plotToyReads}
 
 \title{
   Little helpers for quick access to the toy data included in the
@@ -47,15 +48,15 @@ cat(readLines(toy_genes_gff()), sep="\n")
 
 library(GenomicFeatures)
 suppressWarnings(
-  toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+  txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
 )
 
 ## Plot the gene model:
 if (interactive()) {
   library(Gviz)
-  grtrack <- GeneRegionTrack(toy_genes_txdb, name="toy genes")
-  gatrack <- GenomeAxisTrack()
-  plotTracks(list(gatrack, grtrack))
+  ax_track <- GenomeAxisTrack()
+  tg_track <- GeneRegionTrack(txdb, name="toy genes")
+  plotTracks(list(ax_track, tg_track))
 }
 
 ## ---------------------------------------------------------------------
@@ -65,5 +66,18 @@ if (interactive()) {
 ## reference genome that the above toy gene model is based on.
 toy_reads_sam()
 toy_reads_bam()
-readGappedAlignments(toy_reads_bam(), use.names=TRUE)
+gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE)
+
+## Plot the reads:
+if (interactive()) {
+  ## All of them:
+  plotToyReads(gal, txdb)
+  ## The first 11 only:
+  plotToyReads(head(gal, n=11), txdb)
+  ## The rest of them:
+  plotToyReads(tail(gal, n=-11), txdb)
+  ## Reads 21 to 26:
+  plotToyReads(gal[21:26], txdb)
+  ## Read 26 only:
+  plotToyReads(gal[26], txdb)
 }
