@@ -1,9 +1,9 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### A layout function for igraph objects.
+### A layout function for a splicing graph represented as an igraph object.
 ###
 
 ### Experimental. Not ready yet!
-layout.Sgraph <- function(graph)
+layout.sgraph <- function(graph)
 {
     ## Compute the 'x' col.
     vertices <- get.data.frame(graph, what="vertices")

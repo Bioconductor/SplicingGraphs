@@ -37,7 +37,7 @@ makeSgdfWithHits <- function(grl, sg)
     sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
     in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
     in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
-    Sgdf(sg, inbytx=in_by_tx2)
+    sgdf(sg, inbytx=in_by_tx2)
 }
 
 makeTSPCsgdf <- function(subdir_path)
@@ -56,7 +56,7 @@ makeTSPCsgdf <- function(subdir_path)
 
     ## Compute the splicing graph.
     sg <- SplicingGraphs(ex_by_tx)
-    ans <- Sgdf(sg)
+    ans <- sgdf(sg)
 
     ## Find the BAM files.
     suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)

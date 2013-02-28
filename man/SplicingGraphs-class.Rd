@@ -9,61 +9,24 @@
 \alias{elementLengths,SplicingGraphs-method}
 \alias{show,SplicingGraphs-method}
 
-\alias{Spath}
-\alias{Spath,SplicingGraphs-method}
-
-\alias{UATXHcount}
-\alias{UATXHcount,SplicingGraphs-method}
-
-\alias{Sgdf}
-\alias{Sgdf,ANY-method}
-\alias{Sgdf,IntegerList-method}
-\alias{Sgdf,data.frame-method}
-
-\alias{Sgraph}
-\alias{Sgraph,ANY-method}
-\alias{Sgraph,data.frame-method}
-\alias{Sgraph,DataFrame-method}
-\alias{Sgraph,igraph-method}
-
-\alias{uninformativeSSids}
-\alias{uninformativeSSids,ANY-method}
-\alias{uninformativeSSids,DataFrame-method}
-
-\alias{Sgdf2}
-
-\alias{Sgraph2}
-
-\alias{plot,SplicingGraphs,ANY-method}
-
 
 \title{
-  Tools for creating and plotting splicing graphs from transcript annotations
+  SplicingGraphs objects
 }
 
 \description{
-  TODO
+  The SplicingGraphs class is a container for splicing graphs created from
+  transcript annotations.
 }
 
 \usage{
 SplicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 
-## Basic accessors
+## Basic accessors:
+
 \S4method{length}{SplicingGraphs}(x)
 \S4method{names}{SplicingGraphs}(x)
 \S4method{elementLengths}{SplicingGraphs}(x)
-
-## Other accessors
-Spath(x, gene_id=NA)
-UATXHcount(x, gene_id=NA)
-Sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
-Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
-uninformativeSSids(x, gene_id=NA)
-Sgdf2(x, gene_id=NA)
-Sgraph2(x, gene_id=NA, as.igraph=FALSE)
-
-## PLotting
-\S4method{plot}{SplicingGraphs,ANY}(x, y, gene_id=NA)
 }
 
 \arguments{
@@ -80,24 +43,6 @@ Sgraph2(x, gene_id=NA, as.igraph=FALSE)
     TODO
   }
   \item{x}{
-    TODO
-  }
-  \item{gene_id}{
-    TODO
-  }
-  \item{UATXHcount}{
-    TODO
-  }
-  \item{inbytx}{
-    TODO
-  }
-  \item{keep.dup.edges}{
-    TODO
-  }
-  \item{as.igraph}{
-    TODO
-  }
-  \item{y}{
     TODO
   }
 }
@@ -146,7 +91,7 @@ Sgraph2(x, gene_id=NA, as.igraph=FALSE)
 }
 
 \value{
-TODO
+  TODO
 }
 
 \author{
@@ -175,10 +120,16 @@ TODO
           \code{\link[GenomicFeatures]{transcriptsBy}}, and the
           \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
           package.
+
     \item The \link[GenomicRanges]{GRangesList} class in the GenomicRanges
           package.
+
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
+
+    \item \code{\link{sgdf}} and \code{\link{sgraph}} for extracting
+          a splicing graph as a data frame or as a plottable graph-like
+          object.
   }
 }
 
@@ -207,28 +158,16 @@ sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
 ## Note that 'sg' can also be created directly from the
 ## TranscriptDb object:
 #sg <- SplicingGraphs(toy_genes_txdb)  # not ready yet
+sg
 
 ## 'sg' has 1 element per transcript, and each transcript is
 ## assigned a name that is the id of the gene it belongs to. All the
-## transcripts belonging to a given gene are guaranteed to be
+## transcripts belonging to the same gene are guaranteed to be
 ## consecutive elements in 'sg'.
 names(sg)
 
 ## ---------------------------------------------------------------------
-## 3. Create the splicing graph data frame for geneA, and plot it
-## ---------------------------------------------------------------------
-
-sgdfA <- Sgdf(sg, gene_id="geneA")
-sgdfA
-
-if (interactive()) {
-  ## Edges are labeled with the transcript ids (or names), in blue.
-  ## The green arrows are edges corresponding to exons.
-  plot(Sgraph(sgdfA))
-}
-
-## ---------------------------------------------------------------------
-## 4. Extract information from the splicing graph
+## 3. Extract information from the SplicingGraphs object
 ## ---------------------------------------------------------------------
 
 if (FALSE) {
@@ -251,16 +190,5 @@ if (FALSE) {
 
   ## assignment of edges to bubbles
   mcols(sgA)
-}
-
-## ---------------------------------------------------------------------
-## 5. Plotting the other toy genes
-## ---------------------------------------------------------------------
-
-if (interactive()) {
-  plot(sg, "geneB")
-  plot(sg, "geneC")
-  plot(sg, "geneD")
-  plot(sg, "geneE")
 }
 }

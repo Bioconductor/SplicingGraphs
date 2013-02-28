@@ -19,35 +19,69 @@ import(Rsamtools)
 
 exportClasses(SplicingGraphs)
 
-export(
-  Spath,
-  UATXHcount,
-  Sgdf,
-  Sgraph,
-  uninformativeSSids,
-  Sgdf2,
-  Sgraph2,
-  SplicingGraphs,
 
-  assignSubfeatureHits,
-
-  toy_genes_gff,
-  toy_reads_sam,
-  toy_reads_bam,
-  toy_overlaps,
-  plotToyReads
-)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 methods for generics not defined in SplicingGraphs
+###
 
 exportMethods(
-  length,
-  names,
-  elementLengths,
-  Spath,
-  UATXHcount,
-  Sgdf,
-  Sgraph,
-  uninformativeSSids,
-  plot,
-  findOverlaps,
-  encodeOverlaps
+    length,
+    names,
+    elementLengths,
+    plot,
+    findOverlaps,
+    encodeOverlaps
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export non-generic functions
+###
+
+export(
+    ## SplicingGraphs-class.R:
+    SplicingGraphs,
+
+    ## sgdf-methods.R:
+    sgdf2,
+
+    ## sgraph-methods.R:
+    sgraph2,
+
+    ## countReads.R:
+    assignSubfeatureHits,
+
+    ## toy_data.R:
+    toy_genes_gff,
+    toy_reads_sam,
+    toy_reads_bam,
+    toy_overlaps,
+    plotToyReads
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 generics defined in SplicingGraphs + export corresponding
+### methods
+###
+
+export(
+    ## sgdf-methods.R:
+    spath,
+    UATXHcount,
+    sgdf,
+    uninformativeSSids,
+
+    ## sgraph-methods.R:
+    sgraph
+)
+
+### Exactly the same list as above.
+exportMethods(
+    spath,
+    UATXHcount,
+    sgdf,
+    uninformativeSSids,
+    sgraph
+)
+

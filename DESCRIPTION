@@ -16,6 +16,8 @@ Imports: methods, utils, igraph,
 Suggests: igraph, Gviz, TxDb.Mmusculus.UCSC.mm9.knownGene, RUnit
 Collate: utils.R
 	 SplicingGraphs-class.R
+	 sgdf-methods.R
+	 sgraph-methods.R
 	 countReads.R
 	 toy_data.R
 biocViews: Genetics, Annotation, HighThroughputSequencing

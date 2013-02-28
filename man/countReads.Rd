@@ -106,5 +106,5 @@ sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
 in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
 in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
 
-Sgdf(sg, gene_id="geneA", inbytx=in_by_tx2)
+sgdf(sg, gene_id="geneA", inbytx=in_by_tx2)
 }
