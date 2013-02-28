@@ -4,11 +4,16 @@
 \alias{SplicingGraphs-class}
 \alias{SplicingGraphs}
 
+\alias{length,SplicingGraphs-method}
+\alias{names,SplicingGraphs-method}
+\alias{elementLengths,SplicingGraphs-method}
+\alias{show,SplicingGraphs-method}
+
 \alias{Spath}
-\alias{Spath,GRangesList-method}
+\alias{Spath,SplicingGraphs-method}
 
 \alias{UATXHcount}
-\alias{UATXHcount,GRangesList-method}
+\alias{UATXHcount,SplicingGraphs-method}
 
 \alias{Sgdf}
 \alias{Sgdf,ANY-method}
@@ -29,6 +34,9 @@
 
 \alias{Sgraph2}
 
+\alias{plot,SplicingGraphs,ANY-method}
+
+
 \title{
   Tools for creating and plotting splicing graphs from transcript annotations
 }
@@ -40,7 +48,12 @@
 \usage{
 SplicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 
-## Related utilities
+## Basic accessors
+\S4method{length}{SplicingGraphs}(x)
+\S4method{names}{SplicingGraphs}(x)
+\S4method{elementLengths}{SplicingGraphs}(x)
+
+## Other accessors
 Spath(x, gene_id=NA)
 UATXHcount(x, gene_id=NA)
 Sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
@@ -48,6 +61,9 @@ Sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
 uninformativeSSids(x, gene_id=NA)
 Sgdf2(x, gene_id=NA)
 Sgraph2(x, gene_id=NA, as.igraph=FALSE)
+
+## PLotting
+\S4method{plot}{SplicingGraphs,ANY}(x, y, gene_id=NA)
 }
 
 \arguments{
@@ -81,6 +97,9 @@ Sgraph2(x, gene_id=NA, as.igraph=FALSE)
   \item{as.igraph}{
     TODO
   }
+  \item{y}{
+    TODO
+  }
 }
 
 \details{
@@ -96,12 +115,14 @@ Sgraph2(x, gene_id=NA, as.igraph=FALSE)
   be either:
   \itemize{
     \item Missing (i.e. \code{NULL}). In that case, all the transcripts in
-          \code{exbytx} are considered to belong to the same gene.
+          \code{exbytx} are considered to belong to the same gene and the
+          SplicingGraphs object returned by \code{SplicingGraphs} will be
+          unnamed.
     \item A list of integer or character vectors, or an
           \link[IRanges]{IntegerList}, or a \link[IRanges]{CharacterList}
           object, of length the number of genes to process, and where
-          \code{grouping[[i]]} is a valid subscript in \code{exbytx}
-          pointing to all the transcripts of the i-th gene.
+          \code{grouping[[i]]} is a vector of valid subscripts in
+          \code{exbytx} pointing to all the transcripts of the i-th gene.
     \item A factor, character vector, or integer vector, of the same length
           as \code{exbytx} and 1 level per gene.
     \item A named \link[GenomicRanges]{GRangesList} object containing

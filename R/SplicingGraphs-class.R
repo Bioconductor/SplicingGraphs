@@ -740,8 +740,8 @@ Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 ###       object returned by SplicingGraphs() will be unnamed.
 ###   (b) A list of integer or character vectors, or an IntegerList, or a
 ###       CharacterList object, of length the number of genes to process,
-###       and where 'grouping[[i]]' is a valid subscript in 'exbytx' pointing
-###       to all the transcripts of the i-th gene.
+###       and where 'grouping[[i]]' is a vector of valid subscripts in 'exbytx'
+###       pointing to all the transcripts of the i-th gene.
 ###   (c) A factor, character vector, or integer vector, of length 'exbytx'
 ###       with 1 level per gene.
 ###   (d) A named GRangesList object containing transcripts grouped by genes
