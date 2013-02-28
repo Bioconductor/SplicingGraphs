@@ -4,11 +4,12 @@
 \alias{toy_genes_gff}
 \alias{toy_reads_sam}
 \alias{toy_reads_bam}
+\alias{toy_overlaps}
 \alias{plotToyReads}
 
 \title{
-  Little helpers for quick access to the toy data included in the
-  SplicingGraphs package
+  Little helpers for quick access to (and plotting of) the toy data
+  included in the SplicingGraphs package
 }
 
 \description{
@@ -19,6 +20,8 @@
 toy_genes_gff()
 toy_reads_sam()
 toy_reads_bam()
+toy_overlaps()
+plotToyReads()
 }
 
 \author{
@@ -39,7 +42,7 @@ toy_reads_bam()
 
 \examples{
 ## ---------------------------------------------------------------------
-## Load the toy gene model as a TranscriptDb object and plot it
+## A. LOAD THE TOY GENE MODEL AS A TranscriptDb OBJECT AND PLOT IT
 ## ---------------------------------------------------------------------
 toy_genes_gff()
 
@@ -60,9 +63,10 @@ if (interactive()) {
 }
 
 ## ---------------------------------------------------------------------
-## Load the toy reads
+## B. LOAD THE TOY READS AS A GappedAlignments OBJECT AND PLOT THEM
 ## ---------------------------------------------------------------------
-## The reads are single-end reads. They were aligned to the exact same
+## The reads are single-end reads. They are assumed to come from an
+## RNA-seq experiment and to have been aligned to the exact same
 ## reference genome that the above toy gene model is based on.
 toy_reads_sam()
 toy_reads_bam()
@@ -80,4 +84,44 @@ if (interactive()) {
   plotToyReads(gal[21:26], txdb)
   ## Read 26 only:
   plotToyReads(gal[26], txdb)
+}
+
+## ---------------------------------------------------------------------
+## C. FIND THE OVERLAPS BETWEEN THE TOY READS AND THE TOY GENE MODEL
+## ---------------------------------------------------------------------
+grl <- grglist(gal, order.as.in.query=TRUE)
+ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
+
+## Most of the times the RNA-seq protocol was unstranded so the strand
+## reported in the BAM file for each alignment is meaningless. Thus we
+## call findOverlaps() with 'ignore.strand=TRUE':
+ov <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
+
+## Put the overlaps in a data.frame to make it easier to read:
+ov2 <- data.frame(QNAME=names(grl)[queryHits(ov)],
+                  tx_id=names(ex_by_tx)[subjectHits(ov)],
+                  stringsAsFactors=FALSE)
+
+## These overlaps have been manually checked and included in the
+## SplicingGraphs package. They can be loaded with the toy_overlaps()
+## helper:
+toy_ov <- toy_overlaps()
+head(toy_ov)
+stopifnot(identical(ov2, toy_ov[ , 1:2]))
+
+## ---------------------------------------------------------------------
+## D. DETECT THE OVERLAPS THAT ARE COMPATIBLE WITH THE GENE MODEL
+## ---------------------------------------------------------------------
+## First we encode the overlaps:
+ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov,
+                        flip.query.if.wrong.strand=TRUE)
+
+## Each encoding tells us whether the corresponding overlap is
+## compatible or not with the gene model:
+is_comp <- isCompatibleWithSplicing(ovenc)
+head(is_comp)
+
+## Overlap compatibility has also been manually checked and included in
+## the table returned by toy_overlaps():
+stopifnot(identical(is_comp, toy_ov[ , 3]))
 }

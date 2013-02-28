@@ -32,6 +32,13 @@ toy_reads_bam <- function()
     toy_reads_bam
 }
 
+toy_overlaps <- function()
+{
+    file <- system.file("extdata", "toy_overlaps.txt",
+                        package="SplicingGraphs", mustWork=TRUE)
+    read.table(file, header=TRUE, stringsAsFactors=FALSE)
+}
+
 ### Displaying bug in Gviz (reported to Florian on Feb. 15, 2013). The first
 ### range has width 5 and therefore should cover 5 letters (including the 1st
 ### T). The last range has width 1 (not 0) and should be visible.
@@ -45,16 +52,17 @@ if (FALSE) {
              from=1, to=9)
 }
 
+### Uses the Gviz package.
 plotToyReads <- function(gal, txdb, from=NULL, to=NULL)
 {
-    ax_track <- GenomeAxisTrack()
-    txdb_track <- GeneRegionTrack(txdb, name="genes")
+    ax_track <- Gviz::GenomeAxisTrack()
+    txdb_track <- Gviz::GeneRegionTrack(txdb, name="genes")
     grl <- grglist(gal)
     gr <- unlist(grl)
     mcols(gr)$group <- names(gr)
     grl <- relist(unname(gr), grl)
     name <- if (length(grl) == 1L) names(grl)[1L] else "reads"
-    gal_track <- AnnotationTrack(grl, name=name, fill="blue", shape="box")
+    gal_track <- Gviz::AnnotationTrack(grl, name=name, fill="blue", shape="box")
     if (is.null(from) || is.null(to)) {
         gal_min_start <- min(start(gal))
         gal_max_end <- max(end(gal))
@@ -64,6 +72,6 @@ plotToyReads <- function(gal, txdb, from=NULL, to=NULL)
         if (is.null(to))
             to <- gal_max_end + margin
     }
-    plotTracks(list(ax_track, gal_track, txdb_track), from=from, to=to)
+    Gviz::plotTracks(list(ax_track, gal_track, txdb_track), from=from, to=to)
 }
 
