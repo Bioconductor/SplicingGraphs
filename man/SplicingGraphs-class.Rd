@@ -1,4 +1,8 @@
-\name{splicingGraphs}
+\name{SplicingGraphs-class}
+
+\alias{class:SplicingGraphs}
+\alias{SplicingGraphs-class}
+\alias{SplicingGraphs}
 
 \alias{Spath}
 \alias{Spath,GRangesList-method}
@@ -25,8 +29,6 @@
 
 \alias{Sgraph2}
 
-\alias{splicingGraphs}
-
 \title{
   Tools for creating and plotting splicing graphs from transcript annotations
 }
@@ -36,7 +38,7 @@
 }
 
 \usage{
-splicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
+SplicingGraphs(exbytx, grouping=NULL, check.introns=TRUE)
 
 ## Related utilities
 Spath(x, gene_id=NA)
@@ -180,22 +182,22 @@ ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
 ## Extract the transcripts grouped by gene:
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 
-ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
-## Note that 'ex_by_tx2' can also be created directly from the
+sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
+## Note that 'sg' can also be created directly from the
 ## TranscriptDb object:
-#ex_by_tx2 <- splicingGraphs(toy_genes_txdb)  # not ready yet
+#sg <- SplicingGraphs(toy_genes_txdb)  # not ready yet
 
-## 'ex_by_tx2' has 1 element per transcript, and each transcript is
+## 'sg' has 1 element per transcript, and each transcript is
 ## assigned a name that is the id of the gene it belongs to. All the
 ## transcripts belonging to a given gene are guaranteed to be
-## consecutive elements in 'ex_by_tx2'.
-names(ex_by_tx2)
+## consecutive elements in 'sg'.
+names(sg)
 
 ## ---------------------------------------------------------------------
 ## 3. Create the splicing graph data frame for geneA, and plot it
 ## ---------------------------------------------------------------------
 
-sgdfA <- Sgdf(ex_by_tx2, gene_id="geneA")
+sgdfA <- Sgdf(sg, gene_id="geneA")
 sgdfA
 
 if (interactive()) {
@@ -235,9 +237,9 @@ if (FALSE) {
 ## ---------------------------------------------------------------------
 
 if (interactive()) {
-  plot(Sgraph(ex_by_tx2, gene_id="geneB"))
-  plot(Sgraph(ex_by_tx2, gene_id="geneC"))
-  plot(Sgraph(ex_by_tx2, gene_id="geneD"))
-  plot(Sgraph(ex_by_tx2, gene_id="geneE"))
+  plot(sg, "geneB")
+  plot(sg, "geneC")
+  plot(sg, "geneD")
+  plot(sg, "geneE")
 }
 }

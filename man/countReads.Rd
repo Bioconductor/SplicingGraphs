@@ -26,7 +26,7 @@
           \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
           package.
 
-    \item \code{\link{splicingGraphs}} and related tools for creating and
+    \item \code{\link{SplicingGraphs}} and related tools for creating and
           plotting splicing graphs from transcript annotations.
   }
 }
@@ -48,9 +48,9 @@ ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 
 ## Compute the splicing graphs (1 graph per gene):
-ex_by_tx2 <- splicingGraphs(ex_by_tx, tx_by_gn)
-names(ex_by_tx2)
-plot(Sgraph(ex_by_tx2, gene_id="geneA"))
+sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
+names(sg)  # valid gene ids
+plot(sg, "geneA")
 
 ## ---------------------------------------------------------------------
 ## 2. Load toy reads and find the hits that are "compatible" with the
@@ -69,7 +69,7 @@ gal
 
 ## Find the overlaps between the reads and the transcripts:
 grl <- grglist(gal, order.as.in.query=TRUE)
-ov0 <- findOverlaps(grl, ex_by_tx2, ignore.strand=TRUE)
+ov0 <- findOverlaps(grl, sg, ignore.strand=TRUE)
 
 ## Nb of hits:
 head(countQueryHits(ov0))  # per read
@@ -77,7 +77,7 @@ head(countSubjectHits(ov0))  # per transcript
 
 ## Keep only overlaps that are "compatible" with the splicing of the
 ## transcripts:
-ovenc0 <- encodeOverlaps(grl, ex_by_tx2, hits=ov0,
+ovenc0 <- encodeOverlaps(grl, sg, hits=ov0,
                          flip.query.if.wrong.strand=TRUE)
 ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
 ov1 <- ov0[ov0_is_comp]
@@ -88,10 +88,10 @@ ov1 <- ov0[ov0_is_comp]
 
 ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]
 UATXHcount <- countSubjectHits(ov2)
-mcols(ex_by_tx2)$UATXHcount <- UATXHcount
+mcols(sg@tx)$UATXHcount <- UATXHcount
 
-names(ex_by_tx2)
-plot(Sgraph(ex_by_tx2, gene_id="geneA"))
+names(sg)  # valid gene ids
+plot(sg, "geneA")
 
 ## ---------------------------------------------------------------------
 ## 4. Count nb of compatible hits per edge (NOTE: the same read can be
@@ -100,11 +100,11 @@ plot(Sgraph(ex_by_tx2, gene_id="geneA"))
 ## ---------------------------------------------------------------------
 
 ## Assign compatible hits for each exon:
-ex_by_tx2 <- assignSubfeatureHits(grl, ex_by_tx2, ov1, ignore.strand=TRUE)
+sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
 
 ## Assign compatible hits for each intron:
-in_by_tx2 <- psetdiff(range(ex_by_tx2), ex_by_tx2)
+in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
 in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
 
-Sgdf(ex_by_tx2, gene_id="geneA", inbytx=in_by_tx2)
+Sgdf(sg, gene_id="geneA", inbytx=in_by_tx2)
 }

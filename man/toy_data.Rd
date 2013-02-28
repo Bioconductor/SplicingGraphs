@@ -47,7 +47,7 @@ plotToyReads(gal, txdb, from=NULL, to=NULL)
   The toy data described here is used in the examples of the following
   man pages:
   \itemize{
-    \item \code{\link{splicingGraphs}}: Tools for creating and
+    \item \code{\link{SplicingGraphs}}: Tools for creating and
           plotting splicing graphs from transcript annotations.
 
     \item \link{countReads}: Tools for assigning read counts to splicing

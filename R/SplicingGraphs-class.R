@@ -1,12 +1,53 @@
 ### =========================================================================
-### splicingGraphs() and related utilities
+### SplicingGraphs objects
 ### -------------------------------------------------------------------------
+
+### We deliberately choose to not extend GRangesList to make SplicingGraphs
+### objects read-only and with a very restricted API (opaque objects).
+setClass("SplicingGraphs",
+    representation(
+        tx="GRangesList"
+    )
+)
 
 setOldClass("igraph")
 
 .EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
 .EDGE_WEIGHTS <- c(1, 0.2, 0.1, 0.4)
 .EX_OR_IN_LEVELS <- .EX_OR_IN_LEVELS2[-4L]
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Basic accessors.
+###
+### We support only a very small subset of getters from the GRangesList API.
+###
+
+setMethod("length", "SplicingGraphs", function(x) length(x@tx))
+
+setMethod("names", "SplicingGraphs", function(x) names(x@tx))
+
+setMethod("elementLengths", "SplicingGraphs", function(x) elementLengths(x@tx))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### "show" method.
+###
+
+setMethod("show", "SplicingGraphs",
+    function(object)
+    {
+        ntx <- length(object)
+        object_names <- names(object)
+        if (is.null(object_names)) {
+            ngenes <- ifelse(ntx == 0L, 0L, 1L)
+        } else {
+            ngenes <- length(unique(object_names))
+        }
+        cat(class(object), " object with ", ngenes, " gene(s) ",
+            "and ", ntx, " transcript(s)\n", sep="")
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +64,7 @@ setGeneric("Spath", signature="x",
 )
 
 ### Should return a CompressedIntegerList.
-setMethod("Spath", "GRangesList",
+setMethod("Spath", "SplicingGraphs",
     function(x, gene_id=NA)
     {
         if (!isSingleStringOrNA(gene_id))
@@ -31,7 +72,7 @@ setMethod("Spath", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        ans <- mcols(x)[ , "Spath"]
+        ans <- mcols(x@tx)[ , "Spath"]
         if (is.null(x_names)) {
             if (!is.na(gene_id))
                 stop("the 'gene_id' arg is not supported ",
@@ -59,7 +100,7 @@ setGeneric("UATXHcount", signature="x",
 )
 
 ### Should return an integer vector or a NULL.
-setMethod("UATXHcount", "GRangesList",
+setMethod("UATXHcount", "SplicingGraphs",
     function(x, gene_id=NA)
     {
         if (!isSingleStringOrNA(gene_id))
@@ -67,7 +108,7 @@ setMethod("UATXHcount", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        ans <- mcols(x)[["UATXHcount"]]
+        ans <- mcols(x@tx)[["UATXHcount"]]
         if (is.null(x_names)) {
             if (!is.na(gene_id))
                 stop("the 'gene_id' arg is not supported ",
@@ -247,8 +288,8 @@ setMethod("Sgdf", "ANY",
                                keep.dup.edges=keep.dup.edges))
         if (!is(inbytx, "GRangesList"))
             stop("'inbytx' must be NULL or a GRangesList object")
-        if (!is(x, "GRangesList"))
-            stop("'x' must be a GRangesList object ",
+        if (!is(x, "SplicingGraphs"))
+            stop("'x' must be a SplicingGraphs object ",
                  "when 'inbytx' is a GRangesList object")
         if (length(inbytx) != length(x))
             stop("'inbytx' must have the same length as 'x'")
@@ -259,7 +300,7 @@ setMethod("Sgdf", "ANY",
             stop("'keep.dup.edges' must be FALSE when 'inbytx' is supplied")
         sgdf0 <- Sgdf(spath, UATXHcount=UATXHcount, keep.dup.edges=TRUE)
         ex_or_in <- sgdf0[ , "ex_or_in"]
-        ex_hits <- .hits(x, gene_id=gene_id)
+        ex_hits <- .hits(x@tx, gene_id=gene_id)
         if (is.null(ex_hits))
             stop("'x' must have a \"hits\" inner metadata column ",
                  "when 'inbytx' is a GRangesList object. May be ",
@@ -587,7 +628,7 @@ Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### splicingGraphs()
+### SplicingGraphs() constructor
 ###
 
 ### 'exons_start' and 'exons_end' must be 2 integer vectors of the same length
@@ -695,8 +736,8 @@ Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 ### 'grouping' is an optional object that represents the grouping by gene of
 ### the top-level elements (i.e. transcripts) in 'exbytx'. It can be either:
 ###   (a) Missing (i.e. NULL). In that case, all the transcripts in 'exbytx'
-###       are considered to belong to the same gene and the GRangesList object
-###       returned by splicingGraphs() will be unnamed.
+###       are considered to belong to the same gene and the SplicingGraphs
+###       object returned by SplicingGraphs() will be unnamed.
 ###   (b) A list of integer or character vectors, or an IntegerList, or a
 ###       CharacterList object, of length the number of genes to process,
 ###       and where 'grouping[[i]]' is a valid subscript in 'exbytx' pointing
@@ -810,7 +851,8 @@ Sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
 
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
-splicingGraphs <- function(exbytx, grouping=NULL, check.introns=TRUE)
+.make_SplicingGraphs_from_GRangesList <- function(exbytx, grouping=NULL,
+                                                  check.introns=TRUE)
 {
     if (!is(exbytx, "GRangesList"))
         stop("'exbytx' must be a GRangesList object")
@@ -848,4 +890,42 @@ splicingGraphs <- function(exbytx, grouping=NULL, check.introns=TRUE)
     }
     ans
 }
+
+### TODO: Make this a generic function (and rename 'exbytx' arg -> 'x').
+SplicingGraphs <- function(exbytx, grouping=NULL, check.introns=TRUE)
+{
+    ans_tx <- .make_SplicingGraphs_from_GRangesList(exbytx, grouping=grouping,
+                                                    check.introns=check.introns)
+    new("SplicingGraphs", tx=ans_tx)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### "plot" method.
+###
+
+setMethod("plot", c("SplicingGraphs", "ANY"),
+    function(x, y, gene_id=NA)
+    {
+        if (missing(gene_id)) {
+            if (missing(y)) {
+                gene_id <- NA
+            } else {
+                gene_id <- y
+            }
+        } else {
+            if (!missing(y))
+                warning("'y' is ignored when plotting a SplicingGraphs ",
+                        "object and 'gene_id' is supplied")
+        }
+        if (!isSingleStringOrNA(gene_id))
+            stop("the supplied gene id must be a single string (or NA)")
+        x_names <- names(x)
+        if (!is.null(x_names) && is.na(gene_id))
+            stop("You need to specify a gene id when 'x' has names ",
+                 "e.g. 'plot(sg, \"some gene id\")'. Get all valid ",
+                 "gene ids with 'unique(names(sg))'.")
+        plot(Sgraph(x, gene_id=gene_id))
+    }
+)
 

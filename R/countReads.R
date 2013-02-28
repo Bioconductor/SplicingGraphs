@@ -3,6 +3,28 @@
 ### compatible hits per exon or per intron
 ### -------------------------------------------------------------------------
 
+setMethod("findOverlaps", c("GRangesList", "SplicingGraphs"),
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=ignore.strand)
+    {
+        findOverlaps(query, subject@tx,
+                     maxgap=maxgap, minoverlap=minoverlap,
+                     type=match.arg(type), select=match.arg(select),
+                     ignore.strand=ignore.strand)
+    }
+)
+
+setMethod("encodeOverlaps", c("GRangesList", "SplicingGraphs"),
+    function(query, subject, hits=NULL, flip.query.if.wrong.strand=FALSE)
+    {
+        encodeOverlaps(query, subject@tx,
+                       hits=hits,
+                       flip.query.if.wrong.strand=flip.query.if.wrong.strand)
+    }
+)
+
 ### 'query': a named GRangesList object containing gapped reads.
 ### 'subject': a GRangesList object containing some subfeature (e.g. exons
 ###     or introns) grouped by their parent feature (e.g. transcripts).

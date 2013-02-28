@@ -27,17 +27,17 @@ loadModels <- function(models_path, check.transcripts=TRUE)
 
 ### It's questionable whether this does the right thing on paired-end reads.
 ### I guess not...
-makeSgdfWithHits <- function(grl, ex_by_tx2)
+makeSgdfWithHits <- function(grl, sg)
 {
-    ov0 <- findOverlaps(grl, ex_by_tx2, ignore.strand=TRUE)
-    ovenc0 <- encodeOverlaps(grl, ex_by_tx2, hits=ov0,
+    ov0 <- findOverlaps(grl, sg@tx, ignore.strand=TRUE)
+    ovenc0 <- encodeOverlaps(grl, sg@tx, hits=ov0,
                              flip.query.if.wrong.strand=TRUE)
     ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
     ov1 <- ov0[ov0_is_comp]
-    ex_by_tx2 <- assignSubfeatureHits(grl, ex_by_tx2, ov1, ignore.strand=TRUE)
-    in_by_tx2 <- psetdiff(range(ex_by_tx2), ex_by_tx2)
+    sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
+    in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
     in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
-    Sgdf(ex_by_tx2, inbytx=in_by_tx2)
+    Sgdf(sg, inbytx=in_by_tx2)
 }
 
 makeTSPCsgdf <- function(subdir_path)
@@ -55,8 +55,8 @@ makeTSPCsgdf <- function(subdir_path)
     message("OK")
 
     ## Compute the splicing graph.
-    ex_by_tx2 <- splicingGraphs(ex_by_tx)
-    ans <- Sgdf(ex_by_tx2)
+    sg <- SplicingGraphs(ex_by_tx)
+    ans <- Sgdf(sg)
 
     ## Find the BAM files.
     suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
@@ -101,7 +101,7 @@ makeTSPCsgdf <- function(subdir_path)
                                              param=param0)
             grl <- grglist(galp, order.as.in.query=TRUE)
         }
-        sgdf <- makeSgdfWithHits(grl, ex_by_tx2)
+        sgdf <- makeSgdfWithHits(grl, sg)
         message("OK")
         sgdf[ , "nhits"]
     })

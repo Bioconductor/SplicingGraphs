@@ -17,6 +17,8 @@ importFrom(Rgraphviz, agopen)
 import(GenomicFeatures)
 import(Rsamtools)
 
+exportClasses(SplicingGraphs)
+
 export(
   Spath,
   UATXHcount,
@@ -25,7 +27,7 @@ export(
   uninformativeSSids,
   Sgdf2,
   Sgraph2,
-  splicingGraphs,
+  SplicingGraphs,
 
   assignSubfeatureHits,
 
@@ -37,9 +39,15 @@ export(
 )
 
 exportMethods(
+  length,
+  names,
+  elementLengths,
   Spath,
   UATXHcount,
   Sgdf,
   Sgraph,
-  uninformativeSSids
+  uninformativeSSids,
+  plot,
+  findOverlaps,
+  encodeOverlaps
 )
