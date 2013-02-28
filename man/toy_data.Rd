@@ -21,7 +21,22 @@ toy_genes_gff()
 toy_reads_sam()
 toy_reads_bam()
 toy_overlaps()
-plotToyReads()
+plotToyReads(gal, txdb, from=NULL, to=NULL)
+}
+
+\arguments{
+  \item{gal}{
+    TODO
+  }
+  \item{txdb}{
+    TODO
+  }
+  \item{from}{
+    TODO
+  }
+  \item{to}{
+    TODO
+  }
 }
 
 \author{
@@ -101,6 +116,7 @@ ov <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
 ov2 <- data.frame(QNAME=names(grl)[queryHits(ov)],
                   tx_id=names(ex_by_tx)[subjectHits(ov)],
                   stringsAsFactors=FALSE)
+head(ov2)
 
 ## These overlaps have been manually checked and included in the
 ## SplicingGraphs package. They can be loaded with the toy_overlaps()
@@ -115,6 +131,7 @@ stopifnot(identical(ov2, toy_ov[ , 1:2]))
 ## First we encode the overlaps:
 ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov,
                         flip.query.if.wrong.strand=TRUE)
+ovenc
 
 ## Each encoding tells us whether the corresponding overlap is
 ## compatible or not with the gene model:
