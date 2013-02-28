@@ -1,0 +1,901 @@
+%\VignetteIndexEntry{Splicing graph analysis of RNA-Seq data}
+%\VignetteKeywords{Annotation}
+%\VignettePackage{SplicingGraphs}
+\documentclass[11pt]{article}
+
+\usepackage{url}
+\usepackage{float}
+\usepackage{xcolor}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+
+
+\title{Splicing graph analysis of RNA-Seq data}
+\author{Martin Morgan\and
+  Marc Carlson \and
+  Daniel Bindreither}
+
+\SweaveOpts{keep.source=TRUE}
+
+\definecolor{c1}{HTML}{008C73}
+\definecolor{c2}{HTML}{BFFF00}
+
+\begin{document}
+
+\maketitle
+
+<<results=hide, echo=FALSE>>=
+reCnt <- TRUE
+nr.cpu <- 3
+@ 
+
+
+\section{Introduction}
+
+The \Rpackage{SplicingGraphs} package creates splicing 
+graphs \cite{Sammeth:2009:GB} based on a given annotation 
+provided as \Rclass{TranscriptDb} or \Rclass{GRangesList} 
+objects. An already published RNA-Seq experiment is used
+to demonstrate the usage of the \Rpackage{SplicingGraphs} package. 
+The utilized study, performed in \textit{Mus musculus}, compares 
+TBX20 (T-box protein 20) knock-out with wilde type heart 
+tissue samples \cite{Sakabe15052012}. The presented workflow 
+analyzes the data set in terms of differential alternative splicing. 
+Although there exist several software solutions for RNA-Seq 
+based transcriptome analysis, like RSEM \cite{RSEM2011},
+Cufflinks \cite{Roberts21062011} or the R package \Rpackage{DEXSeq} 
+\cite{Anders:2010:GB}, the approach of analyzing splice events as
+complete complex structure is still new. 
+
+
+\section{Splicing graphs}
+
+Alternative splicing is a frequently observed complex biological 
+process which modifies the primary RNA transcript and leads to 
+transcript variants of genes. Those variants can often be plentiful. 
+Especially for large genes it is often difficult to describe their
+structure in a formal, logical, short and convenient way. To capture 
+the full variety of splice variants of a certain gene in one single 
+data structure Heber at al \cite{Heber01072002} introduced the term 
+splice graph and provided a formal frame work for representing
+the different choices of the splicing machinery. 
+
+Splicing graphs in general are directed acyclic graphs (DAGs) and
+consist of two main structure elements designated as vertices 
+and edges. Vertices represent different types of sites at the annotated 
+transcripts and edges, connecting the vertices, represent the respective 
+exonic and intronic structure. Wether the edge is representing an exon 
+or an intron is determined by the types of the two flanking vertices. 
+Vertices according \cite{Heber01072002} can be of type 
+acceptor splice site ($-$), donor splice site ($\wedge$), transcript start 
+site ($~[~$) or transcript end ($~]~$).  For the correctness of the splicing 
+graph framework artificial sites designated as root ($0$) and leaf ($1$) 
+attached to the start and the end of each graph are required. It is important 
+to note that root and leaf will never represent real observed sites at the 
+transcripts and act just as a common sources and sink of the splice graph. 
+The symbols associated with the individual types of vertices shown in braces 
+above are used for the identification of complete alternative splice events.
+For details about gathering the alternative splice events and their
+associated splice codes see \cite{Heber01072002} and 
+\cite{Sammeth:2009:GB}.
+
+Figure \ref{img:SplicingGraphs} shows the splice graph representation
+of all known transcript variants of gene JUNB (ENTREZ gene ID 3726).
+Before the splice graph is constructed the exons of the individual genes
+respectively transcripts get disjoined to avoid overlapping sequence parts.
+The green dashed lines in Figure \ref{img:SplicingGraphs}  represent
+genomic locations where exons start, end or get disjoined during the 
+splicing graph construction process. Due to disjoining new exons are 
+created in such a way that none of this new exons overlap each other.
+
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=\textwidth]{3726-Txs.png}
+  \end{center}
+  \caption{Splicing graph representation of the two transcript variants
+    of the gene 3726 (JUNB) resulting in 2 bubbles. Left: splicing graph
+    representation. Right: transcript representation
+  }
+  \label{img:SplicingGraphs}
+\end{figure}
+
+
+\subsection{Advantages of disjoining exons}
+
+Counting the reads landing on the transcript annotations of a certain 
+reference genome is a critical step in each RNA-Seq transcriptome analysis.
+For performing a \Rpackage{DEXSeq} analysis counts landing on the individual
+exons are required. One problem with counting reads on single
+exons is that exons often consist only of few nucleotides and therefore
+counting for this rather short sequences could be problematic.
+Software packages like RSEM and Cufflinks employ statistical models
+for handling reads mapping to multiple transcript isoforms.
+\Rpackage{SplicingGraphs} and \Rpackage{DEXSeq} avoid the problem of counting 
+reads landing on overlapping exons of different transcripts by
+disjoining the exons per genes into non-overlapping parts.
+
+Regrading the splicing graph structure disjoining of exons is revealing new
+sites at the transcripts flagged with a $:$ symbol. Each site where disjoining 
+occurs can be considered as an intron of zero length
+flanked by two vertices, one representing the
+end of the first exon part (${\wedge}{:}$) and one representing the start of 
+the second exon part (${-}{:}$). See also Figure \ref{img:SplicingGraphs}.
+
+
+\subsection{Details about vertices and edges}
+
+In many cases one vertex can represent two different types of sites, but
+the combinations of types for such vertices is limited. 
+Only splice site acceptors ($-$) and transcript start sites ($~[~$) or splice site
+donors ($\wedge$) and transcript ends ($~]~$) can occur as a pair of
+site types.
+Such a two type vertex occurs when the start of an exon, which is not
+the first exon of a transcript falls together with the
+transcription start site of another transcript of the same gene.
+A similar case occurs when the end of an exon, which is not the last
+exon of a transcript falls together with the transcript
+end of another transcript isoform belonging to the same gene. 
+As mentioned above the edges can either represent introns or exons
+depending on the types of the flanking vertices.
+An edge between a splice site acceptor ($-$) and a splice site donor ($\wedge$) vertex
+for example would represent an exon whereas the edge between an
+splice site donor ($\wedge$) and an splice site acceptor ($-$) would represent an intron.
+Exons are also described between transcription start sites ($~[~$) and splice
+site donors ($\wedge$) or splice site acceptors ($-$) and transcript
+ends ($~]~$). The edges between the root vertex ($0$) and the transcription start
+sites ($~[~$) as well as the edges between the transcript 
+ends ($~]~$) and the leaf ($1$) contain neither an
+intron nor an exon because such edges contain usually no 
+sequence information at all.
+
+
+\subsection{Alternative splicing events form bubbles in the
+  splicing graph}
+
+Not all splice sites (vertices) on the individual transcripts are alternative 
+splice sites. Therefore the initial splicing graph outlined above can be simplified 
+by collapsing vertices of in- and out- degree equal to one because they
+are supposed to be non-informative in terms of alternative splicing.
+Edges associated with such vertices get also sequentially collapsed with
+the previous ones and result in longer edges capturing several exons.
+The final splicing graph only contains vertices involved in alternative
+splicing. Between two remaining vertices there exist at
+least two edges which form a bubble. Such a bubble, representing an alternative
+splice event, consists at least of two bubble parts. The exonic structures of the 
+two bubble parts are exclusive.
+Bubbles in general can be nested or can intersect with other bubbles.
+The collapsed edges of the final splicing graph associated with one or more exons 
+which do not overlap each other, form larger sequence regions providing 
+advantages in counting reads and testing for differential expression. 
+
+
+\subsection{Interpretation of the splicing codes}
+\label{sec:spliceCodes}
+
+Splicing codes can be obtained by iterating over the individual
+bubbles and collecting the types of the original vertices associated 
+with the individual bubble edges and their ranks. This section
+makes use of simple toy examples to describe how the splicing code can 
+be interpreted in terms of well known splicing mechanisms like exon 
+skipping, alternative promotor usage, intron retention, etc.
+
+An example read out of a bubble could reveal the splicing code 
+($1~0~0~2~1 - 2~2~\wedge$ ) which would represent an 1 exon skip. 
+See Figure \ref{img:exskip}.
+The first part of the code ($1~0~0$) indicates that the first edge
+contains no exon at all. The first symbol of this code part
+indicates the edge number, the second symbol the vertex rank within 
+the bubble and the third symbol the vertex type. The second part of 
+the splice code ($2~1 - 2~2~\wedge$) represents edge number 2 
+containing exactly one exon described by the flanking vertices
+$-$ and $\wedge$. 
+
+
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=\textwidth]{exskip.png}
+  \end{center}
+  \caption{Splice graph representation of an 1 exon skip leading to
+    one bubble. The associated splice code is 
+    $1~0~0~2~1 - 2~2~\wedge$. Left: splice graph
+    representation. Right: transcript representation
+  }
+  \label{img:exskip}
+\end{figure}
+
+Another example where disjoining comes into play is a
+an alternative splice site acceptor in one of two transcripts.
+The code for an alternative splice site acceptor would be 
+$1~0~0~2~1 - 2~2~{\wedge}{:}$ and can be seen as an exon 
+skip where the end of the exon is linked to a disjoint site. 
+In such a way it is possible to characterize and to
+distinguish a variety of different splicing events. 
+See Figure \ref{img:altaccept}
+
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=\textwidth]{altaccept.png}
+  \end{center}
+  \caption{Splice graph representation of an alternative acceptor site
+    leading to one bubble. The associated splice code is $1~0~0~2~1 - 2~2~{\wedge}{:}$. 
+    Left: splice graph representation. Right: transcript representation
+  }
+  \label{img:altaccept}
+\end{figure}
+
+
+\section{Creating the splicing graph}
+
+As outlined in the previous section the splicing graph approach
+extends the differential expression analysis of single exons
+implemented by in \Rpackage{DEXSeq} towards
+the analysis of a priori known alternative splicing events.
+The starting point for creating a splice graph is a
+\Rclass{TranscriptDb} object containing all required gene 
+and transcript annotation of a certain reference genome.
+Here the \Rpackage{TxDb.Mmusculus.UCSC.mm9.knownGenee} 
+package is used.
+
+If other annotations are needed such objects can easily be
+created by using functions of the \Rpackage{GenomicFeatures} 
+package.
+
+First we load the selected \Rclass{TranscriptDb} object.
+
+<<loadTxdb>>=
+library("TxDb.Mmusculus.UCSC.mm9.knownGene")
+txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
+@
+
+Creating a splicing graph for the whole \Rclass{TranscriptDb}
+object usually takes about 20 minutes if the information 
+about the types of alternative splicing events is retrieved on a normal 
+desktop computer. If only the edges of the splicing graph are retrieved
+the computation time shortens to about 5 minutes for the 
+whole \Rclass{TranscriptDb} object.
+To save some time we utilize only chromosome 19. 
+To run the \Rfunction{spliceGraphs} function only on a subset of
+the \Rclass{TranscriptDb} object the \Rpackage{GenomicFeatures}
+package provides the \Rfunction{isActiveSeq} function
+to deactivate chromosomes in the \Rclass{TranscriptDb} object which should
+not be used. Usually one would deactivate random
+chromosomes often found in the annotation.
+
+<<deactChr>>=
+activeChr <- setNames(rep(FALSE, length(isActiveSeq(txdb))),
+                      names(isActiveSeq(txdb)))
+activeChr[names(activeChr) == "chr19"] <- TRUE
+isActiveSeq(txdb) <- activeChr
+@
+
+Finally we can execute the \Rfunction{spliceGraphs} function onto 
+the modified \Rclass{TranscriptDb} object.
+
+<<loadGenomicFeatures>>=
+library(SplicingGraphs)
+sG <- spliceGraphs(txdb, genes="20469")
+@
+
+The \Rfunction{spliceGraphs} function returns the
+collapsed edges with their associated disjoined exons and provides information
+about the underlying splicing mechanisms represented as splicing codes.
+Additionally the object contains mapping of edges to the
+individual bubbles and bubble parts.
+Lets have a look onto the resulting object. The provided
+\Rclass{GrangesList} contains the edge IDs as list names.
+The exons in the \Rclass{Granges} objects are not the original
+exons provided by the \Rclass{TranscriptDb} object, since the gene
+model became modified internally.
+As mentioned in the previous section during the splicing graph 
+construction overlapping exons within a gene get disjoined and
+new exons with new exon ids which differ in
+size compared to the original exons are produced.
+
+The original exon ids associated with the new exon ids
+can be found in the metadata column of the individual list elements
+and is called \Rfunction{exon\_ids}. Each element of the
+column is a \Rclass{CharacterList} containing the original exon ids.
+The new disjoined exon ids can be retrieved
+directly from  the metadata column called \Rfunction{disJ\_exon\_ids}.
+As already mentioned in the introduction there is also information
+provided about the splicing events generating the individual
+transcript variants. This information is stored in the metadata slot
+of the \Rclass{GrangesList} object and can be accessed by using the 
+\Rfunction{metadata} function.
+
+Below an example edge of the object returned by the \Rfunction{spliceGraphs}
+function is shown. This edge consist of multiple exons.
+
+\begin{scriptsize}
+<<exbyedges>>=
+sG
+@ 
+\end{scriptsize}
+
+In the code chunk below we access the information about the type of
+splice events and try to quantify them later on.
+
+\begin{scriptsize}
+<<spliceevents>>=
+metadata(sG)$spliceEvents[8,]
+@ 
+\end{scriptsize}
+
+The types of alternative splice events are provided as a \Rclass{DataFrame}
+object. The first column provides the so-called bubble code. The
+bubble code assigns an unique identifier to the individual splice events
+(bubbles) and consists basically of an bubble ID concatenated with the
+ENTREZ gene ID. The second column provides
+\Rclass{CompressedCharacterList}s representing the splice codes.
+To explore the meaning of the code symbols go back to Section \ref{sec:spliceCodes}.
+The last three columns provide the name of the splice event, the
+corresponding ENTREZ gene ID and the bubble ID unique within each gene.
+
+Back to quantifying the observed splice events in the 
+annotation. Now we are interested which types of splice events occur most often.
+
+<<bubbles>>=
+spliceEvents <- metadata(sG)$spliceEvents
+sp <- split(spliceEvents$bubbleCode, 
+                     factor(spliceEvents$eventType))
+eventSum <- data.frame(event=names(sp), Nr=elementLengths(sp),
+                                row.names=NULL)
+eventSum <- eventSum[order(eventSum$Nr, decreasing=TRUE), ]
+@ 
+
+We would expect that simple events occur more frequently than
+complex events.
+
+<<splicEventSum>>=
+head(eventSum)
+@ 
+
+The most often occurring splice event on chromosome 19 is named skip
+one exon. At this point it should be mentioned that not all splice
+events have names since there are a variety of different events. How many
+different events do we actually observe at chromosome 19? Lets check this.
+
+<<varietyOfEvents>>=
+allEvents <- lapply(spliceEvents$code, paste, collapse=" ")
+allEvents <- unlist(allEvents, use.names=FALSE)
+nrOfdiffEvents <- length(unique(allEvents))
+nrOfdiffEvents
+@ 
+
+We observe \Sexpr{nrOfdiffEvents} different events only on
+chromosome 19. So everybody can imagine that we have not given to all
+those events names. So don't be surprised if some NAs show up.
+
+Another interesting information which we can gain from the splice
+graph is how many splice events does each individual gene have.
+To address this issue we have to count the number of bubbles within
+each gene.
+
+<<howManySpliceEvents>>=
+idx <- ! duplicated(spliceEvents$bubbleCode)
+nrOfBubs <- elementLengths(split(spliceEvents$bubbleCode[idx], 
+                                 spliceEvents$gn[idx]))
+nrOfBubs <- nrOfBubs[order(nrOfBubs,decreasing=TRUE)]
+@ 
+
+Below the genes with the most observed splice events are shown.
+
+<<genesWithMostObservedSpliceEvents>>=
+head(nrOfBubs)
+@ 
+
+Next we want to see which genes show the highest heterogeneity of splice events.
+We check for the number of unique splice events for each gene.
+
+<<genesWithHighestSpliceEventHeterogeneity>>=
+uniEventsPerGn <- lapply(split(allEvents, spliceEvents$gn), 
+                         unique)
+nrOfUniEvents <- elementLengths(uniEventsPerGn)
+nrOfUniEvents <- nrOfUniEvents[order(nrOfUniEvents, 
+                                     decreasing=TRUE)]
+@ 
+
+Below the genes with the highest heterogeneity in observed splice events
+are shown
+
+<<showGenesWithHighestSpliceEventHeterogeneity>>=
+head(nrOfUniEvents)
+@ 
+
+\subsection{Mapping of edge elements to genes and exons}
+
+To get a mapping of the original exons to the new disjoined exons 
+the exons by edge object have to be unlisted first. 
+From the flat \Rclass{Granges} object we can then easily retrieve the 
+original exon ids. For the mapping we utilize a simple
+\Rclass{data.frame} object because the mapping between the new disjoined
+exon ids and the original exon ids is ambiguous.
+
+<<mopOriginalExonIdsToDisjoint>>=
+sG.flat <- unlist(sG, use.names=FALSE)
+orig.Ex <- values(sG.flat)[["exon_ids"]]
+disJ.Ex <- values(sG.flat)[["disJ_exon_id"]]
+
+newExNames <- rep(disJ.Ex, elementLengths(orig.Ex))
+origExToNewEx <- data.frame(orig.Ex=unlist(orig.Ex), 
+                            disJ.Ex=newExNames, 
+                            row.names=NULL)
+
+head(origExToNewEx)
+@
+
+The gene ids are directly retrievable from the \Rclass{GrangesList}
+object. To get the
+gene ids the \Rfunction{values} accessor function is used.
+The mapping from edges to genes is used further downstream in the analysis.
+
+<<getGeneToEdgeMappings>>=
+gnIDs <- values(sG)[["gene_id"]]
+edgeIDs <- names(sG)
+gnToEdge <- setNames(gnIDs, edgeIDs)
+@ 
+
+
+The next step we want to perform is use the information computed above
+in terms of RNA-Seq and transcriptome analysis.
+
+
+\section{Counting reads}
+
+This section deals with counting the reads associated with the
+individual edges. To elucidate later in this vignette some
+advantages of the splice graph approach the reads for the 
+exon model get also counted. As a starting point for counting the 
+aligned reads are required. The aligned reads used in this example 
+are stored as BAM files. The BAM files used for counting reads are
+provided in the \Rpackage{RNASeqDataSubset}.
+The \Rfunction{countSpliceGraphReads} function 
+requires a \Rclass{BamFileList} object which is created out of the
+the file paths to the six selected BAM files.
+
+<<countingReads>>=
+library(RNASeqDataSubset)
+if(reCnt) {
+  require("Rsamtools")
+  fls <- getBamFileList()
+  bfs <- BamFileList(fls)
+}
+@ 
+
+\subsection{Counting reads per edges}
+
+The reads get counted based on the edge model created above.
+Thereby adjacent elements of an edge are summarized to one
+range before the counting is done. If an read overlaps two 
+edges of the same gene, the read is counted for both edges of 
+the gene. If a read hits an exon part which is shared between two 
+genes the read is counted to both genes and their associated edges.
+Counting is performed for each BAM file separately and could be
+parallelized to save computation time.
+
+<<CountReads>>=
+if(reCnt) {
+  library(parallel)
+  cD.exByEdge <- 
+    countSpliceGraphReads(sG, bfs)
+  save(cD.exByEdge, file="cD.exByEdge.Rda")
+} else {
+  fn <- system.file("extdata", "cD.exByEdge.Rda", 
+                    package="RNASeqDataSubset")
+  load(fn)
+}
+@ 
+
+The resulting count table contains one row for each edge.
+The colum names correspond to the names of the 
+\Rclass{BamFileList} object.
+
+\begin{small}
+<<theEdgeCountTable>>=
+head(cD.exByEdge)
+@ 
+\end{small}
+
+
+\section{The experimental design}
+
+The initial step for each RNA-Seq analysis is to set up the 
+design of the experiment. Basically we are interested in comparing knock-out samples
+with wild type samples. This means we have a three against three design and
+therefore for each condition three biological replicates.
+
+<<setUpTheDesign>>=
+fn <- system.file("extdata", "phenoData.txt", 
+                  package="RNASeqDataSubset")
+pd <- read.table(fn, header=TRUE,
+                 stringsAsFactors=FALSE)
+design <- data.frame(condition=pd[, "condition"])
+design$condition <- 
+  factor(design$condition,
+         levels=c("Tbx20 knockout", "normal"))
+@ 
+
+
+\section{Significant altered alternative splice events}
+
+This section deals with testing for significant altered splice events.
+We introduced a generalized linear model (GLM) to asses the
+significance of changes in the alternative splice events between
+treated and untreated cells. The utilized GLM is a modified
+version of the GLM employed in the \Rpackage{DEXSeq} package.
+To get from the \Rpackage{DEXSeq} model to the model usable for
+testing alternative splicing events, represented by bubbles in the
+splice graph, exon terms are replaced by the bubble part terms. 
+Depending on the number of out edges at the source of the bubble
+and the number of in edges at the sink of a bubble the bubble can be
+divided into two or more bubble parts.
+A bubble part in the simplest case consist of only one splice graph edge.
+This means if we would have a bubble with only two edges, we would
+also have two bubble parts which have to be incorporated into our model. 
+See Equation \ref{eq:fullModel}. 
+Our utilized null model would have the following layout, which is
+quite similar to the model in the \Rpackage{DEXSeq} package, but can
+have many terms. 
+
+\begin{equation} 
+sample + bp + condition
+\end{equation} 
+
+Note that in contrast to \Rpackage{DEXSeq} the model term composition 
+not fixed anymore.
+
+\begin{small}
+\begin{equation} 
+sample + bp + condition \times \color{red}I(bp == bpID1) \color{black}
++ condition \times \color{blue}I(bp
+== bpID2) + ...
+\label{eq:fullModel}
+\end{equation}
+\end{small}
+
+Sometimes genes can consist of only one bubble part. E.g.:
+A gene consisting of two transcripts and three exons.
+Transcript 1 contains all three exons and transcript 2 contains only of
+exon 1 and exon 3. Therefore one bubble can be observed where only one
+bubble part consists of exonic structure elements.
+
+To perform the analysis we create a \Rclass{BubbleCountSet} object for
+keeping the edge and the bubble part counts together in the same data structure. 
+This \Rclass{BubbleCountSet} object is a simple container 
+of two \Rclass{ExonCountSet}s and two \Rclass{CountDataSet}s
+representing multi element (edge, bubble part) genes and single
+element genes respectively. See the documentation for further details.
+
+<<creatingABubbleCountSet>>=
+spliceGraphCnts <- BubbleCountSet(cD.exByEdge, sG, design)
+@ 
+
+Estimating the size factors of the libraries.
+
+<<estimatingSizeFactors>>=
+spliceGraphCnts <- estimateSizeFactorsSg( spliceGraphCnts )
+@
+
+Estimating the dispersions for single and multi element genes.
+The utilized functions are basically wrappers for the \Rpackage{DESeq}
+and \Rpackage{DEXSeq} functions.
+
+<<estimatingDispersions>>= 
+## estimate dispersions
+spliceGraphCnts <- estDispsMultiElements( spliceGraphCnts )
+spliceGraphCnts <- 
+  estDispsSglElements( spliceGraphCnts, fitType="local")
+@ 
+
+Fitting the dispersion function for multi element genes and estimating
+the log2 fold changes.
+
+<<fittingTheDispersionFunctions>>=
+spliceGraphCnts <- fitDispFuncSg( spliceGraphCnts )
+spliceGraphCnts <- 
+  estimatelog2FoldChangesSg( spliceGraphCnts )
+@ 
+
+Now we are able to test for alternative splicing.
+
+<<testingForSignificantAlteredSpliceEvents>>=
+res.bubbles <- testForSigSpliceEvents( spliceGraphCnts )
+res.bubbles <- res.bubbles[order(res.bubbles$pvalue), ]
+res.bubbles <- res.bubbles[abs(res.bubbles$maxLog2FC) > 1 |
+                           abs(res.bubbles$minLog2FC) > 1, ]
+@ 
+
+To accsess the individual objects contained in the \Rclass{BubbleCountSet} 
+use the acessor functions. By utilizing this functions dispersions and
+log2 fold changes can also be estimated manually by using the
+respective \Rpackage{DEXSeq} and \Rpackage{DESeq} functions. 
+
+<<accessingCounDataAndExonCountData, results=hide>>=
+multiEdgeCntSet(spliceGraphCnts)
+multiBpCntSet(spliceGraphCnts)
+sglEdgeCntSet(spliceGraphCnts)
+sglBpCntSet(spliceGraphCnts)
+@ 
+
+We found \Sexpr{sum(res.bubbles$padj < 0.05, na.rm=TRUE)} 
+alternative splice events to be significantly (p $<$ 0.05) altered.
+
+<<printSigSpliceEvents, results=tex, echo=FALSE>>=
+library(xtable)
+T <- xtable(head(res.bubbles, n=10),
+             caption=paste("Top 10 most significant altered alternative splice events"))
+align(T) <- "rrrrrrlp{3cm}"
+print(T, table.placement="H", size="scriptsize", 
+      include.rownames=FALSE)
+@ 
+
+%
+%\section{Differential edge expression analysis}
+%
+%This section deals with differential edge analysis. This chapter
+%should demonstrate the increased statistical power of using the
+%spliche graph edge approach. A comparison to the classic \Rpackage{DEXSeq}
+%analysis is shown. To perform the differential edge analysis run the
+%following command
+%
+%<<differentialEdgeAnalysis>>=
+%res.edges <- testForDiffEdgeExp(spliceGraphCnts)
+%@ 
+%
+%
+%\subsection{Differential exon usage}
+%
+%A \Rpackage{DEXSeq} analysis is performed to compare the results with
+%the differential edge expression analysis. Counting the reads for a \Rpackage{DEXSeq}
+%is similar to counting \Rpackage{SplicingGraphs} reads. The same function
+%can be utilized but the gene model is different.
+%
+%\subsubsection{Counting reads per exon}
+%
+%The cunk below creates a exon model to count the read to the
+%individual disjoint exons. We utilize also the 
+%\Rfunction{countSpliceGraphReads} function for counting the exon reads
+%because the strategy remains the same. The only difference is that
+%exons are used as outer level elements. Exon to gene mapping is
+%gathered from the elemen meta data.
+%
+%<<createAnExonModel>>=
+%djEx <- unlist(sG, use.names=FALSE)
+%idx <- rep(seq(1, length(sG)), elementLengths(sG))
+%val.ex <- values(sG)[idx,]
+%ex <- split(djEx, values(djEx)[["disJ_exon_id"]])
+%values(ex) <- val.ex
+%@ 
+%
+%Now the reads landing on the individual exons get counted.
+%
+%<<countExonReads>>=
+%exonsByGn <- exonsBy(txdb, "gene")
+%
+%## counting reads
+%countReads <- function(run, fls, exonsByGn) {
+%
+%  fl <- fls[run]
+%  print(paste("Counting reads per exon for ",fl,sep=""))
+%
+%  ## read gapped alignments
+%  gal <- readGappedAlignments(fl, format="BAM", use.names=FALSE)
+%  
+%  ## coerce to GRangesList
+%  gr <- as(gal, "GRanges")
+%
+%  ## creating a exons model
+%  exonsByGn.flat <- unlist(exonsByGn, use.names=FALSE)
+%
+%  ## check to which gn each exon maps
+%  gn <- rep(names(exonsByGn), elementLengths(exonsByGn))
+%  ex <- as.character(values(unlist(exonsByGn, use.names=FALSE))[["exon_id"]])
+%
+%  res <- setNames(rep(0, length(gn)), paste(gn, ex, sep=":"))
+%  
+%  exToGn <- split(gn, ex)
+%
+%  ## overlaps between model and gapped alignements
+%  ov <- findOverlaps(exonsByGn.flat, gr, ignore.strand=FALSE)
+%
+%  gn.q <- gn[queryHits(ov)]
+%  ex.q <- ex[queryHits(ov)]
+%  exonsByGn.flat <- exonsByGn.flat[queryHits(ov)]
+%
+%  exToGn <- exToGn[ex.q]
+%
+%  ## check for not expected dubble matches
+%  gn.q <- rep(gn.q, elementLengths(exToGn))
+%  exonsByGn.flat <- rep(exonsByGn.flat, elementLengths(exToGn))
+%  ex.q <- rep(ex.q, elementLengths(exToGn))
+%  y <- unlist(exToGn, use.names=FALSE)
+%  ov.idx <- rep(seq(1, length(ov)), elementLengths(exToGn))
+%
+%  bool <- gn.q == y
+%
+%  ## remove not accepted dubble matches
+%  gn.q <- gn.q[bool]
+%  exonsByGn.flat <- exonsByGn.flat[bool]
+%  ex.q <- ex.q[bool]
+%  ov.idx <- ov.idx[bool]
+%  ov.fin <- ov[ov.idx]
+%
+%  ## summarize overlaps per gene
+%  tab <- table(paste(gn.q, ex.q, sep=":"))
+%  prim.res <- setNames(as.vector(as.integer(tab)),
+%                       unlist(dimnames(tab),
+%                              use.names=FALSE))
+%  
+%  n <- names(res)
+%  res[names(prim.res)] <- prim.res
+%  res[n]
+%
+%}
+%
+%## perform the counting
+%cnt <- mclapply(pd$SRR, countReads, fls, exonsByGn,
+%                mc.cores=nr.cpu)
+%names(cnt) <- names(fls)
+%cD.ex <- simplify2array(cnt)
+%@ 
+%
+%
+%%\subsubsection{DESeq analysis for single exon genes}
+%%
+%%In this section the \Rpackage{DESeq} analysis of the single
+%%edge and single exon genes is performed. First we create count data sets
+%%and set up the testing conditions for the differential expression analysis.
+%%
+%%Creating a \Rclass{CountDataSet} and subsetting to single exon gene exons.
+%%
+%%<<se, results=hide>>=
+%%library(DESeq)
+%%gn <- rep(names(exonsByGn), elementLengths(exonsByGn))
+%%el <- elementLengths(split(values(unlist(exonsByGn, use.names=FALSE))[["exon_id"]], gn ))
+%%sglExGns <- names(el[el < 2])
+%%cds.Ex <- newCountDataSet(countData=cD.ex[! duplicated(rownames(cD.ex)),], 
+%%                          design$condition)
+%%@ 
+%%
+%%Next we compute the size factor, estimate the dispersion and test for
+%%differentially expression of single exon genes
+%%
+%%<<difExEx>>=
+%%cds.Ex <- estimateSizeFactors( cds.Ex )
+%%cds.Ex <- estimateDispersions( cds.Ex )
+%%ttSingle.Ex <- nbinomTest( cds.Ex, condA="Tbx20 knockout", condB="Normal" )
+%%
+%%
+%%
+%%@ 
+%
+%
+%\subsubsection{DEXSeq analysis for multi exon genes}
+%
+%Creating a \Rclass{ExonCountSet} and subsetting to multi exon gene exons.
+%
+%<<>>=
+%gnID <- values(ex)[, "gene_id"]
+%names(gnID) <- rownames(cD.exByEx)
+%exID <- names(ex)
+%names(exID) <- rownames(cD.exByEx)
+%eData.Ex <- 
+%  newExonCountSet(countData = cD.exByEx,
+%                  design = design$condition,
+%                  geneIDs = gnID,
+%                  exonIDs = exID)
+%eData.Ex <- eData.Ex[! gn %in% sglExGns, ]
+%@
+%
+%Next we compute the size factor, estimate the dispersion and test for
+%differentially expression of single exon genes
+%
+%
+%<<>>=
+%eData.Ex <- estimateSizeFactors(eData.Ex)
+%eData.Ex <- estimateDispersions(eData.Ex)
+%eData.Ex <- fitDispersionFunction(eData.Ex)
+%eData.Ex <- testForDEU(eData.Ex)
+%eData.Ex <- estimatelog2FoldChanges(eData.Ex)
+%tt.Ex <- DEUresultTable(eData.Ex) 
+%
+%
+%eData.Edge <- multiEdgeCntSet(spliceGraphCnts)
+%eData.Edge <- estimateSizeFactors(eData.Edge)
+%eData.Edge <- estimateDispersions(eData.Edge)
+%eData.Edge <- fitDispersionFunction(eData.Edge)
+%eData.Edge <- testForDEU(eData.Edge)
+%eData.Edge <- estimatelog2FoldChanges(eData.Edge)
+%tt.Edge <- DEUresultTable(eData.Edge) 
+%
+%tt.Edge <- 
+%  DEUresultTable(testForDEU(multiEdgeCntSet(spliceGraphCnts)))
+%@ 
+%
+%
+%
+%
+%
+%
+%<<pcutSum, results=hide>>=
+%p.cuts <- 10^seq( 0, -5, length.out=100 )
+%
+%ps.Ex <- sapply(p.cuts, function(p.cut) {
+%  sum(tt.Ex$padjust < p.cut, na.rm=TRUE)*100/
+%    sum(is.na(tt.Ex$padjust))
+%})
+%
+%ps.Edge <- sapply(p.cuts, function(p.cut) {
+%  sum(tt.Edge$padjust < p.cut, na.rm=TRUE)*100/
+%    sum(is.na(tt.Edge$padjust))
+%})
+%
+%
+%fn <- "Comparison-edges-exons.png"
+%png(fn,  width=7, height=7, res=300, units="in")
+%plot(ps.Edge, p.cuts, type="l", col="purple",
+%     xlab="% of differentially expressed elements",
+%     ylab="P-value cut off", lwd=2, frame.plot=FALSE, 
+%     log="xy", main="Exons versus edges")
+%lines(ps.Ex, p.cuts, lty=2, lwd=2)
+%grid(lwd=2)
+%legend("bottomright", legend=c("Edges", "Exons"), 
+%       col=c("purple", "black"), lty=c(1,2), lwd=2,
+%       border=NA, box.col=NA, bg=NA)
+%dev.off()
+%
+%
+%
+%
+%Table \ref{table:ex} and Table \ref{table:edge} show the 10 most
+%significant differentially expressed edges and exons. The most promising hit 
+%common in both top tables is ENTREZ gene id 90522 (YIF1B, Yip1 interacting factor homolog B). 
+%This protein is a multi-pass membrane protein, but there is not much known about 
+%its function. However it just serves as an example in here.
+%
+%<<pp, results=tex, echo=FALSE>>=
+%library(xtable)
+%T <- xtable(head(finTT.Ex[order(finTT.Ex$padj),], n=10), 
+%            caption="Top table of the exon model", label="table:ex",
+%            display=c("s","d","E","E","f","f","d"))
+%print(T, include.rownames=FALSE, table.placement="H")
+%@ 
+%
+%<<rr, results=tex, echo=FALSE>>=
+%library(xtable)
+%T <- xtable(head(finTT.Edge[order(finTT.Edge$padj),], n=10), 
+%            caption="Top table of the edge model", label="table:edge",
+%            display=c("s","d","E","E","f","f","d"))
+%print(T, include.rownames=FALSE, table.placement="H")
+%@ 
+%
+%
+%
+%
+%
+%
+%
+\bibliography{SplicingGraphs}
+\bibliographystyle{plain}
+
+
+\section{Session Information}
+
+\begin{scriptsize}
+<<SessionInfo, echo=FALSE>>=
+sessionInfo()
+@
+\end{scriptsize}
+
+\end{document}
