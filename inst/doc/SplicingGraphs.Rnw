@@ -77,7 +77,7 @@ or an intron is determined by the types of the two flanking vertices.
 Vertices according \cite{Heber01072002} can be of type 
 acceptor splicing site ($-$), donor splicing site ($\wedge$), transcript start 
 site ($~[~$) or transcript end ($~]~$).  For the correctness of the splicing 
-graph framework artificial sites designated as root ($0$) and leaf ($1$) 
+graph framework artificial sites designated as root ($R$) and leaf ($L$) 
 attached to the start and the end of each graph are required. It is important 
 to note that root and leaf will never represent real observed sites at the 
 transcripts and act just as a common sources and sink of the splicing graph. 
@@ -87,49 +87,27 @@ For details about gathering the alternative splicing events and their
 associated splicing codes see \cite{Heber01072002} and 
 \cite{Sammeth:2009:GB}.
 
-Figure \ref{img:SplicingGraphs} shows the splicing graph representation
-of all known transcript variants of gene JUNB (ENTREZ gene ID 3726).
-Before the splicing graph is constructed the exons of the individual genes
-respectively transcripts get disjoined to avoid overlapping sequence parts.
-The green dashed lines in Figure \ref{img:SplicingGraphs}  represent
-genomic locations where exons start, end or get disjoined during the 
-splicing graph construction process. Due to disjoining new exons are 
-created in such a way that none of this new exons overlap each other.
-
+Figure \ref{img:CIB3} shows the splicing graph representation
+of all known transcript variants of gene CIB3 (Entrez ID 117286).
+The green dashed lines in Figure \ref{img:CIB3} represent
+genomic locations where exons start or end during the splicing graph
+construction process.
 
 \begin{figure}[H]
   \begin{center}
-  \includegraphics[width=\textwidth]{3726-Txs.png}
+  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-gene.pdf}
+  \hskip 0.5in
+  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}}
+  %\includegraphics[width=2in,height=6in]{CIB3-sg2.pdf}
   \end{center}
-  \caption{Splicing graph representation of the two transcript variants
-    of the gene 3726 (JUNB) resulting in 2 bubbles. Left: splicing graph
-    representation. Right: transcript representation
+  \caption{Splicing graph representation of the four transcript variants
+    of gene CIB3 (Entrez ID 117286).
+    Left: transcript representation. Right: splicing graph representation.
+    Edges are labeled with the transcript ids (or names), in blue. The green
+    arrows are edges corresponding to exons.
   }
-  \label{img:SplicingGraphs}
+  \label{img:CIB3}
 \end{figure}
-
-
-\subsection{Advantages of disjoining exons}
-
-Counting the reads landing on the transcript annotations of a certain 
-reference genome is a critical step in each RNA-Seq transcriptome analysis.
-For performing a \Rpackage{DEXSeq} analysis counts landing on the individual
-exons are required. One problem with counting reads on single
-exons is that exons often consist only of few nucleotides and therefore
-counting for this rather short sequences could be problematic.
-Software packages like RSEM and Cufflinks employ statistical models
-for handling reads mapping to multiple transcript isoforms.
-\Rpackage{SplicingGraphs} and \Rpackage{DEXSeq} avoid the problem of counting 
-reads landing on overlapping exons of different transcripts by
-disjoining the exons per genes into non-overlapping parts.
-
-Regrading the splicing graph structure disjoining of exons is revealing new
-sites at the transcripts flagged with a $:$ symbol. Each site where disjoining 
-occurs can be considered as an intron of zero length
-flanked by two vertices, one representing the
-end of the first exon part (${\wedge}{:}$) and one representing the start of 
-the second exon part (${-}{:}$). See also Figure \ref{img:SplicingGraphs}.
-
 
 \subsection{Details about vertices and edges}
 
@@ -138,9 +116,26 @@ the combinations of types for such vertices is limited.
 Only splicing site acceptors ($-$) and transcript start sites ($~[~$) or
 splicing site donors ($\wedge$) and transcript ends ($~]~$) can occur as
 a pair of site types.
-Such a two type vertex occurs when the start of an exon, which is not
+Such a two-type vertex occurs when the start of an exon, which is not
 the first exon of a transcript falls together with the
 transcription start site of another transcript of the same gene.
+An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-gene.pdf}
+  \hskip 0.5in
+  \raisebox{-0.5in}{\includegraphics[width=2in,height=5.5in]{ZNF813-sg.pdf}}
+  %\includegraphics[width=2in,height=6in]{ZNF813-sg2.pdf}
+  \end{center}
+  \caption{Splicing graph representation of the two transcript variants
+    of gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type vertex:
+    splicing site acceptor ($-$) for transcript {\tt uc002qbu.2},
+    and transcript start site ($~[~$) for transcript {\tt uc010eqq.1}.
+  }
+  \label{img:ZNF813}
+\end{figure}
+
 A similar case occurs when the end of an exon, which is not the last
 exon of a transcript falls together with the transcript
 end of another transcript isoform belonging to the same gene. 
@@ -152,11 +147,13 @@ between a splicing site donor ($\wedge$) and an splicing site acceptor ($-$)
 would represent an intron.
 Exons are also described between transcription start sites ($~[~$) and splicing
 site donors ($\wedge$) or splicing site acceptors ($-$) and transcript
-ends ($~]~$). The edges between the root vertex ($0$) and the transcription start
-sites ($~[~$) as well as the edges between the transcript 
-ends ($~]~$) and the leaf ($1$) contain neither an
+ends ($~]~$). The edges between the root vertex ($R$) and the transcription
+start sites ($~[~$) as well as the edges between the transcript 
+ends ($~]~$) and the leaf ($L$) contain neither an
 intron nor an exon because such edges contain usually no 
 sequence information at all.
+
+\end{document}
 
 
 \subsection{Alternative splicing events form bubbles in the
@@ -903,3 +900,4 @@ sessionInfo()
 \end{scriptsize}
 
 \end{document}
+
