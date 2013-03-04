@@ -7,6 +7,7 @@ setOldClass("igraph")
 
 .EDGE_WEIGHTS <- c(1, 0.2, 0.1, 0.4)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .make_igraph_from_sgdf()
 ###
@@ -35,7 +36,7 @@ setOldClass("igraph")
     if (!("lty" %in% extract_colnames))
         ans$lty <- c("solid", "solid", "dashed", "solid")[ex_or_in]
     if (!("color" %in% extract_colnames))
-        ans$color <- c("green3", "darkgrey", "grey", "black")[ex_or_in]
+        ans$color <- c("orange", "darkgrey", "grey", "black")[ex_or_in]
     if (!("width" %in% extract_colnames)
      && "UATXHcount" %in% extract_colnames) {
         min_UATXHcount <- min(ans$UATXHcount)
@@ -84,12 +85,15 @@ setOldClass("igraph")
 
 ### 'sgdf0' must be a data.frame as returned by:
 ###     sgdf( , keep.dup.edges=TRUE)
-.make_igraph_from_sgdf0 <- function(sgdf0, gene_id=NA)
+.make_igraph_from_sgdf0 <- function(sgdf0, gene_id=NA,
+                                    tx_id.as.edge.label=FALSE)
 {
     if (!is.data.frame(sgdf0))
         stop("'sgdf0' must be a data.frame")
+    if (!isTRUEorFALSE(tx_id.as.edge.label))
+        stop("'tx_id.as.edge.label' must be TRUE or FALSE")
     d <- .precook_igraph_edges_from_sgdf(sgdf0)
-    if (!("label" %in% colnames(d)))
+    if (tx_id.as.edge.label)
         d$label <- d$tx_id
     .make_igraph(d)
 }
@@ -98,12 +102,15 @@ setOldClass("igraph")
 ###     sgdf( , keep.dup.edges=FALSE)
 ### or by:
 ###     sgdf2( )
-.make_igraph_from_sgdf <- function(sgdf, gene_id=NA)
+.make_igraph_from_sgdf <- function(sgdf, gene_id=NA,
+                                   tx_id.as.edge.label=FALSE)
 {
     if (!is(sgdf, "DataFrame"))
         stop("'sgdf' must be a DataFrame")
+    if (!isTRUEorFALSE(tx_id.as.edge.label))
+        stop("'tx_id.as.edge.label' must be TRUE or FALSE")
     d <- .precook_igraph_edges_from_sgdf(sgdf)
-    if (!("label" %in% colnames(d)))
+    if (tx_id.as.edge.label)
         d$label <- sapply(d$tx_id, paste, collapse=",")
     d$tx_id <- NULL
     ## Turning 'd' into an ordinary data.frame. (Looks like 'as.data.frame()'
@@ -121,20 +128,24 @@ setOldClass("igraph")
 ###
 
 setGeneric("sgraph", signature="x",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE,
+             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
         standardGeneric("sgraph")
 )
 
 setMethod("sgraph", "ANY",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE,
+             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
     {
         sgdf <- sgdf(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
-        sgraph(sgdf, as.igraph=as.igraph)
+        sgraph(sgdf, tx_id.as.edge.label=tx_id.as.edge.label,
+                     as.igraph=as.igraph)
     }
 )
 
 setMethod("sgraph", "data.frame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE,
+             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -142,13 +153,15 @@ setMethod("sgraph", "data.frame",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a data.frame")
-        igraph <- .make_igraph_from_sgdf0(x)
+        igraph <- .make_igraph_from_sgdf0(x,
+                      tx_id.as.edge.label=tx_id.as.edge.label)
         sgraph(igraph, as.igraph=as.igraph)
     }
 )
 
 setMethod("sgraph", "DataFrame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE,
+             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -156,19 +169,24 @@ setMethod("sgraph", "DataFrame",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a DataFrame")
-        igraph <- .make_igraph_from_sgdf(x)
+        igraph <- .make_igraph_from_sgdf(x,
+                      tx_id.as.edge.label=tx_id.as.edge.label)
         sgraph(igraph, as.igraph=as.igraph)
     }
 )
 
 setMethod("sgraph", "igraph",
-    function(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
+    function(x, gene_id=NA, keep.dup.edges=FALSE,
+             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an igraph object")
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
+                 "when 'x' is an igraph object")
+        if (!identical(tx_id.as.edge.label, FALSE))
+            stop("the 'tx_id.as.edge.label' arg is not supported ",
                  "when 'x' is an igraph object")
         if (!isTRUEorFALSE(as.igraph))
             stop("'as.igraph' must be TRUE or FALSE")
@@ -189,9 +207,10 @@ setMethod("sgraph", "igraph",
 ### Same as sgraph() except that uninformative nodes (i.e. SSids) are removed.
 ###
 
-sgraph2 <- function(x, gene_id=NA, as.igraph=FALSE)
+sgraph2 <- function(x, gene_id=NA, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 {
-    sgraph(sgdf2(x, gene_id=gene_id), as.igraph=as.igraph)
+    sgraph(sgdf2(x, gene_id=gene_id),
+           tx_id.as.edge.label=tx_id.as.edge.label, as.igraph=as.igraph)
 }
 
 
@@ -223,4 +242,22 @@ setMethod("plot", c("SplicingGraphs", "ANY"),
         plot(sgraph(x, gene_id=gene_id))
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### slideshow()
+###
+
+slideshow <- function(x)
+{
+    if (!is(x, "SplicingGraphs"))
+        stop("'x' must be a SplicingGraphs object")
+    for (gene_id in unique(names(x))) {
+        ntx <- sum(names(x) == gene_id)
+        cat("Plotting gene ", gene_id, " (", ntx, " transcripts). ", sep="")
+        plot(x, gene_id)
+        cat("Press <Enter> for next...")
+        readLines(n=1)
+    }
+}
 

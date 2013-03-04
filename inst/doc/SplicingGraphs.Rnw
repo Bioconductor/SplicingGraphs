@@ -89,9 +89,6 @@ associated splicing codes see \cite{Heber01072002} and
 
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of gene CIB3 (Entrez ID 117286).
-The green dashed lines in Figure \ref{img:CIB3} represent
-genomic locations where exons start or end during the splicing graph
-construction process.
 
 \begin{figure}[H]
   \begin{center}
@@ -103,8 +100,7 @@ construction process.
   \caption{Splicing graph representation of the four transcript variants
     of gene CIB3 (Entrez ID 117286).
     Left: transcript representation. Right: splicing graph representation.
-    Edges are labeled with the transcript ids (or names), in blue. The green
-    arrows are edges corresponding to exons.
+    The orange arrows are edges corresponding to exons.
   }
   \label{img:CIB3}
 \end{figure}

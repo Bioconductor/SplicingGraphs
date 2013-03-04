@@ -1,3 +1,5 @@
+library(SplicingGraphs)
+
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
@@ -18,15 +20,9 @@ tx_by_gn <- tx_by_gn[elementLengths(tx_by_gn) >= 2L]
 ### Compute the splicing graphs (takes about 2 min. 30 sec.):
 sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
 
-for (gene_id in unique(names(sg))) {
-    ntx <- sum(names(sg) == gene_id)
-    cat("Plotting gene ", gene_id, " (", ntx, " transcripts). ", sep="")
-    plot(sg, gene_id)
-    cat("Press <Enter> for next...")
-    readLines(n=1)
-}
+### Slideshow of the graphs.
+slideshow(sg)
 
-### Only VALIDATED genes:
 #sgraph(sg, gene_id="100507433")
 #sgraph(sg, gene_id="10362")  # gene official symbol: HMG20B
 #sgraph(sg, gene_id="11202")  # gene official symbol: KLK8 (REVIEWED)
@@ -105,4 +101,9 @@ pdf("ZNF813-gene.pdf", width=6, height=3)
 plotTracks(c(list(ax_track), tx_tracks))
 dev.off()
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Entrez ID 10332 as a complex graph! (10 transcripts, 22 splicing sites)
+### graphviz layout engine could do a better job though (in particular edge
+### 9-17 doesn't need to cross any other edge).
 

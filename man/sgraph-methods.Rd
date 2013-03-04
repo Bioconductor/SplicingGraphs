@@ -11,6 +11,7 @@
 \alias{sgraph2}
 
 \alias{plot,SplicingGraphs,ANY-method}
+\alias{slideshow}
 
 
 \title{
@@ -23,12 +24,15 @@
 }
 
 \usage{
-sgraph(x, gene_id=NA, keep.dup.edges=FALSE, as.igraph=FALSE)
-sgraph2(x, gene_id=NA, as.igraph=FALSE)
+sgraph(x, gene_id=NA, keep.dup.edges=FALSE,
+       tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+sgraph2(x, gene_id=NA,
+        tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 
 ## PLotting:
 
 \S4method{plot}{SplicingGraphs,ANY}(x, y, gene_id=NA)
+slideshow(x)
 }
 
 \arguments{
@@ -39,6 +43,9 @@ sgraph2(x, gene_id=NA, as.igraph=FALSE)
     TODO
   }
   \item{keep.dup.edges}{
+    TODO
+  }
+  \item{tx_id.as.edge.label}{
     TODO
   }
   \item{as.igraph}{
@@ -80,17 +87,17 @@ sg
 ## consecutive elements in 'sg'.
 names(sg)
 
-sgA <- sgraph(sg, gene_id="geneA")
+sgA <- sgraph(sg, gene_id="geneA", tx_id.as.edge.label=TRUE)
 
 if (interactive()) {
   ## Edges are labeled with the transcript ids (or names), in blue.
-  ## The green arrows are edges corresponding to exons.
+  ## The orange arrows are edges corresponding to exons:
   plot(sgA)
 
-  ## Note that plot() works directly on the SplicingGraphs object 'sg'.
+  ## Note that plot() works directly on the SplicingGraphs object 'sg':
   plot(sg, "geneB")
-  plot(sg, "geneC")
-  plot(sg, "geneD")
-  plot(sg, "geneE")
+
+  ## Slideshow of the graphs:
+  slideshow(sg)
 }
 }

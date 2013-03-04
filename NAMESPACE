@@ -47,6 +47,7 @@ export(
 
     ## sgraph-methods.R:
     sgraph2,
+    slideshow,
 
     ## countReads.R:
     assignSubfeatureHits,
