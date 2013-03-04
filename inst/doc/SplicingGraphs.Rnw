@@ -90,7 +90,7 @@ associated splicing codes see \cite{Heber01072002} and
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of gene CIB3 (Entrez ID 117286).
 
-\begin{figure}[H]
+\begin{figure}[tbp]
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-gene.pdf}
   \hskip 0.5in
@@ -117,11 +117,11 @@ the first exon of a transcript falls together with the
 transcription start site of another transcript of the same gene.
 An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
 
-\begin{figure}[H]
+\begin{figure}[tbp]
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-gene.pdf}
   \hskip 0.5in
-  \raisebox{-0.5in}{\includegraphics[width=2in,height=5.5in]{ZNF813-sg.pdf}}
+  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{ZNF813-sg.pdf}}
   %\includegraphics[width=2in,height=6in]{ZNF813-sg2.pdf}
   \end{center}
   \caption{Splicing graph representation of the two transcript variants
@@ -149,28 +149,43 @@ ends ($~]~$) and the leaf ($L$) contain neither an
 intron nor an exon because such edges contain usually no 
 sequence information at all.
 
-\end{document}
-
-
 \subsection{Alternative splicing events form bubbles in the
   splicing graph}
 
 Not all splicing sites (vertices) on the individual transcripts are alternative 
 splicing sites. Therefore the initial splicing graph outlined above can be
-simplified by collapsing vertices of in- and out- degree equal to one because
+simplified by removing vertices of in- and out- degree equal to one because
 they are supposed to be non-informative in terms of alternative splicing.
-Edges associated with such vertices get also sequentially collapsed with
+Edges associated with such vertices get sequentially merged with
 the previous ones and result in longer edges capturing several exons.
 The final splicing graph only contains vertices involved in alternative
-splicing. Between two remaining vertices there exists at
-least two edges which form a bubble. Such a bubble, representing an
-alternative splicing event, consists at least of two bubble parts. The exonic
-structures of the two bubble parts are exclusive.
+splicing. The process of removing uninformative nodes is illustrated in
+Figure \ref{img:CIB3-simplified}.
+
+\begin{figure}[tbp]
+  \begin{center}
+  \includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}
+  \hskip 0.5in
+  \includegraphics[width=2in,height=5.5in]{CIB3-sg2.pdf}
+  \end{center}
+  \caption{Nodes $1$, $3$, $5$, $6$, $9$, $11$, $12$, and $13$ are
+    uninformative and can be removed.
+    Left: before removal of the uninformative nodes. Right: after their
+    removal.
+  }
+  \label{img:CIB3-simplified}
+\end{figure}
+
+[FIXME: The following statement is not true.] Between two remaining vertices
+there exists at least two edges which form a bubble. Such a bubble,
+representing an alternative splicing event, consists at least of two bubble
+parts. The exonic structures of the two bubble parts are exclusive.
 Bubbles in general can be nested or can intersect with other bubbles.
 The collapsed edges of the final splicing graph associated with one or more
 exons which do not overlap each other, form larger sequence regions providing 
 advantages in counting reads and testing for differential expression. 
 
+\end{document}
 
 \subsection{Interpretation of the splicing codes}
 \label{sec:spliceCodes}
