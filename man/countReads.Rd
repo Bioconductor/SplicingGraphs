@@ -103,8 +103,8 @@ plot(sg, "geneA")
 sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
 
 ## Assign compatible hits for each intron:
-in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
-in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
+in_by_tx <- psetdiff(range(sg@tx), sg@tx)
+in_by_tx <- assignSubfeatureHits(grl, in_by_tx, ov1, ignore.strand=TRUE)
 
-sgdf(sg, gene_id="geneA", inbytx=in_by_tx2)
+sgdf(sg, gene_id="geneA", in_by_tx=in_by_tx)
 }

@@ -14,6 +14,7 @@ Imports: methods, utils, igraph,
 	 BiocGenerics, IRanges, GenomicRanges,
 	 graph, Rgraphviz, GenomicFeatures, Rsamtools
 Suggests: igraph, Gviz,
+	 TxDb.Hsapiens.UCSC.hg19.knownGene,
 	 TxDb.Mmusculus.UCSC.mm9.knownGene, RNASeqDataSubset,
 	 RUnit
 Collate: utils.R

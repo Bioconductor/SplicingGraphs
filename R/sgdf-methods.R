@@ -230,54 +230,57 @@ setMethod(".hits", "GRangesList",
 }
 
 setGeneric("sgdf", signature="x",
-    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
+             keep.dup.edges=FALSE)
         standardGeneric("sgdf")
 )
 
 setMethod("sgdf", "ANY",
-    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
+             keep.dup.edges=FALSE)
     {
         spath <- spath(x, gene_id=gene_id)
         if (is.null(UATXHcount))
             UATXHcount <- UATXHcount(x, gene_id=gene_id)
-        if (is.null(inbytx))
+        if (is.null(in_by_tx))
             return(sgdf(spath, UATXHcount=UATXHcount,
                                keep.dup.edges=keep.dup.edges))
-        if (!is(inbytx, "GRangesList"))
-            stop("'inbytx' must be NULL or a GRangesList object")
+        if (!is(in_by_tx, "GRangesList"))
+            stop("'in_by_tx' must be NULL or a GRangesList object")
         if (!is(x, "SplicingGraphs"))
             stop("'x' must be a SplicingGraphs object ",
-                 "when 'inbytx' is a GRangesList object")
-        if (length(inbytx) != length(x))
-            stop("'inbytx' must have the same length as 'x'")
-        if (!identical(elementLengths(inbytx) + 1L, elementLengths(x)))
-            stop("the shape of 'inbytx' is not compatible ",
+                 "when 'in_by_tx' is a GRangesList object")
+        if (length(in_by_tx) != length(x))
+            stop("'in_by_tx' must have the same length as 'x'")
+        if (!identical(elementLengths(in_by_tx) + 1L, elementLengths(x)))
+            stop("the shape of 'in_by_tx' is not compatible ",
                  "with the shape of 'x'")
         if (!identical(keep.dup.edges, FALSE))
-            stop("'keep.dup.edges' must be FALSE when 'inbytx' is supplied")
+            stop("'keep.dup.edges' must be FALSE when 'in_by_tx' is supplied")
         sgdf0 <- sgdf(spath, UATXHcount=UATXHcount, keep.dup.edges=TRUE)
         ex_or_in <- sgdf0[ , "ex_or_in"]
         ex_hits <- .hits(x@tx, gene_id=gene_id)
         if (is.null(ex_hits))
             stop("'x' must have a \"hits\" inner metadata column ",
-                 "when 'inbytx' is a GRangesList object. May be ",
+                 "when 'in_by_tx' is a GRangesList object. May be ",
                  "you forgot to pass it thru assignSubfeatureHits()?")
-        in_hits <- .hits(inbytx, gene_id=gene_id)
+        in_hits <- .hits(in_by_tx, gene_id=gene_id)
         if (is.null(in_hits))
-            stop("'inbytx' has no \"hits\" inner metadata column. May be ",
+            stop("'in_by_tx' has no \"hits\" inner metadata column. May be ",
                  "you forgot to pass it thru assignSubfeatureHits()?")
         .make_sgdf_from_sgdf0(sgdf0, ex_hits=ex_hits, in_hits=in_hits)
     }
 )
 
 setMethod("sgdf", "IntegerList",
-    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
+             keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        if (!is.null(inbytx))
-            stop("the 'inbytx' arg is not supported ",
+        if (!is.null(in_by_tx))
+            stop("the 'in_by_tx' arg is not supported ",
                  "when 'x' is an IntegerList")
         sgdf0 <- .make_sgdf0_from_spath(x, UATXHcount=UATXHcount)
         sgdf(sgdf0, keep.dup.edges=keep.dup.edges)
@@ -285,7 +288,8 @@ setMethod("sgdf", "IntegerList",
 )
 
 setMethod("sgdf", "data.frame",
-    function(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
+    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
+             keep.dup.edges=FALSE)
     {
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
@@ -293,8 +297,8 @@ setMethod("sgdf", "data.frame",
         if (!is.null(UATXHcount))
             stop("the 'UATXHcount' arg is not supported ",
                  "when 'x' is a data.frame")
-        if (!is.null(inbytx))
-            stop("the 'inbytx' arg is not supported ",
+        if (!is.null(in_by_tx))
+            stop("the 'in_by_tx' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")

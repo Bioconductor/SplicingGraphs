@@ -88,14 +88,13 @@ associated splicing codes see \cite{Heber01072002} and
 \cite{Sammeth:2009:GB}.
 
 Figure \ref{img:CIB3} shows the splicing graph representation
-of all known transcript variants of gene CIB3 (Entrez ID 117286).
+of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 \begin{figure}[tbp]
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-gene.pdf}
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}}
-  %\includegraphics[width=2in,height=6in]{CIB3-sg2.pdf}
   \end{center}
   \caption{Splicing graph representation of the four transcript variants
     of gene CIB3 (Entrez ID 117286).
@@ -122,10 +121,9 @@ An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
   \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-gene.pdf}
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{ZNF813-sg.pdf}}
-  %\includegraphics[width=2in,height=6in]{ZNF813-sg2.pdf}
   \end{center}
   \caption{Splicing graph representation of the two transcript variants
-    of gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type vertex:
+    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type vertex:
     splicing site acceptor ($-$) for transcript {\tt uc002qbu.2},
     and transcript start site ($~[~$) for transcript {\tt uc010eqq.1}.
   }
@@ -185,10 +183,10 @@ The collapsed edges of the final splicing graph associated with one or more
 exons which do not overlap each other, form larger sequence regions providing 
 advantages in counting reads and testing for differential expression. 
 
-\end{document}
-
 \subsection{Interpretation of the splicing codes}
 \label{sec:spliceCodes}
+
+[TODO: Revisit this sub-section entirely.]
 
 Splicing codes can be obtained by iterating over the individual
 bubbles and collecting the types of the original vertices associated 
@@ -207,8 +205,6 @@ the bubble and the third symbol the vertex type. The second part of
 the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2 
 containing exactly one exon described by the flanking vertices
 $-$ and $\wedge$. 
-
-
 
 \begin{figure}[H]
   \begin{center}
@@ -230,7 +226,6 @@ skip where the end of the exon is linked to a disjoint site.
 In such a way it is possible to characterize and to
 distinguish a variety of different splicing events. 
 See Figure \ref{img:altaccept}
-
 
 \begin{figure}[H]
   \begin{center}
@@ -275,7 +270,7 @@ desktop computer. If only the edges of the splicing graph are retrieved
 the computation time shortens to about 5 minutes for the 
 whole \Rclass{TranscriptDb} object.
 To save some time we utilize only chromosome 19. 
-To run the \Rfunction{spliceGraphs} function only on a subset of
+To run the \Rfunction{SplicingGraphs} constructor only on a subset of
 the \Rclass{TranscriptDb} object the \Rpackage{GenomicFeatures}
 package provides the \Rfunction{isActiveSeq} function
 to deactivate chromosomes in the \Rclass{TranscriptDb} object which should
@@ -289,13 +284,15 @@ activeChr[names(activeChr) == "chr19"] <- TRUE
 isActiveSeq(txdb) <- activeChr
 @
 
-Finally we can execute the \Rfunction{spliceGraphs} function onto 
+Finally we can call the \Rfunction{SplicingGraphs} constructor on
 the modified \Rclass{TranscriptDb} object.
 
 <<loadGenomicFeatures>>=
 library(SplicingGraphs)
-sG <- spliceGraphs(txdb, genes="20469")
+sg <- SplicingGraphs(txdb)
 @
+
+\end{document}
 
 The \Rfunction{spliceGraphs} function returns the
 collapsed edges with their associated disjoined exons and provides information

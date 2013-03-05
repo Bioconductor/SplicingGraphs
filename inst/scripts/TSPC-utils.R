@@ -35,9 +35,9 @@ makeSgdfWithHits <- function(grl, sg)
     ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
     ov1 <- ov0[ov0_is_comp]
     sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
-    in_by_tx2 <- psetdiff(range(sg@tx), sg@tx)
-    in_by_tx2 <- assignSubfeatureHits(grl, in_by_tx2, ov1, ignore.strand=TRUE)
-    sgdf(sg, inbytx=in_by_tx2)
+    in_by_tx <- psetdiff(range(sg@tx), sg@tx)
+    in_by_tx <- assignSubfeatureHits(grl, in_by_tx, ov1, ignore.strand=TRUE)
+    sgdf(sg, in_by_tx=in_by_tx)
 }
 
 makeTSPCsgdf <- function(subdir_path)

@@ -30,7 +30,7 @@
 }
 
 \usage{
-sgdf(x, gene_id=NA, UATXHcount=NULL, inbytx=NULL, keep.dup.edges=FALSE)
+sgdf(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL, keep.dup.edges=FALSE)
 sgdf2(x, gene_id=NA)
 
 ## Related utilities:
@@ -50,7 +50,7 @@ uninformativeSSids(x, gene_id=NA)
   \item{UATXHcount}{
     TODO
   }
-  \item{inbytx}{
+  \item{in_by_tx}{
     TODO
   }
   \item{keep.dup.edges}{

@@ -82,17 +82,17 @@ setMethod("show", "SplicingGraphs",
     list(start_SSid=exons_start_SSid, end_SSid=exons_end_SSid)
 }
 
-### 'exbytx' must be a GRangesList object containing the exons of a *single*
+### 'gene' must be a GRangesList object containing the exons of a *single*
 ### gene grouped by transcripts. More precisely, each top-level element
-### in 'exbytx' contains the genomic ranges of the exons for a particular
+### in 'gene' contains the genomic ranges of the exons for a particular
 ### transcript of the gene.
-.setSplicingGraphInfo <- function(exbytx, check.introns=TRUE)
+.setSplicingGraphInfo <- function(gene, check.introns=TRUE)
 {
-    if (!is(exbytx, "GRangesList"))
-        stop("'exbytx' must be a GRangesList object")
+    if (!is(gene, "GRangesList"))
+        stop("'gene' must be a GRangesList object")
     if (!isTRUEorFALSE(check.introns))
         stop("'check.introns' must be TRUE or FALSE")
-    exons <- exbytx@unlistData
+    exons <- gene@unlistData
     exons_strand <- strand(exons)
     if (nrun(seqnames(exons)) != 1L || nrun(exons_strand) != 1L)
         stop("all the exons in the gene must be on the same ",
@@ -101,7 +101,7 @@ setMethod("show", "SplicingGraphs",
     if (check.introns) {
         ## We check that, within each transcript, exons are ordered from 5'
         ## to 3' with gaps of at least 1 nucleotide between them.
-        ranges_by_tx <- ranges(exbytx)
+        ranges_by_tx <- ranges(gene)
         if (on.minus.strand)
             ranges_by_tx <- revElements(ranges_by_tx)
         if (!all(isNormal(ranges_by_tx)))
@@ -116,66 +116,66 @@ setMethod("show", "SplicingGraphs",
     exons_mcols <- mcols(exons)
     if (any(names(SSids) %in% colnames(exons_mcols))) {
         in_1_string <- paste(names(SSids), collapse=", ")
-        stop("'unlist(exbytx)' already has metadata columns: ", in_1_string)
+        stop("'unlist(gene)' already has metadata columns: ", in_1_string)
     }
     mcols(exons) <- cbind(mcols(exons), DataFrame(SSids))
-    exbytx@unlistData <- exons
-    exbytx_mcols <- mcols(exbytx)
+    gene@unlistData <- exons
+    gene_mcols <- mcols(gene)
 
     ## Set tx_id metadata col.
-    if ("tx_id" %in% colnames(exbytx_mcols))
-        stop("'exbytx' already has metadata column tx_id")
-    tx_id <- names(exbytx)
+    if ("tx_id" %in% colnames(gene_mcols))
+        stop("'gene' already has metadata column tx_id")
+    tx_id <- names(gene)
     if (!is.null(tx_id))
-        exbytx_mcols$tx_id <- tx_id
+        gene_mcols$tx_id <- tx_id
 
     ## Set spath metadata col.
-    if ("spath" %in% colnames(exbytx_mcols))
-        stop("'exbytx' already has metadata column spath")
+    if ("spath" %in% colnames(gene_mcols))
+        stop("'gene' already has metadata column spath")
     if (on.minus.strand) {
         spath <- rbind(SSids$end_SSid, SSids$start_SSid)
     } else {
         spath <- rbind(SSids$start_SSid, SSids$end_SSid)
     }
-    spath_partitioning <- PartitioningByEnd(end(PartitioningByEnd(exbytx)) * 2L)
+    spath_partitioning <- PartitioningByEnd(end(PartitioningByEnd(gene)) * 2L)
     names(spath_partitioning) <- tx_id
     spath <- splitAsList(as.vector(spath), spath_partitioning)
-    exbytx_mcols$spath <- spath
+    gene_mcols$spath <- spath
 
-    mcols(exbytx) <- exbytx_mcols
-    exbytx
+    mcols(gene) <- gene_mcols
+    gene
 }
 
-### 'exbytx' must be a GRangesList object containing the exons of one or more
+### 'x' must be a GRangesList object containing the exons of one or more
 ### genes grouped by transcripts. More precisely, each top-level element
-### in 'exbytx' contains the genomic ranges of the exons for a particular
-### transcript. Typically 'exbytx' will be obtained from a TranscriptDb object
+### in 'x' contains the genomic ranges of the exons for a particular
+### transcript. Typically 'x' will be obtained from a TranscriptDb object
 ### 'txdb' with 'exonsBy(txdb, by="tx")'.
 ### 'grouping' is an optional object that represents the grouping by gene of
-### the top-level elements (i.e. transcripts) in 'exbytx'. It can be either:
-###   (a) Missing (i.e. NULL). In that case, all the transcripts in 'exbytx'
+### the top-level elements (i.e. transcripts) in 'x'. It can be either:
+###   (a) Missing (i.e. NULL). In that case, all the transcripts in 'x'
 ###       are considered to belong to the same gene and the SplicingGraphs
 ###       object returned by SplicingGraphs() will be unnamed.
 ###   (b) A list of integer or character vectors, or an IntegerList, or a
 ###       CharacterList object, of length the number of genes to process,
-###       and where 'grouping[[i]]' is a vector of valid subscripts in 'exbytx'
+###       and where 'grouping[[i]]' is a vector of valid subscripts in 'x'
 ###       pointing to all the transcripts of the i-th gene.
-###   (c) A factor, character vector, or integer vector, of length 'exbytx'
+###   (c) A factor, character vector, or integer vector, of length 'x'
 ###       with 1 level per gene.
 ###   (d) A named GRangesList object containing transcripts grouped by genes
 ###       i.e. each top-level element in 'grouping' contains the genomic ranges
 ###       of the transcripts for a particular gene. In that case, the grouping
 ###       is inferred from the tx_id (or alternatively tx_name) metadata
 ###       column of 'unlist(grouping)' and all the values in that column must
-###       be in 'names(exbytx)'.
-###       If 'exbytx' was obtained with 'exonsBy(txdb, by="tx")', then the
+###       be in 'names(x)'.
+###       If 'x' was obtained with 'exonsBy(txdb, by="tx")', then the
 ###       GRangesList object used for grouping would typically be obtained with
 ###       'transcriptsBy(txdb, by="gene")'.
 ###   (e) A data.frame or DataFrame with 2 character vector columns: a
 ###       gene_id column (factor, character vector, or integer vector),
-###       and a tx_id (or alternatively tx_name) column. In that case, 'exbytx'
+###       and a tx_id (or alternatively tx_name) column. In that case, 'x'
 ###       must be named and all the values in the tx_id (or tx_name) column
-###       must be in 'names(exbytx)'.
+###       must be in 'names(x)'.
 
 .checkOrMakeUniqueGroupingNames <- function(grouping)
 {
@@ -195,7 +195,7 @@ setMethod("show", "SplicingGraphs",
 
 ### Returns a list or IntegerList or CharacterList. Always *named* with the
 ### gene ids.
-.normargGrouping <- function(grouping, exbytx)
+.normargGrouping <- function(grouping, x)
 {
     ## (b)
     if (is.list(grouping) || is(grouping, "IntegerList")
@@ -204,16 +204,16 @@ setMethod("show", "SplicingGraphs",
     }
     ## (c)
     if (is.factor(grouping) || is.character(grouping) || is.integer(grouping)) {
-        if (length(grouping) != length(exbytx))
+        if (length(grouping) != length(x))
             stop("when 'grouping' is a factor, character vector, or integer ",
-                 "vector, it must have the same length as 'exbytx'")
-        return(split(seq_along(exbytx), grouping))
+                 "vector, it must have the same length as 'x'")
+        return(split(seq_along(x), grouping))
     }
-    exbytx_names <- names(exbytx)
+    x_names <- names(x)
     ## (d)
     if (is(grouping, "GRangesList")) {
-        if (is.null(exbytx_names))
-            stop("when 'grouping' is a GRangesList, 'exbytx' must be named ",
+        if (is.null(x_names))
+            stop("when 'grouping' is a GRangesList, 'x' must be named ",
                  "with transcript ids (tx_id) or transcript names (tx_name)")
         grouping <- .checkOrMakeUniqueGroupingNames(grouping)
         mcols <- mcols(grouping@unlistData)
@@ -225,18 +225,18 @@ setMethod("show", "SplicingGraphs",
             if (length(idx) >= 2L)
                 stop("'unlist(grouping)' has more than 1 ",
                      colname, " metadata column")
-            m <- match(mcols[[idx]], exbytx_names)
+            m <- match(mcols[[idx]], x_names)
             if (any(is.na(m)))
                 next
             return(splitAsList(m, PartitioningByEnd(grouping)))
         }
         stop("'unlist(grouping)' has no tx_id or tx_name column, ",
-             "or they contain values that are not in 'names(exbytx)'")
+             "or they contain values that are not in 'names(x)'")
     }
     ## (e)
     if (is.data.frame(grouping) || is(grouping, "DataFrame")) {
-        if (is.null(exbytx_names))
-            stop("when 'grouping' is a data.frame or a DataFrame, 'exbytx' ",
+        if (is.null(x_names))
+            stop("when 'grouping' is a data.frame or a DataFrame, 'x' ",
                  "must be named with transcript ids (tx_id) or transcript ",
                  "names (tx_name)")
         grouping_colnames <- colnames(grouping)
@@ -255,13 +255,13 @@ setMethod("show", "SplicingGraphs",
                 next
             if (length(idx) >= 2L)
                 stop("'grouping' has more than 1 ", colname, " column")
-            m <- match(grouping[[idx]], exbytx_names)
+            m <- match(grouping[[idx]], x_names)
             if (any(is.na(m)))
                 next
             return(split(m, gene_id))
         }
         stop("'grouping' has no tx_id or tx_name column, ",
-             "or they contain values that are not in 'names(exbytx)'")
+             "or they contain values that are not in 'names(x)'")
     }
     stop("invalid 'grouping'")
 
@@ -269,21 +269,21 @@ setMethod("show", "SplicingGraphs",
 
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
-.make_SplicingGraphs_from_GRangesList <- function(exbytx, grouping=NULL,
+.make_SplicingGraphs_from_GRangesList <- function(x, grouping=NULL,
                                                   check.introns=TRUE)
 {
-    if (!is(exbytx, "GRangesList"))
-        stop("'exbytx' must be a GRangesList object")
+    if (!is(x, "GRangesList"))
+        stop("'x' must be a GRangesList object")
     if (is.null(grouping)) {
-        ans <- .setSplicingGraphInfo(exbytx, check.introns=check.introns)
+        ans <- .setSplicingGraphInfo(x, check.introns=check.introns)
         names(ans) <- NULL
         return(ans)
     }
-    grouping <- .normargGrouping(grouping, exbytx)
+    grouping <- .normargGrouping(grouping, x)
     ans <- lapply(seq_along(grouping),
                   function(i) {
                       ii <- grouping[[i]]
-                      gene <- exbytx[ii]
+                      gene <- x[ii]
                       gene2 <- try(.setSplicingGraphInfo(gene,
                                        check.introns=check.introns),
                                    silent=TRUE)
@@ -309,11 +309,29 @@ setMethod("show", "SplicingGraphs",
     ans
 }
 
-### TODO: Make this a generic function (and rename 'exbytx' arg -> 'x').
-SplicingGraphs <- function(exbytx, grouping=NULL, check.introns=TRUE)
-{
-    ans_tx <- .make_SplicingGraphs_from_GRangesList(exbytx, grouping=grouping,
-                                                    check.introns=check.introns)
-    new("SplicingGraphs", tx=ans_tx)
-}
+setGeneric("SplicingGraphs", signature="x",
+    function(x, grouping=NULL, check.introns=TRUE)
+        standardGeneric("SplicingGraphs")
+)
+
+setMethod("SplicingGraphs", "GRangesList",
+    function(x, grouping=NULL, check.introns=TRUE)
+    {
+        ans_tx <- .make_SplicingGraphs_from_GRangesList(x,
+                      grouping=grouping, check.introns=check.introns)
+        new("SplicingGraphs", tx=ans_tx)
+    }
+)
+
+setMethod("SplicingGraphs", "TranscriptDb",
+    function(x, grouping=NULL, check.introns=TRUE)
+    {
+        if (!is.null(grouping))
+            stop("the 'grouping' arg is not supported ",
+                 "when 'x' is a TranscriptDb object")
+        ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)
+        tx_by_gn <- transcriptsBy(x, by="gene")
+        SplicingGraphs(ex_by_tx, tx_by_gn, check.introns=check.introns)
+    }
+)
 
