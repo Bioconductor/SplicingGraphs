@@ -27,12 +27,12 @@
 
 
 \title{
-  Extract the edges of a splicing graph
+  Extract the edges (and nodes) of a splicing graph
 }
 
 \description{
-  Extract the edges of the splicing graph of a given gene from a
-  \link{SplicingGraphs} object and return it as a \link[IRanges]{DataFrame}.
+  \code{sgedges} (resp. \code{sgnodes}) extracts the edges (resp. the nodes)
+  of the splicing graph of a given gene from a \link{SplicingGraphs} object.
 }
 
 \usage{
@@ -84,6 +84,8 @@ uninformativeSSids(x, gene_id=NA)
 
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
+
+    \item \code{\link{bubbles}} for extracting the bubbles of a splicing graph.
   }
 }
 

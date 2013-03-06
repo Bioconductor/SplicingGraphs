@@ -75,7 +75,10 @@ export(
     uninformativeSSids,
 
     ## sgraph-methods.R:
-    sgraph
+    sgraph,
+
+    ## bubbles-methods.R:
+    bubbles
 )
 
 ### Exactly the same list as above.
@@ -86,6 +89,7 @@ exportMethods(
     sgedges,
     sgnodes,
     uninformativeSSids,
-    sgraph
+    sgraph,
+    bubbles
 )
 

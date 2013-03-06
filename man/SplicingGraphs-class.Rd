@@ -139,10 +139,13 @@ SplicingGraphs(x, grouping=NULL, check.introns=TRUE)
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
 
-    \item \code{\link{sgedges}} for extracting the edges of a splicing graph.
+    \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
+          splicing graph.
 
     \item \code{\link{sgraph}} for extracting a splicing graph as a plottable
           graph-like object.
+
+    \item \code{\link{bubbles}} for extracting the bubbles of a splicing graph.
   }
 }
 
