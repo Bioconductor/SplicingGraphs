@@ -321,11 +321,48 @@ setMethod("sgnodes", "ANY",
     function(x, gene_id=NA)
     {
         spath <- spath(x, gene_id=gene_id)
-        c("R", sort(unique(unlist(spath, use.names=FALSE))), "L")
+        sgnodes(spath)
     }
 )
 
-### TODO: Add methods for IntegerList, data.frame, and DataFrame.
+setMethod("sgnodes", "IntegerList",
+    function(x, gene_id=NA)
+    {
+        if (!identical(gene_id, NA))
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is an IntegerList")
+        SSids <- unique(unlist(x, use.names=FALSE))
+        c("R", sort(SSids), "L")
+    }
+)
+
+.get_sgnodes_from_sgedges <- function(sgedges)
+{
+    from <- sgedges[ , "from"]
+    to <- sgedges[ , "to"]
+    SSids <- as.integer(setdiff(c(from, to), c("R", "L")))
+    c("R", sort(SSids), "L")
+}
+
+setMethod("sgnodes", "data.frame",
+    function(x, gene_id=NA)
+    {
+        if (!identical(gene_id, NA))
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is a data.frame")
+        .get_sgnodes_from_sgedges(x)
+    }
+)
+
+setMethod("sgnodes", "DataFrame",
+    function(x, gene_id=NA)
+    {
+        if (!identical(gene_id, NA))
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is a DataFrame")
+        .get_sgnodes_from_sgedges(x)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

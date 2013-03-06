@@ -59,11 +59,7 @@ setOldClass("igraph")
 .make_igraph <- function(d)
 {
     ## Prepare the 'vertices' argument to pass to graph.data.frame().
-    from <- d[ , "from"]
-    to <- d[ , "to"]
-    nodes <- unique(c(from, to))
-    nodes <- sort(as.integer(setdiff(nodes, c("R", "L"))))
-    nodes <- c("R", as.character(nodes), "L")
+    nodes <- sgnodes(d)
     color <- c("gray", rep.int("white", length(nodes)-2L), "gray")
     label.color <- "black"
     vertices <- data.frame(name=nodes, color=color, label.color=label.color)

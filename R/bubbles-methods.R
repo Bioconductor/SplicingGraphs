@@ -1,7 +1,7 @@
 
 .make_spath_matrix_from_spath <- function(spath)
 {
-    nodes <- c("R", sort(unique(unlist(spath))), "L")
+    nodes <- sgnodes(spath)
 }
 
 findBubbles <- function(x, gene_id=NA)

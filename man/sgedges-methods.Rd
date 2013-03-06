@@ -13,6 +13,12 @@
 \alias{sgedges,IntegerList-method}
 \alias{sgedges,data.frame-method}
 
+\alias{sgnodes}
+\alias{sgnodes,ANY-method}
+\alias{sgnodes,IntegerList-method}
+\alias{sgnodes,data.frame-method}
+\alias{sgnodes,DataFrame-method}
+
 \alias{uninformativeSSids}
 \alias{uninformativeSSids,ANY-method}
 \alias{uninformativeSSids,DataFrame-method}
@@ -31,6 +37,8 @@
 
 \usage{
 sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL, keep.dup.edges=FALSE)
+sgnodes(x, gene_id=NA)
+
 sgedges2(x, gene_id=NA)
 
 ## Related utilities:
@@ -90,4 +98,5 @@ sg
 names(sg)
 
 sgedges(sg, gene_id="geneA")
+sgnodes(sg, gene_id="geneA")
 }
