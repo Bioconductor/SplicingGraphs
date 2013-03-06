@@ -310,6 +310,25 @@ setMethod("sgedges", "data.frame",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### sgnodes() accessor
+###
+
+setGeneric("sgnodes", signature="x",
+    function(x, gene_id=NA) standardGeneric("sgnodes")
+)
+
+setMethod("sgnodes", "ANY",
+    function(x, gene_id=NA)
+    {
+        spath <- spath(x, gene_id=gene_id)
+        c("R", sort(unique(unlist(spath, use.names=FALSE))), "L")
+    }
+)
+
+### TODO: Add methods for IntegerList, data.frame, and DataFrame.
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### uninformativeSSids() extractor
 ###
 

@@ -71,6 +71,7 @@ export(
     spath,
     UATXHcount,
     sgedges,
+    sgnodes,
     uninformativeSSids,
 
     ## sgraph-methods.R:
@@ -83,6 +84,7 @@ exportMethods(
     spath,
     UATXHcount,
     sgedges,
+    sgnodes,
     uninformativeSSids,
     sgraph
 )
