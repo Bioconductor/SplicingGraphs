@@ -68,7 +68,7 @@ export(
     SplicingGraphs,
 
     ## sgedges-methods.R:
-    spath,
+    txpaths,
     UATXHcount,
     sgedges,
     sgnodes,
@@ -84,7 +84,7 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     SplicingGraphs,
-    spath,
+    txpaths,
     UATXHcount,
     sgedges,
     sgnodes,

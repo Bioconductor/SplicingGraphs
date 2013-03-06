@@ -6,36 +6,35 @@
 ### Returns a DataFrame with 1 row per bubble and the following cols:
 ### source <character>, sink <character>, left_path <IntegerList>, and
 ### right_path <IntegerList>.
-### Must find at least 1 bubble if 'left_SSids' and 'right_SSids' are not
+### Must find at least 1 bubble if 'left_txpath' and 'right_txpath' are not
 ### identical.
-.find_bubbles_in_tx_pair <- function(left_SSids, right_SSids)
+.find_bubbles_in_tx_pair <- function(left_txpath, right_txpath)
 {
     ans_source <- ans_sink <- character(0)
     ans_left_path <- ans_right_path <- IntegerList()
-    left_len <- length(left_SSids)
-    right_len <- length(right_SSids)
+    left_len <- length(left_txpath)
+    right_len <- length(right_txpath)
     i <- j <- 1L
-    prev_left <- prev_right <- "R"
     in_bubble <- FALSE
     while (i <= left_len + 1L || j <= right_len + 1L) {
         if (i <= left_len) {
-            curr_left <- left_SSids[i]
+            curr_left_SSid <- left_txpath[i]
         } else {
-            curr_left <- .Machine$integer.max
+            curr_left_SSid <- .Machine$integer.max
         }
         if (j <= right_len) {
-            curr_right <- right_SSids[j]
+            curr_right_SSid <- right_txpath[j]
         } else {
-            curr_right <- .Machine$integer.max
+            curr_right_SSid <- .Machine$integer.max
         }
-        if (curr_left == curr_right) {
+        if (curr_left_SSid == curr_right_SSid) {
             if (in_bubble) {
                 ## End of the current bubble.
                 in_bubble <- FALSE
-                if (curr_left == .Machine$integer.max) {
+                if (curr_left_SSid == .Machine$integer.max) {
                     sink <- "L"
                 } else {
-                    sink <- as.character(curr_left)
+                    sink <- as.character(curr_left_SSid)
                 }
                 ans_sink <- c(ans_sink, sink)
                 ans_left_path <- c(ans_left_path,
@@ -43,25 +42,26 @@
                 ans_right_path <- c(ans_right_path,
                                     IntegerList(bubble_right_path))
             }
-            prev_left <- curr_left
             i <- i + 1L
-            prev_right <- curr_right
             j <- j + 1L
             next
         }
         if (!in_bubble) {
             ## Start a new bubble.
             in_bubble <- TRUE
-            ans_source <- c(ans_source, as.character(prev_left))
+            if (i == 1L) {
+                bubble_source <- "R"
+            } else {
+                bubble_source <- as.character(left_txpath[i - 1L])
+            }
+            ans_source <- c(ans_source, bubble_source)
             bubble_left_path <- bubble_right_path <- integer(0)
         }
-        if (curr_left < curr_right) {
-            bubble_left_path <- c(bubble_left_path, curr_left)
-            prev_left <- curr_left
+        if (curr_left_SSid < curr_right_SSid) {
+            bubble_left_path <- c(bubble_left_path, curr_left_SSid)
             i <- i + 1L
         } else {
-            bubble_right_path <- c(bubble_right_path, curr_right)
-            prev_right <- curr_right
+            bubble_right_path <- c(bubble_right_path, curr_right_SSid)
             j <- j + 1L
         }
     }
@@ -71,9 +71,9 @@
               right_path=ans_right_path)
 }
 
-.extract_bubbles_from_spath <- function(spath)
+.extract_bubbles_from_txpaths <- function(txpaths)
 {
-    ntx <- length(spath)
+    ntx <- length(txpaths)
     if (ntx <= 1L) {
         ## No bubbles.
         bubbles <- .find_bubbles_in_tx_pair(integer(0), integer(0))
@@ -81,20 +81,20 @@
                                             right_tx_id=character(0)))
         return(bubbles)
     }
-    tx_id <- names(spath)
+    tx_id <- names(txpaths)
     if (is.null(tx_id))
-        tx_id <- seq_along(spath)
+        tx_id <- seq_along(txpaths)
 
     npairs <- (ntx * (ntx - 1L)) %/% 2L
     all_bubbles <- vector(mode="list", length=npairs)
     z <- 1L
     for (i in 1:(ntx-1L)) {
-        left_SSids <- spath[[i]]
+        left_txpath <- txpaths[[i]]
         left_tx_id <- tx_id[i]
         for (j in (i+1L):ntx) {
-            right_SSids <- spath[[j]]
+            right_txpath <- txpaths[[j]]
             right_tx_id <- tx_id[j]
-            bubbles <- .find_bubbles_in_tx_pair(left_SSids, right_SSids)
+            bubbles <- .find_bubbles_in_tx_pair(left_txpath, right_txpath)
             bubbles <- cbind(bubbles, DataFrame(left_tx_id=left_tx_id,
                                                 right_tx_id=right_tx_id))
             all_bubbles[[z]] <- bubbles
@@ -130,8 +130,8 @@ setGeneric("bubbles", signature="x",
 setMethod("bubbles", "ANY",
     function(x, gene_id=NA)
     {
-        spath <- spath(x, gene_id=gene_id)
-        bubbles(spath)
+        txpaths <- txpaths(x, gene_id=gene_id)
+        bubbles(txpaths)
     }
 )
 
@@ -141,7 +141,7 @@ setMethod("bubbles", "IntegerList",
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        .extract_bubbles_from_spath(x)
+        .extract_bubbles_from_txpaths(x)
     }
 )
 

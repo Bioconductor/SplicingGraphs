@@ -129,18 +129,19 @@ setMethod("show", "SplicingGraphs",
     if (!is.null(tx_id))
         gene_mcols$tx_id <- tx_id
 
-    ## Set spath metadata col.
-    if ("spath" %in% colnames(gene_mcols))
-        stop("'gene' already has metadata column spath")
+    ## Set txpaths metadata col.
+    if ("txpaths" %in% colnames(gene_mcols))
+        stop("'gene' already has metadata column txpaths")
     if (on.minus.strand) {
-        spath <- rbind(SSids$end_SSid, SSids$start_SSid)
+        txpaths <- rbind(SSids$end_SSid, SSids$start_SSid)
     } else {
-        spath <- rbind(SSids$start_SSid, SSids$end_SSid)
+        txpaths <- rbind(SSids$start_SSid, SSids$end_SSid)
     }
-    spath_partitioning <- PartitioningByEnd(end(PartitioningByEnd(gene)) * 2L)
-    names(spath_partitioning) <- tx_id
-    spath <- splitAsList(as.vector(spath), spath_partitioning)
-    gene_mcols$spath <- spath
+    txpaths_partitioning_end <- end(PartitioningByEnd(gene)) * 2L
+    txpaths_partitioning <- PartitioningByEnd(txpaths_partitioning_end)
+    names(txpaths_partitioning) <- tx_id
+    txpaths <- splitAsList(as.vector(txpaths), txpaths_partitioning)
+    gene_mcols$txpaths <- txpaths
 
     mcols(gene) <- gene_mcols
     gene

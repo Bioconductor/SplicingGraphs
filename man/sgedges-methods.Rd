@@ -2,8 +2,8 @@
 
 \alias{sgedges-methods}
 
-\alias{spath}
-\alias{spath,SplicingGraphs-method}
+\alias{txpaths}
+\alias{txpaths,SplicingGraphs-method}
 
 \alias{UATXHcount}
 \alias{UATXHcount,SplicingGraphs-method}
@@ -36,14 +36,15 @@
 }
 
 \usage{
-sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL, keep.dup.edges=FALSE)
+sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
+        keep.dup.edges=FALSE)
 sgnodes(x, gene_id=NA)
 
 sgedges2(x, gene_id=NA)
 
 ## Related utilities:
 
-spath(x, gene_id=NA)
+txpaths(x, gene_id=NA)
 UATXHcount(x, gene_id=NA)
 uninformativeSSids(x, gene_id=NA)
 }
