@@ -259,7 +259,7 @@ package.
 First we load the selected \Rclass{TranscriptDb} object.
 
 <<loadTxdb>>=
-library("TxDb.Mmusculus.UCSC.mm9.knownGene")
+library(TxDb.Mmusculus.UCSC.mm9.knownGene)
 txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
 @
 
@@ -290,45 +290,31 @@ the modified \Rclass{TranscriptDb} object.
 <<loadGenomicFeatures>>=
 library(SplicingGraphs)
 sg <- SplicingGraphs(txdb)
+sg
+@
+
+\Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
+transcript, and each transcript is assigned a name that is the id of the
+gene it belongs to. All the transcripts belonging to the same gene are
+guaranteed to be consecutive elements in \Rcode{sg}:
+
+<<>>=
+head(names(sg))
 @
 
 \end{document}
 
-The \Rfunction{spliceGraphs} function returns the
-collapsed edges with their associated disjoined exons and provides information
-about the underlying splicing mechanisms represented as splicing codes.
-Additionally the object contains mapping of edges to the
-individual bubbles and bubble parts.
-Lets have a look onto the resulting object. The provided
-\Rclass{GrangesList} contains the edge IDs as list names.
-The exons in the \Rclass{Granges} objects are not the original
-exons provided by the \Rclass{TranscriptDb} object, since the gene
-model became modified internally.
-As mentioned in the previous section during the splicing graph 
-construction overlapping exons within a gene get disjoined and
-new exons with new exon ids which differ in
-size compared to the original exons are produced.
+\Rcode{sg} contains information about the underlying splicing mechanisms
+represented as splicing codes. Additionally the object contains mapping
+of edges to the individual bubbles and bubble parts.
 
-The original exon ids associated with the new exon ids
-can be found in the metadata column of the individual list elements
-and is called \Rfunction{exon\_ids}. Each element of the
-column is a \Rclass{CharacterList} containing the original exon ids.
-The new disjoined exon ids can be retrieved
-directly from  the metadata column called \Rfunction{disJ\_exon\_ids}.
+Lets have a look at the resulting object.
+
 As already mentioned in the introduction there is also information
 provided about the splicing events generating the individual
 transcript variants. This information is stored in the metadata slot
 of the \Rclass{GrangesList} object and can be accessed by using the 
 \Rfunction{metadata} function.
-
-Below an example edge of the object returned by the \Rfunction{spliceGraphs}
-function is shown. This edge consist of multiple exons.
-
-\begin{scriptsize}
-<<exbyedges>>=
-sG
-@ 
-\end{scriptsize}
 
 In the code chunk below we access the information about the type of
 splicing events and try to quantify them later on.

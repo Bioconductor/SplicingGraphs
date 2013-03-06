@@ -1,6 +1,6 @@
-\name{sgdf-methods}
+\name{sgedges-methods}
 
-\alias{sgdf-methods}
+\alias{sgedges-methods}
 
 \alias{spath}
 \alias{spath,SplicingGraphs-method}
@@ -8,30 +8,30 @@
 \alias{UATXHcount}
 \alias{UATXHcount,SplicingGraphs-method}
 
-\alias{sgdf}
-\alias{sgdf,ANY-method}
-\alias{sgdf,IntegerList-method}
-\alias{sgdf,data.frame-method}
+\alias{sgedges}
+\alias{sgedges,ANY-method}
+\alias{sgedges,IntegerList-method}
+\alias{sgedges,data.frame-method}
 
 \alias{uninformativeSSids}
 \alias{uninformativeSSids,ANY-method}
 \alias{uninformativeSSids,DataFrame-method}
 
-\alias{sgdf2}
+\alias{sgedges2}
 
 
 \title{
-  Extract a splicing graph as a data frame
+  Extract the edges of a splicing graph
 }
 
 \description{
-  Extract the splicing graph for a given gene from a \link{SplicingGraphs}
-  object and return it as a \link[IRanges]{DataFrame}.
+  Extract the edges of the splicing graph of a given gene from a
+  \link{SplicingGraphs} object and return it as a \link[IRanges]{DataFrame}.
 }
 
 \usage{
-sgdf(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL, keep.dup.edges=FALSE)
-sgdf2(x, gene_id=NA)
+sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL, keep.dup.edges=FALSE)
+sgedges2(x, gene_id=NA)
 
 ## Related utilities:
 
@@ -89,5 +89,5 @@ sg
 ## consecutive elements in 'sg'.
 names(sg)
 
-sgdf(sg, gene_id="geneA")
+sgedges(sg, gene_id="geneA")
 }

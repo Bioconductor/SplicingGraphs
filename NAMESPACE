@@ -39,8 +39,8 @@ exportMethods(
 ###
 
 export(
-    ## sgdf-methods.R:
-    sgdf2,
+    ## sgedges-methods.R:
+    sgedges2,
 
     ## sgraph-methods.R:
     sgraph2,
@@ -67,10 +67,10 @@ export(
     ## SplicingGraphs-class.R:
     SplicingGraphs,
 
-    ## sgdf-methods.R:
+    ## sgedges-methods.R:
     spath,
     UATXHcount,
-    sgdf,
+    sgedges,
     uninformativeSSids,
 
     ## sgraph-methods.R:
@@ -82,7 +82,7 @@ exportMethods(
     SplicingGraphs,
     spath,
     UATXHcount,
-    sgdf,
+    sgedges,
     uninformativeSSids,
     sgraph
 )

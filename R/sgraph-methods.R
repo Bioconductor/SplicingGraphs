@@ -9,23 +9,23 @@ setOldClass("igraph")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .make_igraph_from_sgdf()
+### .make_igraph_from_sgedges()
 ###
 
-### 'sgdf' must be a data.frame as returned by:
-###     sgdf( , keep.dup.edges=TRUE)
+### 'sgedges' must be a data.frame as returned by:
+###     sgedges( , keep.dup.edges=TRUE)
 ### or a DataFrame as returned by:
-###     sgdf( , keep.dup.edges=FALSE)
+###     sgedges( , keep.dup.edges=FALSE)
 ### Valid extra cols are: "label", "label.color", "lty", "color", "width"
 ### and "UATXHcount". They are used to set graphical parameters on the edges.
-.precook_igraph_edges_from_sgdf <- function(sgdf)
+.precook_igraph_edges_from_sgedges <- function(sgedges)
 {
     required_colnames <- c("from", "to", "ex_or_in", "tx_id")
     extra_colnames <- c("label", "label.color", "lty", "color",
                         "width", "UATXHcount")
     extract_colnames <- c(required_colnames,
-                          intersect(extra_colnames, colnames(sgdf)))
-    ans <- sgdf[ , extract_colnames, drop=FALSE]
+                          intersect(extra_colnames, colnames(sgedges)))
+    ans <- sgedges[ , extract_colnames, drop=FALSE]
     ex_or_in <- ans[ , "ex_or_in"]
     ex_or_in_levels <- levels(ex_or_in)
     if (!identical(ex_or_in_levels, EX_OR_IN_LEVELS2)
@@ -83,33 +83,33 @@ setOldClass("igraph")
     g
 }
 
-### 'sgdf0' must be a data.frame as returned by:
-###     sgdf( , keep.dup.edges=TRUE)
-.make_igraph_from_sgdf0 <- function(sgdf0, gene_id=NA,
-                                    tx_id.as.edge.label=FALSE)
+### 'sgedges0' must be a data.frame as returned by:
+###     sgedges( , keep.dup.edges=TRUE)
+.make_igraph_from_sgedges0 <- function(sgedges0, gene_id=NA,
+                                       tx_id.as.edge.label=FALSE)
 {
-    if (!is.data.frame(sgdf0))
-        stop("'sgdf0' must be a data.frame")
+    if (!is.data.frame(sgedges0))
+        stop("'sgedges0' must be a data.frame")
     if (!isTRUEorFALSE(tx_id.as.edge.label))
         stop("'tx_id.as.edge.label' must be TRUE or FALSE")
-    d <- .precook_igraph_edges_from_sgdf(sgdf0)
+    d <- .precook_igraph_edges_from_sgedges(sgedges0)
     if (tx_id.as.edge.label)
         d$label <- d$tx_id
     .make_igraph(d)
 }
 
-### 'sgdf' must be a DataFrame as returned by:
-###     sgdf( , keep.dup.edges=FALSE)
+### 'sgedges' must be a DataFrame as returned by:
+###     sgedges( , keep.dup.edges=FALSE)
 ### or by:
-###     sgdf2( )
-.make_igraph_from_sgdf <- function(sgdf, gene_id=NA,
-                                   tx_id.as.edge.label=FALSE)
+###     sgedges2( )
+.make_igraph_from_sgedges <- function(sgedges, gene_id=NA,
+                                      tx_id.as.edge.label=FALSE)
 {
-    if (!is(sgdf, "DataFrame"))
-        stop("'sgdf' must be a DataFrame")
+    if (!is(sgedges, "DataFrame"))
+        stop("'sgedges' must be a DataFrame")
     if (!isTRUEorFALSE(tx_id.as.edge.label))
         stop("'tx_id.as.edge.label' must be TRUE or FALSE")
-    d <- .precook_igraph_edges_from_sgdf(sgdf)
+    d <- .precook_igraph_edges_from_sgedges(sgedges)
     if (tx_id.as.edge.label)
         d$label <- sapply(d$tx_id, paste, collapse=",")
     d$tx_id <- NULL
@@ -137,9 +137,9 @@ setMethod("sgraph", "ANY",
     function(x, gene_id=NA, keep.dup.edges=FALSE,
              tx_id.as.edge.label=FALSE, as.igraph=FALSE)
     {
-        sgdf <- sgdf(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
-        sgraph(sgdf, tx_id.as.edge.label=tx_id.as.edge.label,
-                     as.igraph=as.igraph)
+        sgedges <- sgedges(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
+        sgraph(sgedges, tx_id.as.edge.label=tx_id.as.edge.label,
+                        as.igraph=as.igraph)
     }
 )
 
@@ -153,7 +153,7 @@ setMethod("sgraph", "data.frame",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a data.frame")
-        igraph <- .make_igraph_from_sgdf0(x,
+        igraph <- .make_igraph_from_sgedges0(x,
                       tx_id.as.edge.label=tx_id.as.edge.label)
         sgraph(igraph, as.igraph=as.igraph)
     }
@@ -169,7 +169,7 @@ setMethod("sgraph", "DataFrame",
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a DataFrame")
-        igraph <- .make_igraph_from_sgdf(x,
+        igraph <- .make_igraph_from_sgedges(x,
                       tx_id.as.edge.label=tx_id.as.edge.label)
         sgraph(igraph, as.igraph=as.igraph)
     }
@@ -209,7 +209,7 @@ setMethod("sgraph", "igraph",
 
 sgraph2 <- function(x, gene_id=NA, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 {
-    sgraph(sgdf2(x, gene_id=gene_id),
+    sgraph(sgedges2(x, gene_id=gene_id),
            tx_id.as.edge.label=tx_id.as.edge.label, as.igraph=as.igraph)
 }
 

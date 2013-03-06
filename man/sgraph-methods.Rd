@@ -72,8 +72,7 @@ slideshow(x)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
-    \item \code{\link{sgdf}} for extracting a splicing graph as a
-          data frame.
+    \item \code{\link{sgedges}} for extracting the edges of a splicing graph.
   }
 }
 

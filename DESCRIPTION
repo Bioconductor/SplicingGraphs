@@ -19,8 +19,9 @@ Suggests: igraph, Gviz,
 	 RUnit
 Collate: utils.R
 	 SplicingGraphs-class.R
-	 sgdf-methods.R
+	 sgedges-methods.R
 	 sgraph-methods.R
+	 bubbles-methods.R
 	 countReads.R
 	 toy_data.R
 biocViews: Genetics, Annotation, HighThroughputSequencing

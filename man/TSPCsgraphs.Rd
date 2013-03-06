@@ -1,6 +1,6 @@
-\name{TSPCsgdfs}
+\name{TSPCsgraphs}
 
-\alias{TSPCsgdfs}
+\alias{TSPCsgraphs}
 \alias{TSPC}
 
 \title{
@@ -15,36 +15,36 @@
 ## 1 splicing graph data frame per gene, except for gene MUC16.
 ## Transcripts T-4 and T-5 in gene MUC16 both have their 2nd exon included
 ## in their 3rd exon ==> splicing graph theory doesn't apply.
-filepaths <- list.files(system.file("extdata", "TSPCsgdfs",
+filepaths <- list.files(system.file("extdata", "TSPCsgraphs",
                                     package="SplicingGraphs"),
                         full.names=TRUE)
 for (filepath in filepaths)
     load(filepath)
 
-dim(BAI1sgdf)
+dim(BAI1sgedges)
 
 ## All the data frames have 1 row per edge in the graph, and the first 4
 ## cols are always "from", "to", "ex_or_in", and "tx_id". Note that there
 ## can be more than 1 transcript associated with a given edge.
-LGSNsgdf[ , 1:4]
+LGSNsgedges[ , 1:4]
 
 ## There is 1 additional column per sample:
-LGSNsgdf[ , 5:8]
+LGSNsgedges[ , 5:8]
 
-## 'KIAA0319Lsgdf' and 'TREM2sgdf' have no additional cols because there
+## 'KIAA0319Lsgedges' and 'TREM2sgedges' have no additional cols because there
 ## was no BAM files for those genes:
-dim(KIAA0319Lsgdf)
-dim(TREM2sgdf)
+dim(KIAA0319Lsgedges)
+dim(TREM2sgedges)
 
 ## Plot the splicing graphs:
 library(Rgraphviz)
-plot(sgraph(BAI1sgdf))
-plot(sgraph(CYB561sgdf))
-plot(sgraph(DAPL1sgdf))
-plot(sgraph(ITGB8sgdf))
-plot(sgraph(KIAA0319Lsgdf))
-plot(sgraph(LGSNsgdf))
-plot(sgraph(MKRN3sgdf))
-plot(sgraph(ST14sgdf))
-plot(sgraph(TREM2sgdf))
+plot(sgraph(BAI1sgedges))
+plot(sgraph(CYB561sgedges))
+plot(sgraph(DAPL1sgedges))
+plot(sgraph(ITGB8sgedges))
+plot(sgraph(KIAA0319Lsgedges))
+plot(sgraph(LGSNsgedges))
+plot(sgraph(MKRN3sgedges))
+plot(sgraph(ST14sgedges))
+plot(sgraph(TREM2sgedges))
 }

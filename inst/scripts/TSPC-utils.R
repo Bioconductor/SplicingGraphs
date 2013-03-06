@@ -27,7 +27,7 @@ loadModels <- function(models_path, check.transcripts=TRUE)
 
 ### It's questionable whether this does the right thing on paired-end reads.
 ### I guess not...
-makeSgdfWithHits <- function(grl, sg)
+makeSgedgesWithHits <- function(grl, sg)
 {
     ov0 <- findOverlaps(grl, sg@tx, ignore.strand=TRUE)
     ovenc0 <- encodeOverlaps(grl, sg@tx, hits=ov0,
@@ -37,10 +37,10 @@ makeSgdfWithHits <- function(grl, sg)
     sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
     in_by_tx <- psetdiff(range(sg@tx), sg@tx)
     in_by_tx <- assignSubfeatureHits(grl, in_by_tx, ov1, ignore.strand=TRUE)
-    sgdf(sg, in_by_tx=in_by_tx)
+    sgedges(sg, in_by_tx=in_by_tx)
 }
 
-makeTSPCsgdf <- function(subdir_path)
+makeTSPCsgedges <- function(subdir_path)
 {
     subdir_basename <- basename(subdir_path)
     filenames <- list.files(subdir_path)
@@ -56,7 +56,7 @@ makeTSPCsgdf <- function(subdir_path)
 
     ## Compute the splicing graph.
     sg <- SplicingGraphs(ex_by_tx)
-    ans <- sgdf(sg)
+    ans <- sgedges(sg)
 
     ## Find the BAM files.
     suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
@@ -101,9 +101,9 @@ makeTSPCsgdf <- function(subdir_path)
                                              param=param0)
             grl <- grglist(galp, order.as.in.query=TRUE)
         }
-        sgdf <- makeSgdfWithHits(grl, sg)
+        sgedges <- makeSgedgesWithHits(grl, sg)
         message("OK")
-        sgdf[ , "nhits"]
+        sgedges[ , "nhits"]
     })
     cbind(ans, DataFrame(nhits))
 }
