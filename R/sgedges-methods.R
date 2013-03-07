@@ -6,6 +6,34 @@
 EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
 EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 
+.get_sgnodes_from_txpaths <- function(txpaths)
+{
+    SSids <- unique(unlist(txpaths, use.names=FALSE))
+    c("R", sort(SSids), "L")
+}
+
+.get_sgnodes_from_sgedges <- function(sgedges)
+{
+    from <- sgedges[ , "from"]
+    to <- sgedges[ , "to"]
+    SSids <- as.integer(setdiff(c(from, to), c("R", "L")))
+    c("R", sort(SSids), "L")
+}
+
+.make_matrix_from_txpaths <- function(txpaths)
+{
+    sgnodes <- .get_sgnodes_from_txpaths(txpaths)
+    ans_nrow <- length(txpaths)
+    ans_ncol <- length(sgnodes)
+    ans_dimnames <- list(names(txpaths), sgnodes)
+    ans <- matrix(FALSE , nrow=ans_nrow, ncol=ans_ncol, dimnames=ans_dimnames)
+    ans[ , 1L] <- ans[ , ans_ncol] <- TRUE
+    i <- cbind(rep.int(seq_along(txpaths), elementLengths(txpaths)),
+               unlist(txpaths, use.names=FALSE) + 1L)
+    ans[i] <- TRUE
+    ans
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### txpaths() accessor
@@ -17,32 +45,35 @@ EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 ###
 
 setGeneric("txpaths", signature="x",
-    function(x, gene_id=NA) standardGeneric("txpaths")
+    function(x, gene_id=NA, as.matrix=FALSE) standardGeneric("txpaths")
 )
 
 ### Should return a CompressedIntegerList.
 setMethod("txpaths", "SplicingGraphs",
-    function(x, gene_id=NA)
+    function(x, gene_id=NA, as.matrix=FALSE)
     {
         if (!isSingleStringOrNA(gene_id))
             stop("'gene_id' must be a single string (or NA)")
+        if (!isTRUEorFALSE(as.matrix))
+            stop("'as.matrix' must be TRUE or FALSE")
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
         ans <- mcols(x@tx)[ , "txpaths"]
-        if (is.null(x_names)) {
-            if (!is.na(gene_id))
-                stop("the 'gene_id' arg is not supported ",
-                     "when 'x' is unnamed (in which case all its elements ",
-                     "(i.e. transcripts) are considered to belong to the ",
-                     "same gene)")
-            return(ans) 
+        if (!is.null(x_names)) {
+            if (is.na(gene_id))
+                stop("'gene_id' must be supplied when 'x' has names")
+            ans <- ans[x_names == gene_id]
+            if (length(ans) == 0L)
+                stop("invalid 'gene_id'")
+        } else if (!is.na(gene_id)) {
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is unnamed (in which case all its elements ",
+                 "(i.e. transcripts) are considered to belong to the ",
+                 "same gene)")
         }
-        if (is.na(gene_id))
-            stop("'gene_id' must be supplied when 'x' has names")
-        ans <- ans[x_names == gene_id]
-        if (length(ans) == 0L)
-            stop("invalid 'gene_id'")
+        if (as.matrix)
+            ans <- .make_matrix_from_txpaths(ans)
         ans
     }
 )
@@ -66,21 +97,20 @@ setMethod("UATXHcount", "SplicingGraphs",
             stop("'x' must be of length >= 1")
         x_names <- names(x)
         ans <- mcols(x@tx)[["UATXHcount"]]
-        if (is.null(x_names)) {
-            if (!is.na(gene_id))
-                stop("the 'gene_id' arg is not supported ",
-                     "when 'x' is unnamed (in which case all its elements ",
-                     "(i.e. transcripts) are considered to belong to the ",
-                     "same gene)")
-            return(ans) 
+        if (!is.null(x_names)) {
+            if (is.na(gene_id))
+                stop("'gene_id' must be supplied when 'x' has names")
+            if (is.null(ans))
+                return(ans)
+            ans <- ans[x_names == gene_id]
+            if (length(ans) == 0L)
+                stop("invalid 'gene_id'")
+        } else if (!is.na(gene_id)) {
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is unnamed (in which case all its elements ",
+                 "(i.e. transcripts) are considered to belong to the ",
+                 "same gene)")
         }
-        if (is.na(gene_id))
-            stop("'gene_id' must be supplied when 'x' has names")
-        if (is.null(ans))
-            return(ans)
-        ans <- ans[x_names == gene_id]
-        if (length(ans) == 0L)
-            stop("invalid 'gene_id'")
         ans
     }
 )
@@ -103,22 +133,19 @@ setMethod(".hits", "GRangesList",
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
         x_names <- names(x)
-        if (is.null(x_names)) {
-            if (!is.na(gene_id))
-                stop("the 'gene_id' arg is not supported ",
-                     "when 'x' is unnamed (in which case all its elements ",
-                     "(i.e. transcripts) are considered to belong to the ",
-                     "same gene)")
-            ans <- mcols(unlist(x, use.names=FALSE))[["hits"]]
-            return(ans) 
+        if (!is.null(x_names)) {
+            if (is.na(gene_id))
+                stop("'gene_id' must be supplied when 'x' has names")
+            x <- x[x_names == gene_id]
+            if (length(x) == 0L)
+                stop("invalid 'gene_id'")
+        } else if (!is.na(gene_id)) {
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is unnamed (in which case all its elements ",
+                 "(i.e. transcripts) are considered to belong to the ",
+                 "same gene)")
         }
-        if (is.na(gene_id))
-            stop("'gene_id' must be supplied when 'x' has names")
-        x <- x[x_names == gene_id]
-        if (length(x) == 0L)
-            stop("invalid 'gene_id'")
-        ans <- mcols(unlist(x, use.names=FALSE))[["hits"]]
-        ans
+        mcols(unlist(x, use.names=FALSE))[["hits"]]
     }
 )
 
@@ -332,18 +359,9 @@ setMethod("sgnodes", "IntegerList",
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        SSids <- unique(unlist(x, use.names=FALSE))
-        c("R", sort(SSids), "L")
+        .get_sgnodes_from_txpaths(x)
     }
 )
-
-.get_sgnodes_from_sgedges <- function(sgedges)
-{
-    from <- sgedges[ , "from"]
-    to <- sgedges[ , "to"]
-    SSids <- as.integer(setdiff(c(from, to), c("R", "L")))
-    c("R", sort(SSids), "L")
-}
 
 setMethod("sgnodes", "data.frame",
     function(x, gene_id=NA)

@@ -44,7 +44,7 @@ sgedges2(x, gene_id=NA)
 
 ## Related utilities:
 
-txpaths(x, gene_id=NA)
+txpaths(x, gene_id=NA, as.matrix=FALSE)
 UATXHcount(x, gene_id=NA)
 uninformativeSSids(x, gene_id=NA)
 }
@@ -63,6 +63,9 @@ uninformativeSSids(x, gene_id=NA)
     TODO
   }
   \item{keep.dup.edges}{
+    TODO
+  }
+  \item{as.matrix}{
     TODO
   }
 }
@@ -100,6 +103,9 @@ sg
 ## consecutive elements in 'sg'.
 names(sg)
 
-sgedges(sg, gene_id="geneA")
-sgnodes(sg, gene_id="geneA")
+sgedges(sg, gene_id="geneC")
+sgnodes(sg, gene_id="geneC")
+
+txpaths(sg, gene_id="geneC")
+txpaths(sg, gene_id="geneC", as.matrix=TRUE)
 }
