@@ -20,7 +20,7 @@ EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
     c("R", sort(SSids), "L")
 }
 
-.make_matrix_from_txpaths <- function(txpaths)
+make_matrix_from_txpaths <- function(txpaths)
 {
     sgnodes <- .get_sgnodes_from_txpaths(txpaths)
     ans_nrow <- length(txpaths)
@@ -73,7 +73,7 @@ setMethod("txpaths", "SplicingGraphs",
                  "same gene)")
         }
         if (as.matrix)
-            ans <- .make_matrix_from_txpaths(ans)
+            ans <- make_matrix_from_txpaths(ans)
         ans
     }
 )
