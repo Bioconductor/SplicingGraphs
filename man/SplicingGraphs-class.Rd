@@ -125,7 +125,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   Pages: S181-S188
 
   Sammeth, M. (2009) 
-  \emph{Complete alternative splicing events are bubbles in splicing graphs}
+  \emph{Complete Alternative Splicing Events Are Bubbles in Splicing Graphs}
   J. Comput. Biol.
   Date: Aug 2009
   Vol: 16

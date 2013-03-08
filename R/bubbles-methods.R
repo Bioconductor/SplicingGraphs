@@ -280,7 +280,8 @@
 
 ### Returns a DataFrame with 1 row per bubble and the following cols:
 ### source <character>, sink <character>, d <integer>, partitions
-### <CharacterList>, paths <CharacterList>, and AScode <character>.
+### <CharacterList>, paths <CharacterList>, AScode <character>, and
+### description <character>.
 #.extract_bubbles_from_txpathmat <- function(txpathmat, outdeg, indeg)
 .extract_bubbles_from_txpathmat <- function(txpathmat)
 {
@@ -329,7 +330,8 @@
               d=ans_d,
               partitions=ans_partitions,
               paths=ans_paths,
-              AScode=ans_AScode)
+              AScode=ans_AScode,
+              description=unname(AScode2desc[ans_AScode]))
 }
 
 

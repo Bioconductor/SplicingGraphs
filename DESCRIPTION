@@ -24,4 +24,5 @@ Collate: utils.R
 	 bubbles-methods.R
 	 countReads.R
 	 toy_data.R
+	 zzz.R
 biocViews: Genetics, Annotation, HighThroughputSequencing
