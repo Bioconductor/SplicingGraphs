@@ -177,7 +177,17 @@
     for (k in (i+1L):(j-1L))
         if (all(txpathmat[ , k] >= txbase))
             return(FALSE)
-    return(TRUE)
+    TRUE
+}
+
+### A fancy alternative to .is_bubble() that tries to avoid the for loop.
+### Surprisingly, it turned out to be slower than .is_bubble() in practise.
+.is_bubble2 <- function(txpathmat, i, j)
+{
+    txbase <- txpathmat[, i] & txpathmat[, j]
+    if (sum(txbase) <= 1L)
+        return(FALSE)
+    all(colSums(txpathmat[ , (i+1L):(j-1L), drop=FALSE] < txbase) >= 1)
 }
 
 ### Assumes 'm' to be a logical matrix. Not checked.
@@ -271,15 +281,21 @@
 ### Returns a DataFrame with 1 row per bubble and the following cols:
 ### source <character>, sink <character>, d <integer>, partitions
 ### <CharacterList>, paths <CharacterList>, and AScode <character>.
+#.extract_bubbles_from_txpathmat <- function(txpathmat, outdeg, indeg)
 .extract_bubbles_from_txpathmat <- function(txpathmat)
 {
     sgnodetypes <- .get_sgnodetypes_from_txpathmat(txpathmat)
     ans_source <- ans_sink <- ans_AScode <- character(0)
     ans_d <- integer(0)
     ans_partitions <- ans_paths <- CharacterList()
+    ## Surprisingly, the outdeg/indeg trick turned out to not make any
+    ## noticeable speed difference in practise.
+    #ii0 <- which(outdeg >= 2L)
+    #jj0 <- which(indeg >= 2L)
+    #for (i in ii0) {
+    #    jj <- jj0[jj0 >= i + 2L]
+    #    for (j in jj) {
     ncol <- ncol(txpathmat)
-    ## TODO: Walk on informative nodes only (this should result in a
-    ## significant speedup).
     for (i in 1:(ncol-2L)) {
         for (j in (i+2L):ncol) {
             if (!.is_bubble(txpathmat, i, j))
@@ -339,8 +355,10 @@ setMethod("bubbles", "IntegerList",
         if (!identical(gene_id, NA))
             stop("the 'gene_id' arg is not supported ",
                  "when 'x' is an IntegerList")
-        #.extract_ASevents2_from_txpaths(x)
         txpathmat <- make_matrix_from_txpaths(x)
+        #outdeg <- outdeg(x)
+        #indeg <- indeg(x)
+        #.extract_bubbles_from_txpathmat(txpathmat, outdeg, indeg)
         .extract_bubbles_from_txpathmat(txpathmat)
     }
 )
