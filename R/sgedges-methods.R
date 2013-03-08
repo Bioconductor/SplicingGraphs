@@ -385,7 +385,75 @@ setMethod("sgnodes", "DataFrame",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### outdeg() and indeg() extractors
+###
+
+setGeneric("outdeg", signature="x",
+    function(x, gene_id=NA) standardGeneric("outdeg")
+)
+
+setMethod("outdeg", "ANY",
+    function(x, gene_id=NA)
+    {
+        sgedges <- sgedges(x, gene_id=gene_id)
+        outdeg(sgedges)
+    }
+)
+
+setMethod("outdeg", "DataFrame",
+    function(x, gene_id=NA)
+    {
+        if (!identical(gene_id, NA))
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is a DataFrame")
+        sgnodes <- sgnodes(x)
+        ans <- countMatches(sgnodes, x[ , "from"])
+        names(ans) <- sgnodes
+        ans
+    }
+)
+
+setGeneric("indeg", signature="x",
+    function(x, gene_id=NA) standardGeneric("indeg")
+)
+
+setMethod("indeg", "ANY",
+    function(x, gene_id=NA)
+    {
+        sgedges <- sgedges(x, gene_id=gene_id)
+        indeg(sgedges)
+    }
+)
+
+setMethod("indeg", "DataFrame",
+    function(x, gene_id=NA)
+    {
+        if (!identical(gene_id, NA))
+            stop("the 'gene_id' arg is not supported ",
+                 "when 'x' is a DataFrame")
+        sgnodes <- sgnodes(x)
+        ans <- countMatches(sgnodes, x[ , "to"])
+        names(ans) <- sgnodes
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### uninformativeSSids() extractor
+###
+### Uninformative splicing sites are nodes in the splicing graph for which 
+### outdeg and indeg are 1. A straightforward implementation of
+### uninformativeSSids() would be:
+###
+###   uninformativeSSids <- function(x, gene_id=NA)
+###   {
+###       is_uninfo <- outdeg(sg, gene_id=gene_id) == 1L &
+###                    indeg(sg, gene_id=gene_id) == 1L
+###       names(is_uninfo)[is_uninfo]
+###   }
+###
+### but the implementation below is about 2x faster.
 ###
 
 setGeneric("uninformativeSSids", signature="x",

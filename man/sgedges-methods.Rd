@@ -19,6 +19,14 @@
 \alias{sgnodes,data.frame-method}
 \alias{sgnodes,DataFrame-method}
 
+\alias{outdeg}
+\alias{outdeg,ANY-method}
+\alias{outdeg,DataFrame-method}
+
+\alias{indeg}
+\alias{indeg,ANY-method}
+\alias{indeg,DataFrame-method}
+
 \alias{uninformativeSSids}
 \alias{uninformativeSSids,ANY-method}
 \alias{uninformativeSSids,DataFrame-method}
@@ -39,6 +47,8 @@
 sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
         keep.dup.edges=FALSE)
 sgnodes(x, gene_id=NA)
+outdeg(x, gene_id=NA)
+indeg(x, gene_id=NA)
 
 sgedges2(x, gene_id=NA)
 
@@ -103,9 +113,11 @@ sg
 ## consecutive elements in 'sg'.
 names(sg)
 
-sgedges(sg, gene_id="geneC")
-sgnodes(sg, gene_id="geneC")
+sgedges(sg, gene_id="geneD")
+sgnodes(sg, gene_id="geneD")
+outdeg(sg, gene_id="geneD")
+indeg(sg, gene_id="geneD")
 
-txpaths(sg, gene_id="geneC")
-txpaths(sg, gene_id="geneC", as.matrix=TRUE)
+txpaths(sg, gene_id="geneD")
+txpaths(sg, gene_id="geneD", as.matrix=TRUE)
 }

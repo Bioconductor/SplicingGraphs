@@ -72,6 +72,7 @@ export(
     UATXHcount,
     sgedges,
     sgnodes,
+    outdeg, indeg,
     uninformativeSSids,
 
     ## sgraph-methods.R:
@@ -88,6 +89,7 @@ exportMethods(
     UATXHcount,
     sgedges,
     sgnodes,
+    outdeg, indeg,
     uninformativeSSids,
     sgraph,
     bubbles
