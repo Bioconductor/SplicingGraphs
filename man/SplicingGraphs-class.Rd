@@ -23,7 +23,7 @@
 }
 
 \usage{
-SplicingGraphs(x, grouping=NULL, check.introns=TRUE)
+SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 ## Basic accessors:
 
@@ -46,6 +46,12 @@ SplicingGraphs(x, grouping=NULL, check.introns=TRUE)
     An optional object that represents the grouping by gene of the top-level
     elements (i.e. the transcripts) in \code{x}. See Details section
     below.
+  }
+  \item{min.ntx}{
+    TODO
+  }
+  \item{max.ntx}{
+    TODO
   }
   \item{check.introns}{
     TODO

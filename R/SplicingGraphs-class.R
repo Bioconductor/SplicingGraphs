@@ -271,16 +271,46 @@ setMethod("show", "SplicingGraphs",
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
 .make_SplicingGraphs_from_GRangesList <- function(x, grouping=NULL,
+                                                  min.ntx=2, max.ntx=NA,
                                                   check.introns=TRUE)
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
     if (is.null(grouping)) {
+        if (!identical(min.ntx, 2) || !identical(max.ntx, NA))
+            stop("the 'min.ntx' and 'max.ntx' args are not supported ",
+                 "when 'grouping' is not supplied or NULL")
         ans <- .setSplicingGraphInfo(x, check.introns=check.introns)
         names(ans) <- NULL
         return(ans)
     }
+
+    ## Check 'min.ntx'.
+    if (!isSingleNumber(min.ntx))
+        stop("'min.ntx' must be a single number")
+    if (!is.integer(min.ntx))
+        min.ntx <- as.integer(min.ntx)
+    if (min.ntx < 1L)
+        stop("'min.ntx' must be >= 1")
+
+    ## Check 'max.ntx'.
+    if (!isSingleNumberOrNA(max.ntx))
+        stop("'max.ntx' must be a single number or NA")
+    if (!is.integer(max.ntx))
+        max.ntx <- as.integer(max.ntx)
+    if (!is.na(max.ntx) && max.ntx < min.ntx)
+        stop("'max.ntx' must be >= 'min.ntx'")
+
     grouping <- .normargGrouping(grouping, x)
+
+    ## Keep genes with nb of transcripts >= min.ntx and <= max.ntx.
+    grouping_eltlen <- elementLengths(grouping)
+    keep <- grouping_eltlen >= min.ntx
+    if (!is.na(max.ntx))
+        keep <- keep & grouping_eltlen <= max.ntx
+    grouping <- grouping[keep]
+
+    ## Main loop.
     ans <- lapply(seq_along(grouping),
                   function(i) {
                       ii <- grouping[[i]]
@@ -292,6 +322,7 @@ setMethod("show", "SplicingGraphs",
                           return(NULL)
                       gene2
                   })
+
     invalid_genes_idx <- which(sapply(ans, is.null))
     nb_invalid_genes <- length(invalid_genes_idx)
     if (nb_invalid_genes != 0L) {
@@ -311,28 +342,30 @@ setMethod("show", "SplicingGraphs",
 }
 
 setGeneric("SplicingGraphs", signature="x",
-    function(x, grouping=NULL, check.introns=TRUE)
+    function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
         standardGeneric("SplicingGraphs")
 )
 
 setMethod("SplicingGraphs", "GRangesList",
-    function(x, grouping=NULL, check.introns=TRUE)
+    function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
         ans_tx <- .make_SplicingGraphs_from_GRangesList(x,
-                      grouping=grouping, check.introns=check.introns)
+                      grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
+                      check.introns=check.introns)
         new("SplicingGraphs", tx=ans_tx)
     }
 )
 
 setMethod("SplicingGraphs", "TranscriptDb",
-    function(x, grouping=NULL, check.introns=TRUE)
+    function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
         if (!is.null(grouping))
             stop("the 'grouping' arg is not supported ",
                  "when 'x' is a TranscriptDb object")
         ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)
         tx_by_gn <- transcriptsBy(x, by="gene")
-        SplicingGraphs(ex_by_tx, tx_by_gn, check.introns=check.introns)
+        SplicingGraphs(ex_by_tx, tx_by_gn, min.ntx=min.ntx, max.ntx=max.ntx,
+                       check.introns=check.introns)
     }
 )
 
