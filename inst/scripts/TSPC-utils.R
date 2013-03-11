@@ -29,13 +29,15 @@ loadModels <- function(models_path, check.transcripts=TRUE)
 ### I guess not...
 makeSgedgesWithHits <- function(grl, sg)
 {
-    ov0 <- findOverlaps(grl, sg@tx, ignore.strand=TRUE)
-    ovenc0 <- encodeOverlaps(grl, sg@tx, hits=ov0,
+    unlisted_sg <- unlist(sg)
+    ov0 <- findOverlaps(grl, unlisted_sg, ignore.strand=TRUE)
+    ovenc0 <- encodeOverlaps(grl, unlisted_sg, hits=ov0,
                              flip.query.if.wrong.strand=TRUE)
     ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
     ov1 <- ov0[ov0_is_comp]
-    sg@tx <- assignSubfeatureHits(grl, sg@tx, ov1, ignore.strand=TRUE)
-    in_by_tx <- psetdiff(range(sg@tx), sg@tx)
+    sg@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
+                                                 ignore.strand=TRUE))
+    in_by_tx <- psetdiff(range(unlisted_sg), unlisted_sg)
     in_by_tx <- assignSubfeatureHits(grl, in_by_tx, ov1, ignore.strand=TRUE)
     sgedges(sg, in_by_tx=in_by_tx)
 }

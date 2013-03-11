@@ -107,10 +107,7 @@ uninformativeSSids(x, gene_id=NA)
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
 sg
 
-## 'sg' has 1 element per transcript, and each transcript is
-## assigned a name that is the id of the gene it belongs to. All the
-## transcripts belonging to the same gene are guaranteed to be
-## consecutive elements in 'sg'.
+## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
 
 sgedges(sg, gene_id="geneD")
@@ -119,5 +116,5 @@ outdeg(sg, gene_id="geneD")
 indeg(sg, gene_id="geneD")
 
 txpaths(sg, gene_id="geneD")
-txpaths(sg, gene_id="geneD", as.matrix=TRUE)
+txpaths(sg, gene_id="geneD", as.matrix=TRUE)  # splicing matrix
 }

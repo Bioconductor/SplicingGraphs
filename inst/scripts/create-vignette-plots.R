@@ -51,7 +51,7 @@ library(Gviz)
 # Plotting to the PDF device produces an incomplete plot (ax_track is missing)!
 # Looks like a bug in Gviz.
 ax_track <- GenomeAxisTrack()
-grl <- sg@tx[names(sg@tx) == "117286"]
+grl <- sg[["117286"]]
 ### We create 1 track per transcript.
 tx_tracks <- lapply(seq_along(grl),
                     function(i) {
@@ -85,7 +85,7 @@ library(Gviz)
 # Plotting to the PDF device produces an incomplete plot (ax_track is missing)!
 # Looks like a bug in Gviz.
 ax_track <- GenomeAxisTrack()
-grl <- sg@tx[names(sg@tx) == "126017"]
+grl <- sg[["126017"]]
 ### We create 1 track per transcript.
 tx_tracks <- lapply(seq_along(grl),
                     function(i) {

@@ -25,12 +25,7 @@ exportClasses(SplicingGraphs)
 ###
 
 exportMethods(
-    length,
-    names,
-    elementLengths,
-    plot,
-    findOverlaps,
-    encodeOverlaps
+    plot
 )
 
 

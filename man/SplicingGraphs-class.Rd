@@ -7,9 +7,6 @@
 \alias{SplicingGraphs,GRangesList-method}
 \alias{SplicingGraphs,TranscriptDb-method}
 
-\alias{length,SplicingGraphs-method}
-\alias{names,SplicingGraphs-method}
-\alias{elementLengths,SplicingGraphs-method}
 \alias{show,SplicingGraphs-method}
 
 
@@ -24,23 +21,13 @@
 
 \usage{
 SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
-
-## Basic accessors:
-
-\S4method{length}{SplicingGraphs}(x)
-\S4method{names}{SplicingGraphs}(x)
-\S4method{elementLengths}{SplicingGraphs}(x)
 }
 
 \arguments{
   \item{x}{
-    For \code{SplicingGraphs}: A \link[GenomicRanges]{GRangesList} object
-    containing the exons of one or more genes grouped by transcripts.
-    Alternatively, \code{x} can be a \link[GenomicFeatures]{TranscriptDb}
-    object. See Details section below.
-
-    For the \code{length}, \code{names}, and \code{elementLengths} methods
-    for SplicingGraphs objects: A SplicingGraphs object.
+    A \link[GenomicRanges]{GRangesList} object containing the exons of one
+    or more genes grouped by transcripts. Alternatively, \code{x} can be a
+    \link[GenomicFeatures]{TranscriptDb} object. See Details section below.
   }
   \item{grouping}{
     An optional object that represents the grouping by gene of the top-level
@@ -183,11 +170,16 @@ sg2 <- SplicingGraphs(toy_genes_txdb)
 stopifnot(identical(sg2, sg))
 sg
 
-## 'sg' has 1 element per transcript, and each transcript is
-## assigned a name that is the id of the gene it belongs to. All the
-## transcripts belonging to the same gene are guaranteed to be
-## consecutive elements in 'sg'.
+## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
+
+## The transcripts of a given gene can be extracted as an *unnamed*
+## GRangesList object with [[:
+sg[["geneB"]]
+
+## The transcripts of all the genes can be extracted as a *named*
+## GRangesList object with unlist():
+unlist(sg)
 
 ## ---------------------------------------------------------------------
 ## 3. Extract information from the SplicingGraphs object

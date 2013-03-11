@@ -58,19 +58,17 @@ setMethod("txpaths", "SplicingGraphs",
             stop("'as.matrix' must be TRUE or FALSE")
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
-        x_names <- names(x)
-        ans <- mcols(x@tx)[ , "txpaths"]
-        if (!is.null(x_names)) {
+        unlisted_x <- unlist(x)
+        unlisted_names <- names(unlisted_x)
+        ans <- mcols(unlisted_x)[ , "txpaths"]
+        if (!is.null(unlisted_names)) {
             if (is.na(gene_id))
                 stop("'gene_id' must be supplied when 'x' has names")
-            ans <- ans[x_names == gene_id]
+            ans <- ans[unlisted_names == gene_id]
             if (length(ans) == 0L)
                 stop("invalid 'gene_id'")
         } else if (!is.na(gene_id)) {
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is unnamed (in which case all its elements ",
-                 "(i.e. transcripts) are considered to belong to the ",
-                 "same gene)")
+            stop("the 'gene_id' arg is not supported when 'x' is unnamed")
         }
         if (as.matrix)
             ans <- make_matrix_from_txpaths(ans)
@@ -95,21 +93,19 @@ setMethod("UATXHcount", "SplicingGraphs",
             stop("'gene_id' must be a single string (or NA)")
         if (length(x) == 0L)
             stop("'x' must be of length >= 1")
-        x_names <- names(x)
-        ans <- mcols(x@tx)[["UATXHcount"]]
-        if (!is.null(x_names)) {
+        unlisted_x <- unlist(x)
+        unlisted_names <- names(unlisted_x)
+        ans <- mcols(unlisted_x)[["UATXHcount"]]
+        if (!is.null(unlisted_names)) {
             if (is.na(gene_id))
                 stop("'gene_id' must be supplied when 'x' has names")
             if (is.null(ans))
                 return(ans)
-            ans <- ans[x_names == gene_id]
+            ans <- ans[unlisted_names == gene_id]
             if (length(ans) == 0L)
                 stop("invalid 'gene_id'")
         } else if (!is.na(gene_id)) {
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is unnamed (in which case all its elements ",
-                 "(i.e. transcripts) are considered to belong to the ",
-                 "same gene)")
+            stop("the 'gene_id' arg is not supported when 'x' is unnamed")
         }
         ans
     }
@@ -277,17 +273,19 @@ setMethod("sgedges", "ANY",
         if (!is(x, "SplicingGraphs"))
             stop("'x' must be a SplicingGraphs object ",
                  "when 'in_by_tx' is a GRangesList object")
-        if (length(in_by_tx) != length(x))
-            stop("'in_by_tx' must have the same length as 'x'")
-        if (!identical(elementLengths(in_by_tx) + 1L, elementLengths(x)))
+        unlisted_x <- unlist(x)
+        if (length(in_by_tx) != length(unlisted_x))
+            stop("'in_by_tx' must have the same length as 'unlist(x)'")
+        if (!identical(elementLengths(in_by_tx) + 1L,
+                       elementLengths(unlisted_x)))
             stop("the shape of 'in_by_tx' is not compatible ",
-                 "with the shape of 'x'")
+                 "with the shape of 'unlist(x)'")
         if (!identical(keep.dup.edges, FALSE))
             stop("'keep.dup.edges' must be FALSE when 'in_by_tx' is supplied")
         sgedges0 <- sgedges(txpaths, UATXHcount=UATXHcount,
                                      keep.dup.edges=TRUE)
         ex_or_in <- sgedges0[ , "ex_or_in"]
-        ex_hits <- .hits(x@tx, gene_id=gene_id)
+        ex_hits <- .hits(unlisted_x, gene_id=gene_id)
         if (is.null(ex_hits))
             stop("'x' must have a \"hits\" inner metadata column ",
                  "when 'in_by_tx' is a GRangesList object. May be ",

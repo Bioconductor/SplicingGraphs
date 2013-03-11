@@ -3,26 +3,49 @@
 ### -------------------------------------------------------------------------
 
 
-### We deliberately choose to not extend GRangesList to make SplicingGraphs
-### objects read-only and with a very restricted API (opaque objects).
 setClass("SplicingGraphs",
+    contains="CompressedList",
     representation(
-        tx="GRangesList"
+        unlistData="GRangesList",
+        elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementType="GRangesList"
     )
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Basic accessors.
-###
-### We support only a very small subset of getters from the GRangesList API.
+### Validity.
 ###
 
-setMethod("length", "SplicingGraphs", function(x) length(x@tx))
+.valid.SplicingGraphs.names <- function(x)
+{
+    x_names <- names(x)
+    if (is.null(x_names)) {
+        if (length(x) == 1L)
+            return(NULL)
+        return("'x' must have names")
+    }
+    if (anyDuplicated(x_names))
+        return("'x' has duplicated names")
+    NULL
+}
 
-setMethod("names", "SplicingGraphs", function(x) names(x@tx))
+.valid.SplicingGraphs.unlistData <- function(x)
+{
+    x_unlistData <- x@unlistData
+    if (!is.null(x_unlistData))
+        return("'x@unlistData' must be unnamed")
+    NULL
+}
 
-setMethod("elementLengths", "SplicingGraphs", function(x) elementLengths(x@tx))
+.valid.SplicingGraphs <- function(x)
+{
+    c(.valid.SplicingGraphs.names(x), .valid.SplicingGraphs.unlistData(x))
+}
+
+setValidity2("SplicingGraphs", .valid.SplicingGraphs)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,14 +55,9 @@ setMethod("elementLengths", "SplicingGraphs", function(x) elementLengths(x@tx))
 setMethod("show", "SplicingGraphs",
     function(object)
     {
-        ntx <- length(object)
-        object_names <- names(object)
-        if (is.null(object_names)) {
-            ngenes <- ifelse(ntx == 0L, 0L, 1L)
-        } else {
-            ngenes <- length(unique(object_names))
-        }
-        cat(class(object), " object with ", ngenes, " gene(s) ",
+        ngene <- length(object)
+        ntx <- length(unlist(object, use.names=FALSE))
+        cat(class(object), " object with ", ngene, " gene(s) ",
             "and ", ntx, " transcript(s)\n", sep="")
     }
 )
@@ -270,9 +288,9 @@ setMethod("show", "SplicingGraphs",
 
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
-.make_SplicingGraphs_from_GRangesList <- function(x, grouping=NULL,
-                                                  min.ntx=2, max.ntx=NA,
-                                                  check.introns=TRUE)
+.make_unlisted_SplicingGraphs_from_GRangesList <- function(x, grouping=NULL,
+                                                      min.ntx=2, max.ntx=NA,
+                                                      check.introns=TRUE)
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
@@ -349,10 +367,20 @@ setGeneric("SplicingGraphs", signature="x",
 setMethod("SplicingGraphs", "GRangesList",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
-        ans_tx <- .make_SplicingGraphs_from_GRangesList(x,
-                      grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
-                      check.introns=check.introns)
-        new("SplicingGraphs", tx=ans_tx)
+        ans_unlistData <- .make_unlisted_SplicingGraphs_from_GRangesList(x,
+                            grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
+                            check.introns=check.introns)
+        ans_unlistData_names <- names(ans_unlistData)
+        if (is.null(ans_unlistData_names)) {
+            ans_partitioning <- PartitioningByEnd(length(ans_unlistData))
+        } else {
+            names(ans_unlistData) <- NULL
+            ans_end <- end(Rle(ans_unlistData_names))
+            ans_names <- ans_unlistData_names[ans_end]
+            ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
+        }
+        IRanges:::newCompressedList0("SplicingGraphs",
+                                     ans_unlistData, ans_partitioning)
     }
 )
 

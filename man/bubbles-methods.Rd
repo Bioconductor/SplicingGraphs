@@ -57,10 +57,7 @@ bubbles(x, gene_id=NA)
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
 sg
 
-## 'sg' has 1 element per transcript, and each transcript is
-## assigned a name that is the id of the gene it belongs to. All the
-## transcripts belonging to the same gene are guaranteed to be
-## consecutive elements in 'sg'.
+## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
 
 plot(sgraph(sg, gene_id="geneA", tx_id.as.edge.label=TRUE))
