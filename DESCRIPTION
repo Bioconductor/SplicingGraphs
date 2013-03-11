@@ -8,7 +8,7 @@ Description: This package provides tools for creating splicing graphs based on
 	differential splicing event usage based on genomic count data from
 	RNA-seq experiments. 
 Maintainer: H. Pages <hpages@fhcrc.org>
-Depends: BiocGenerics, IRanges (>= 1.17.31), GenomicRanges,
+Depends: BiocGenerics, IRanges (>= 1.17.37), GenomicRanges,
 	 Rgraphviz (>= 2.3.7), GenomicFeatures (>= 1.11.8), Rsamtools
 Imports: methods, utils, igraph,
 	 BiocGenerics, IRanges, GenomicRanges,

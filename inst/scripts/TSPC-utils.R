@@ -35,8 +35,8 @@ makeSgedgesWithHits <- function(grl, sg)
                              flip.query.if.wrong.strand=TRUE)
     ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
     ov1 <- ov0[ov0_is_comp]
-    sg@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
-                                                 ignore.strand=TRUE))
+    sg@genes@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
+                                                       ignore.strand=TRUE))
     in_by_tx <- psetdiff(range(unlisted_sg), unlisted_sg)
     in_by_tx <- assignSubfeatureHits(grl, in_by_tx, ov1, ignore.strand=TRUE)
     sgedges(sg, in_by_tx=in_by_tx)

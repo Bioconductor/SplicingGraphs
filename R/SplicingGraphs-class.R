@@ -3,7 +3,18 @@
 ### -------------------------------------------------------------------------
 
 
-setClass("SplicingGraphs",
+### A simpler design would be to define only 1 class, the SplicingGraphs
+### class, and to define it the way the .SplicingGraphGenes class below is
+### defined. The problem with this is that the SplicingGraphs class then
+### inherits a very rich API (Vector + List) but many operations (like c()
+### or relist()) are broken, unless we implement specific methods for them.
+### But: (a) that's a lot of work (the API is huge), and (b) we don't need
+### those operations in the first place. All we need are: length(), names(),
+### [, [[, elementLengths(), and unlist(). Hence the 2 class definitions
+### below. The .SplicingGraphGenes class is an internal class that is not
+### intended to be exposed to the user.
+
+setClass(".SplicingGraphGenes",
     contains="CompressedList",
     representation(
         unlistData="GRangesList",
@@ -14,12 +25,24 @@ setClass("SplicingGraphs",
     )
 )
 
+setClass("SplicingGraphs",
+    representation(
+        genes=".SplicingGraphGenes"
+    )
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
+### A valid SplicingGraphs object is an object with a valid genes slot. So
+### it's enough to implement a validity method for .SplicingGraphGenes
+### objects and to validate a SplicingGraphs object 'x' with:
+###
+###   validObject(x, complete=TRUE)
+###
 
-.valid.SplicingGraphs.names <- function(x)
+.valid.SplicingGraphGenes.names <- function(x)
 {
     x_names <- names(x)
     if (is.null(x_names)) {
@@ -32,20 +55,63 @@ setClass("SplicingGraphs",
     NULL
 }
 
-.valid.SplicingGraphs.unlistData <- function(x)
+.valid.SplicingGraphGenes.unlistData <- function(x)
 {
     x_unlistData <- x@unlistData
-    if (!is.null(x_unlistData))
+    if (!is.null(names(x_unlistData)))
         return("'x@unlistData' must be unnamed")
     NULL
 }
 
-.valid.SplicingGraphs <- function(x)
+.valid.SplicingGraphGenes <- function(x)
 {
-    c(.valid.SplicingGraphs.names(x), .valid.SplicingGraphs.unlistData(x))
+    c(.valid.SplicingGraphGenes.names(x),
+      .valid.SplicingGraphGenes.unlistData(x))
 }
 
-setValidity2("SplicingGraphs", .valid.SplicingGraphs)
+setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Restricted SplicingGraphs API.
+###
+
+setMethod("length", "SplicingGraphs", function(x) length(x@genes))
+
+setMethod("names", "SplicingGraphs", function(x) names(x@genes))
+
+setMethod("[", "SplicingGraphs",
+    function(x, i, j, ... , drop=TRUE)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        x@genes <- x@genes[i, drop=drop]
+        x
+    }
+)
+
+setMethod("[[", "SplicingGraphs",
+    function (x, i, j, ...)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        x@genes[[i]]
+
+    }
+)
+
+setMethod("elementLengths", "SplicingGraphs",
+    function(x) elementLengths(x@genes)
+)
+
+setMethod("unlist", "SplicingGraphs",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        unlist(x@genes, recursive=recursive, use.names=use.names)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -288,9 +354,9 @@ setMethod("show", "SplicingGraphs",
 
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
-.make_unlisted_SplicingGraphs_from_GRangesList <- function(x, grouping=NULL,
-                                                      min.ntx=2, max.ntx=NA,
-                                                      check.introns=TRUE)
+.make_unlisted_genes_from_GRangesList <- function(x, grouping=NULL,
+                                                     min.ntx=2, max.ntx=NA,
+                                                     check.introns=TRUE)
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
@@ -359,6 +425,21 @@ setMethod("show", "SplicingGraphs",
     ans
 }
 
+.new_SplicingGraphGenes <- function(unlisted_genes)
+{
+    unlisted_names <- names(unlisted_genes)
+    if (is.null(unlisted_names)) {
+        ans_partitioning <- PartitioningByEnd(length(unlisted_genes))
+    } else {
+        names(unlisted_genes) <- NULL
+        ans_end <- end(Rle(unlisted_names))
+        ans_names <- unlisted_names[ans_end]
+        ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
+    }
+    IRanges:::newCompressedList0(".SplicingGraphGenes",
+                                 unlisted_genes, ans_partitioning)
+}
+
 setGeneric("SplicingGraphs", signature="x",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
         standardGeneric("SplicingGraphs")
@@ -367,20 +448,11 @@ setGeneric("SplicingGraphs", signature="x",
 setMethod("SplicingGraphs", "GRangesList",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
-        ans_unlistData <- .make_unlisted_SplicingGraphs_from_GRangesList(x,
+        unlisted_genes <- .make_unlisted_genes_from_GRangesList(x,
                             grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
                             check.introns=check.introns)
-        ans_unlistData_names <- names(ans_unlistData)
-        if (is.null(ans_unlistData_names)) {
-            ans_partitioning <- PartitioningByEnd(length(ans_unlistData))
-        } else {
-            names(ans_unlistData) <- NULL
-            ans_end <- end(Rle(ans_unlistData_names))
-            ans_names <- ans_unlistData_names[ans_end]
-            ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
-        }
-        IRanges:::newCompressedList0("SplicingGraphs",
-                                     ans_unlistData, ans_partitioning)
+        ans_genes <- .new_SplicingGraphGenes(unlisted_genes)
+        new("SplicingGraphs", genes=ans_genes)
     }
 )
 

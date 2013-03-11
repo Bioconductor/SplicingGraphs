@@ -25,6 +25,12 @@ exportClasses(SplicingGraphs)
 ###
 
 exportMethods(
+    length,
+    names,
+    "[",
+    "[[",
+    elementLengths,
+    unlist,
     plot
 )
 

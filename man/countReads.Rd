@@ -88,7 +88,7 @@ ov1 <- ov0[ov0_is_comp]
 
 ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]
 UATXHcount <- countSubjectHits(ov2)
-mcols(sg@unlistData)$UATXHcount <- UATXHcount
+mcols(sg@genes@unlistData)$UATXHcount <- UATXHcount
 
 names(sg)  # valid gene ids
 plot(sg, "geneA")
@@ -101,8 +101,8 @@ plot(sg, "geneA")
 
 ## Assign compatible hits for each exon:
 unlisted_sg <- unlist(sg)
-sg@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
-                                             ignore.strand=TRUE))
+sg@genes@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
+                                                   ignore.strand=TRUE))
 
 ## Assign compatible hits for each intron:
 in_by_tx <- psetdiff(range(unlisted_sg), unlisted_sg)
