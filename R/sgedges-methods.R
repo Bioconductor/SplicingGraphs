@@ -38,38 +38,25 @@ make_matrix_from_txpaths <- function(txpaths)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### txpaths() accessor
 ###
-### Gets all the splicing paths for the specified gene.
+### Gets the splicing paths.
 ### Returns them in a named IntegerList with 1 top-level element per
 ### transcript in the specified gene. Each top-level element 'txpaths[[i]]'
 ### contains the splicing site ids for the i-th transcript.
 ###
 
 setGeneric("txpaths", signature="x",
-    function(x, gene_id=NA, as.matrix=FALSE) standardGeneric("txpaths")
+    function(x, as.matrix=FALSE) standardGeneric("txpaths")
 )
 
 ### Should return a CompressedIntegerList.
 setMethod("txpaths", "SplicingGraphs",
-    function(x, gene_id=NA, as.matrix=FALSE)
+    function(x, as.matrix=FALSE)
     {
-        if (!isSingleStringOrNA(gene_id))
-            stop("'gene_id' must be a single string (or NA)")
         if (!isTRUEorFALSE(as.matrix))
             stop("'as.matrix' must be TRUE or FALSE")
-        if (length(x) == 0L)
-            stop("'x' must be of length >= 1")
-        unlisted_x <- unlist(x)
-        unlisted_names <- names(unlisted_x)
-        ans <- mcols(unlisted_x)[ , "txpaths"]
-        if (!is.null(unlisted_names)) {
-            if (is.na(gene_id))
-                stop("'gene_id' must be supplied when 'x' has names")
-            ans <- ans[unlisted_names == gene_id]
-            if (length(ans) == 0L)
-                stop("invalid 'gene_id'")
-        } else if (!is.na(gene_id)) {
-            stop("the 'gene_id' arg is not supported when 'x' is unnamed")
-        }
+        if (length(x) != 1L)
+            stop("'x' must be of length 1")
+        ans <- mcols(unlist(x, use.names=FALSE))[ , "txpaths"]
         if (as.matrix)
             ans <- make_matrix_from_txpaths(ans)
         ans
@@ -82,66 +69,16 @@ setMethod("txpaths", "SplicingGraphs",
 ###
 
 setGeneric("UATXHcount", signature="x",
-    function(x, gene_id=NA) standardGeneric("UATXHcount")
+    function(x) standardGeneric("UATXHcount")
 )
 
 ### Should return an integer vector or a NULL.
 setMethod("UATXHcount", "SplicingGraphs",
-    function(x, gene_id=NA)
+    function(x)
     {
-        if (!isSingleStringOrNA(gene_id))
-            stop("'gene_id' must be a single string (or NA)")
-        if (length(x) == 0L)
-            stop("'x' must be of length >= 1")
-        unlisted_x <- unlist(x)
-        unlisted_names <- names(unlisted_x)
-        ans <- mcols(unlisted_x)[["UATXHcount"]]
-        if (!is.null(unlisted_names)) {
-            if (is.na(gene_id))
-                stop("'gene_id' must be supplied when 'x' has names")
-            if (is.null(ans))
-                return(ans)
-            ans <- ans[unlisted_names == gene_id]
-            if (length(ans) == 0L)
-                stop("invalid 'gene_id'")
-        } else if (!is.na(gene_id)) {
-            stop("the 'gene_id' arg is not supported when 'x' is unnamed")
-        }
-        ans
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .hits() accessor (not exported)
-###
-
-setGeneric(".hits", signature="x",
-    function(x, gene_id=NA) standardGeneric(".hits")
-)
-
-### Should return a CompressedCharacterList or a NULL.
-setMethod(".hits", "GRangesList",
-    function(x, gene_id=NA)
-    {
-        if (!isSingleStringOrNA(gene_id))
-            stop("'gene_id' must be a single string (or NA)")
-        if (length(x) == 0L)
-            stop("'x' must be of length >= 1")
-        x_names <- names(x)
-        if (!is.null(x_names)) {
-            if (is.na(gene_id))
-                stop("'gene_id' must be supplied when 'x' has names")
-            x <- x[x_names == gene_id]
-            if (length(x) == 0L)
-                stop("invalid 'gene_id'")
-        } else if (!is.na(gene_id)) {
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is unnamed (in which case all its elements ",
-                 "(i.e. transcripts) are considered to belong to the ",
-                 "same gene)")
-        }
-        mcols(unlist(x, use.names=FALSE))[["hits"]]
+        if (length(x) != 1L)
+            stop("'x' must be of length 1")
+        mcols(unlist(x, use.names=FALSE))[["UATXHcount"]]
     }
 )
 
@@ -253,78 +190,44 @@ setMethod(".hits", "GRangesList",
 }
 
 setGeneric("sgedges", signature="x",
-    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
-             keep.dup.edges=FALSE)
+    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
         standardGeneric("sgedges")
 )
 
-setMethod("sgedges", "ANY",
-    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
-             keep.dup.edges=FALSE)
+setMethod("sgedges", "SplicingGraphs",
+    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
-        txpaths <- txpaths(x, gene_id=gene_id)
+        if (!isTRUEorFALSE(keep.dup.edges))
+            stop("'keep.dup.edges' must be TRUE or FALSE")
+        txpaths <- txpaths(x)
         if (is.null(UATXHcount))
-            UATXHcount <- UATXHcount(x, gene_id=gene_id)
-        if (is.null(in_by_tx))
+            UATXHcount <- UATXHcount(x)
+        if (keep.dup.edges)
             return(sgedges(txpaths, UATXHcount=UATXHcount,
                                     keep.dup.edges=keep.dup.edges))
-        if (!is(in_by_tx, "GRangesList"))
-            stop("'in_by_tx' must be NULL or a GRangesList object")
-        if (!is(x, "SplicingGraphs"))
-            stop("'x' must be a SplicingGraphs object ",
-                 "when 'in_by_tx' is a GRangesList object")
-        unlisted_x <- unlist(x)
-        if (length(in_by_tx) != length(unlisted_x))
-            stop("'in_by_tx' must have the same length as 'unlist(x)'")
-        if (!identical(elementLengths(in_by_tx) + 1L,
-                       elementLengths(unlisted_x)))
-            stop("the shape of 'in_by_tx' is not compatible ",
-                 "with the shape of 'unlist(x)'")
-        if (!identical(keep.dup.edges, FALSE))
-            stop("'keep.dup.edges' must be FALSE when 'in_by_tx' is supplied")
+        ex_by_tx <- unlist(x)
+        in_by_tx <- x@in_by_tx
         sgedges0 <- sgedges(txpaths, UATXHcount=UATXHcount,
                                      keep.dup.edges=TRUE)
-        ex_or_in <- sgedges0[ , "ex_or_in"]
-        ex_hits <- .hits(unlisted_x, gene_id=gene_id)
-        if (is.null(ex_hits))
-            stop("'x' must have a \"hits\" inner metadata column ",
-                 "when 'in_by_tx' is a GRangesList object. May be ",
-                 "you forgot to pass it thru assignSubfeatureHits()?")
-        in_hits <- .hits(in_by_tx, gene_id=gene_id)
-        if (is.null(in_hits))
-            stop("'in_by_tx' has no \"hits\" inner metadata column. May be ",
-                 "you forgot to pass it thru assignSubfeatureHits()?")
+        ex_hits <- mcols(unlist(ex_by_tx, use.names=FALSE))[["hits"]]
+        in_hits <- mcols(unlist(in_by_tx, use.names=FALSE))[["hits"]]
         .make_sgedges_from_sgedges0(sgedges0, ex_hits=ex_hits, in_hits=in_hits)
     }
 )
 
 setMethod("sgedges", "IntegerList",
-    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
-             keep.dup.edges=FALSE)
+    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is an IntegerList")
-        if (!is.null(in_by_tx))
-            stop("the 'in_by_tx' arg is not supported ",
-                 "when 'x' is an IntegerList")
         sgedges0 <- .make_sgedges0_from_txpaths(x, UATXHcount=UATXHcount)
         sgedges(sgedges0, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("sgedges", "data.frame",
-    function(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
-             keep.dup.edges=FALSE)
+    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a data.frame")
         if (!is.null(UATXHcount))
             stop("the 'UATXHcount' arg is not supported ",
-                 "when 'x' is a data.frame")
-        if (!is.null(in_by_tx))
-            stop("the 'in_by_tx' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
@@ -340,45 +243,27 @@ setMethod("sgedges", "data.frame",
 ###
 
 setGeneric("sgnodes", signature="x",
-    function(x, gene_id=NA) standardGeneric("sgnodes")
+    function(x) standardGeneric("sgnodes")
 )
 
 setMethod("sgnodes", "ANY",
-    function(x, gene_id=NA)
+    function(x)
     {
-        txpaths <- txpaths(x, gene_id=gene_id)
+        txpaths <- txpaths(x)
         sgnodes(txpaths)
     }
 )
 
 setMethod("sgnodes", "IntegerList",
-    function(x, gene_id=NA)
-    {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is an IntegerList")
-        .get_sgnodes_from_txpaths(x)
-    }
+    function(x) .get_sgnodes_from_txpaths(x)
 )
 
 setMethod("sgnodes", "data.frame",
-    function(x, gene_id=NA)
-    {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a data.frame")
-        .get_sgnodes_from_sgedges(x)
-    }
+    function(x) .get_sgnodes_from_sgedges(x)
 )
 
 setMethod("sgnodes", "DataFrame",
-    function(x, gene_id=NA)
-    {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a DataFrame")
-        .get_sgnodes_from_sgedges(x)
-    }
+    function(x) .get_sgnodes_from_sgedges(x)
 )
 
 
@@ -387,23 +272,20 @@ setMethod("sgnodes", "DataFrame",
 ###
 
 setGeneric("outdeg", signature="x",
-    function(x, gene_id=NA) standardGeneric("outdeg")
+    function(x) standardGeneric("outdeg")
 )
 
 setMethod("outdeg", "ANY",
-    function(x, gene_id=NA)
+    function(x)
     {
-        sgedges <- sgedges(x, gene_id=gene_id)
+        sgedges <- sgedges(x)
         outdeg(sgedges)
     }
 )
 
 setMethod("outdeg", "DataFrame",
-    function(x, gene_id=NA)
+    function(x)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a DataFrame")
         sgnodes <- sgnodes(x)
         ans <- countMatches(sgnodes, x[ , "from"])
         names(ans) <- sgnodes
@@ -412,23 +294,20 @@ setMethod("outdeg", "DataFrame",
 )
 
 setGeneric("indeg", signature="x",
-    function(x, gene_id=NA) standardGeneric("indeg")
+    function(x) standardGeneric("indeg")
 )
 
 setMethod("indeg", "ANY",
-    function(x, gene_id=NA)
+    function(x)
     {
-        sgedges <- sgedges(x, gene_id=gene_id)
+        sgedges <- sgedges(x)
         indeg(sgedges)
     }
 )
 
 setMethod("indeg", "DataFrame",
-    function(x, gene_id=NA)
+    function(x)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a DataFrame")
         sgnodes <- sgnodes(x)
         ans <- countMatches(sgnodes, x[ , "to"])
         names(ans) <- sgnodes
@@ -444,10 +323,9 @@ setMethod("indeg", "DataFrame",
 ### outdeg and indeg are 1. A straightforward implementation of
 ### uninformativeSSids() would be:
 ###
-###   uninformativeSSids <- function(x, gene_id=NA)
+###   uninformativeSSids <- function(x)
 ###   {
-###       is_uninfo <- outdeg(sg, gene_id=gene_id) == 1L &
-###                    indeg(sg, gene_id=gene_id) == 1L
+###       is_uninfo <- outdeg(sg) == 1L & indeg(sg) == 1L
 ###       names(is_uninfo)[is_uninfo]
 ###   }
 ###
@@ -455,23 +333,20 @@ setMethod("indeg", "DataFrame",
 ###
 
 setGeneric("uninformativeSSids", signature="x",
-    function(x, gene_id=NA) standardGeneric("uninformativeSSids")
+    function(x) standardGeneric("uninformativeSSids")
 )
 
 setMethod("uninformativeSSids", "ANY",
-    function(x, gene_id=NA)
+    function(x)
     {
-        x <- sgedges(x, gene_id=gene_id)
-        uninformativeSSids(x)
+        sgedges <- sgedges(x)
+        uninformativeSSids(sgedges)
     }
 )
 
 setMethod("uninformativeSSids", "DataFrame",
-    function(x, gene_id=NA)
+    function(x)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a DataFrame")
         from <- x[ , "from"]
         to <- x[ , "to"]
         from1_SSids <- setdiff(from, from[duplicated(from)])
@@ -533,10 +408,10 @@ setMethod("uninformativeSSids", "DataFrame",
     DataFrame(from=from, to=to, ex_or_in=ex_or_in, tx_id=tx_id)
 }
 
-sgedges2 <- function(x, gene_id=NA)
+sgedges2 <- function(x)
 {
     if (!is(x, "DataFrame"))
-        x <- sgedges(x, gene_id=gene_id)
+        x <- sgedges(x)
     .remove_uninformative_SSids(x)
 }
 

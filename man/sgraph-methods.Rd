@@ -24,22 +24,17 @@
 }
 
 \usage{
-sgraph(x, gene_id=NA, keep.dup.edges=FALSE,
-       tx_id.as.edge.label=FALSE, as.igraph=FALSE)
-sgraph2(x, gene_id=NA,
-        tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+sgraph(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+sgraph2(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 
 ## PLotting:
 
-\S4method{plot}{SplicingGraphs,ANY}(x, y, gene_id=NA)
+\S4method{plot}{SplicingGraphs,ANY}(x, y)
 slideshow(x)
 }
 
 \arguments{
   \item{x}{
-    TODO
-  }
-  \item{gene_id}{
     TODO
   }
   \item{keep.dup.edges}{
@@ -86,15 +81,18 @@ sg
 ## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
 
-sgA <- sgraph(sg, gene_id="geneA", tx_id.as.edge.label=TRUE)
+sg["geneA"]
+
+graphA <- sgraph(sg["geneA"], tx_id.as.edge.label=TRUE)
 
 if (interactive()) {
   ## Edges are labeled with the transcript ids (or names), in blue.
   ## The orange arrows are edges corresponding to exons:
-  plot(sgA)
+  plot(graphA)
 
-  ## Note that plot() works directly on the SplicingGraphs object 'sg':
-  plot(sg, "geneB")
+  ## Note that plot() works directly on a SplicingGraphs object of
+  ## length 1:
+  plot(sg["geneB"])
 
   ## Slideshow of the graphs:
   slideshow(sg)

@@ -340,23 +340,20 @@
 ###
 
 setGeneric("bubbles", signature="x",
-    function(x, gene_id=NA) standardGeneric("bubbles")
+    function(x) standardGeneric("bubbles")
 )
 
 setMethod("bubbles", "ANY",
-    function(x, gene_id=NA)
+    function(x)
     {
-        txpaths <- txpaths(x, gene_id=gene_id)
+        txpaths <- txpaths(x)
         bubbles(txpaths)
     }
 )
 
 setMethod("bubbles", "IntegerList",
-    function(x, gene_id=NA)
+    function(x)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is an IntegerList")
         txpathmat <- make_matrix_from_txpaths(x)
         #outdeg <- outdeg(x)
         #indeg <- indeg(x)

@@ -23,14 +23,14 @@ sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
 ### Slideshow of the graphs.
 slideshow(sg)
 
-#sgraph(sg, gene_id="100507433")
-#sgraph(sg, gene_id="10362")  # gene official symbol: HMG20B
-#sgraph(sg, gene_id="11202")  # gene official symbol: KLK8 (REVIEWED)
-#sgraph(sg, gene_id="112724")  # gene official symbol: RDH13 (REVIEWED)
-#sgraph(sg, gene_id="1153")  # gene official symbol: CIRBP
-#sgraph(sg, gene_id="126259")  # gene official symbol: TMIGD2
-#sgraph(sg, gene_id="147650")  # gene official symbol: LINC00085
-#sgraph(sg, gene_id="147965")  # gene official symbol: FAM98C
+#sgraph(sg["100507433"])
+#sgraph(sg["10362"])  # gene official symbol: HMG20B
+#sgraph(sg["11202"])  # gene official symbol: KLK8 (REVIEWED)
+#sgraph(sg["112724"])  # gene official symbol: RDH13 (REVIEWED)
+#sgraph(sg["1153"])  # gene official symbol: CIRBP
+#sgraph(sg["126259"])  # gene official symbol: TMIGD2
+#sgraph(sg["147650"])  # gene official symbol: LINC00085
+#sgraph(sg["147965"])  # gene official symbol: FAM98C
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,11 +40,11 @@ slideshow(sg)
 ###
 
 pdf("CIB3-sg.pdf", width=2, height=6)
-plot(sgraph(sg, gene_id="117286"))
+plot(sgraph(sg["117286"]))
 dev.off()
 
 pdf("CIB3-sg2.pdf", width=2.5, height=6)
-plot(sgraph2(sg, gene_id="117286"))
+plot(sgraph2(sg["117286"])
 dev.off()
 
 library(Gviz)
@@ -74,11 +74,11 @@ dev.off()
 ### Gene landing page at NCBI: http://www.ncbi.nlm.nih.gov/gene/?term=126017
 
 pdf("ZNF813-sg.pdf", width=4, height=6)
-plot(sgraph(sg, gene_id="126017"))
+plot(sgraph(sg["126017"]))
 dev.off()
 
 pdf("ZNF813-sg2.pdf", width=5, height=6)
-plot(sgraph2(sg, gene_id="126017"))
+plot(sgraph2(sg["126017"]))
 dev.off()
 
 library(Gviz)

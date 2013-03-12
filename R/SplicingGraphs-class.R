@@ -27,7 +27,8 @@ setClass(".SplicingGraphGenes",
 
 setClass("SplicingGraphs",
     representation(
-        genes=".SplicingGraphGenes"
+        genes=".SplicingGraphGenes",
+        in_by_tx="GRangesList"
     )
 )
 
@@ -35,9 +36,7 @@ setClass("SplicingGraphs",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
-### A valid SplicingGraphs object is an object with a valid genes slot. So
-### it's enough to implement a validity method for .SplicingGraphGenes
-### objects and to validate a SplicingGraphs object 'x' with:
+### A SplicingGraphs object 'x' should be validated with:
 ###
 ###   validObject(x, complete=TRUE)
 ###
@@ -71,6 +70,28 @@ setClass("SplicingGraphs",
 
 setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
 
+.valid.SplicingGraphs.in_by_tx <- function(x)
+{
+    x_in_by_tx <- x@in_by_tx
+    unlisted_x <- unlist(x)
+    if (length(x_in_by_tx) != length(unlisted_x))
+        return("'x@in_by_tx' must have the same length as 'unlist(x)'")
+    if (!identical(elementLengths(x_in_by_tx) + 1L,
+                   elementLengths(unlisted_x))) {
+        msg <- c("the shape of 'x@in_by_tx' is not compatible ",
+                 "with the shape of 'unlist(x)'")     
+        return(paste0(msg, collapse=""))
+    }
+    NULL
+}
+
+.valid.SplicingGraphs <- function(x)
+{
+    c(.valid.SplicingGraphs.in_by_tx(x))
+}
+
+setValidity2("SplicingGraphs", .valid.SplicingGraphs)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Restricted SplicingGraphs API.
@@ -87,7 +108,10 @@ setMethod("[", "SplicingGraphs",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (is.null(names(x)))
+            stop("subsetting a SplicingGraphs with no names is not supported")
         x@genes <- x@genes[i, drop=drop]
+        x@in_by_tx <- x@in_by_tx[names(x@in_by_tx) %in% names(x)]
         x
     }
 )
@@ -452,7 +476,8 @@ setMethod("SplicingGraphs", "GRangesList",
                             grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
                             check.introns=check.introns)
         ans_genes <- .new_SplicingGraphGenes(unlisted_genes)
-        new("SplicingGraphs", genes=ans_genes)
+        ans_in_by_tx <- psetdiff(range(unlisted_genes), unlisted_genes)
+        new("SplicingGraphs", genes=ans_genes, in_by_tx=ans_in_by_tx)
     }
 )
 

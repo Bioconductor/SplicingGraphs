@@ -9,7 +9,7 @@
 \alias{UATXHcount,SplicingGraphs-method}
 
 \alias{sgedges}
-\alias{sgedges,ANY-method}
+\alias{sgedges,SplicingGraphs-method}
 \alias{sgedges,IntegerList-method}
 \alias{sgedges,data.frame-method}
 
@@ -44,32 +44,25 @@
 }
 
 \usage{
-sgedges(x, gene_id=NA, UATXHcount=NULL, in_by_tx=NULL,
-        keep.dup.edges=FALSE)
-sgnodes(x, gene_id=NA)
-outdeg(x, gene_id=NA)
-indeg(x, gene_id=NA)
+sgedges(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+sgnodes(x)
+outdeg(x)
+indeg(x)
 
-sgedges2(x, gene_id=NA)
+sgedges2(x)
 
 ## Related utilities:
 
-txpaths(x, gene_id=NA, as.matrix=FALSE)
-UATXHcount(x, gene_id=NA)
-uninformativeSSids(x, gene_id=NA)
+txpaths(x, as.matrix=FALSE)
+UATXHcount(x)
+uninformativeSSids(x)
 }
 
 \arguments{
   \item{x}{
-    TODO
-  }
-  \item{gene_id}{
-    TODO
+    A \link{SplicingGraphs} object of length 1.
   }
   \item{UATXHcount}{
-    TODO
-  }
-  \item{in_by_tx}{
     TODO
   }
   \item{keep.dup.edges}{
@@ -110,11 +103,11 @@ sg
 ## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
 
-sgedges(sg, gene_id="geneD")
-sgnodes(sg, gene_id="geneD")
-outdeg(sg, gene_id="geneD")
-indeg(sg, gene_id="geneD")
+sgedges(sg["geneD"])
+sgnodes(sg["geneD"])
+outdeg(sg["geneD"])
+indeg(sg["geneD"])
 
-txpaths(sg, gene_id="geneD")
-txpaths(sg, gene_id="geneD", as.matrix=TRUE)  # splicing matrix
+txpaths(sg["geneD"])
+txpaths(sg["geneD"], as.matrix=TRUE)  # splicing matrix
 }

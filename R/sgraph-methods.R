@@ -81,8 +81,7 @@ setOldClass("igraph")
 
 ### 'sgedges0' must be a data.frame as returned by:
 ###     sgedges( , keep.dup.edges=TRUE)
-.make_igraph_from_sgedges0 <- function(sgedges0, gene_id=NA,
-                                       tx_id.as.edge.label=FALSE)
+.make_igraph_from_sgedges0 <- function(sgedges0, tx_id.as.edge.label=FALSE)
 {
     if (!is.data.frame(sgedges0))
         stop("'sgedges0' must be a data.frame")
@@ -98,8 +97,7 @@ setOldClass("igraph")
 ###     sgedges( , keep.dup.edges=FALSE)
 ### or by:
 ###     sgedges2( )
-.make_igraph_from_sgedges <- function(sgedges, gene_id=NA,
-                                      tx_id.as.edge.label=FALSE)
+.make_igraph_from_sgedges <- function(sgedges, tx_id.as.edge.label=FALSE)
 {
     if (!is(sgedges, "DataFrame"))
         stop("'sgedges' must be a DataFrame")
@@ -124,28 +122,25 @@ setOldClass("igraph")
 ###
 
 setGeneric("sgraph", signature="x",
-    function(x, gene_id=NA, keep.dup.edges=FALSE,
-             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+    function(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE,
+                as.igraph=FALSE)
         standardGeneric("sgraph")
 )
 
 setMethod("sgraph", "ANY",
-    function(x, gene_id=NA, keep.dup.edges=FALSE,
-             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+    function(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE,
+                as.igraph=FALSE)
     {
-        sgedges <- sgedges(x, gene_id=gene_id, keep.dup.edges=keep.dup.edges)
+        sgedges <- sgedges(x, keep.dup.edges=keep.dup.edges)
         sgraph(sgedges, tx_id.as.edge.label=tx_id.as.edge.label,
                         as.igraph=as.igraph)
     }
 )
 
 setMethod("sgraph", "data.frame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE,
-             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+    function(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE,
+                as.igraph=FALSE)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a data.frame")
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a data.frame")
@@ -156,12 +151,9 @@ setMethod("sgraph", "data.frame",
 )
 
 setMethod("sgraph", "DataFrame",
-    function(x, gene_id=NA, keep.dup.edges=FALSE,
-             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+    function(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE,
+                as.igraph=FALSE)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is a DataFrame")
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is a DataFrame")
@@ -172,12 +164,9 @@ setMethod("sgraph", "DataFrame",
 )
 
 setMethod("sgraph", "igraph",
-    function(x, gene_id=NA, keep.dup.edges=FALSE,
-             tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+    function(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE,
+                as.igraph=FALSE)
     {
-        if (!identical(gene_id, NA))
-            stop("the 'gene_id' arg is not supported ",
-                 "when 'x' is an igraph object")
         if (!identical(keep.dup.edges, FALSE))
             stop("the 'keep.dup.edges' arg is not supported ",
                  "when 'x' is an igraph object")
@@ -203,9 +192,9 @@ setMethod("sgraph", "igraph",
 ### Same as sgraph() except that uninformative nodes (i.e. SSids) are removed.
 ###
 
-sgraph2 <- function(x, gene_id=NA, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+sgraph2 <- function(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 {
-    sgraph(sgedges2(x, gene_id=gene_id),
+    sgraph(sgedges2(x), 
            tx_id.as.edge.label=tx_id.as.edge.label, as.igraph=as.igraph)
 }
 
@@ -214,30 +203,7 @@ sgraph2 <- function(x, gene_id=NA, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 ### "plot" method.
 ###
 
-setMethod("plot", c("SplicingGraphs", "ANY"),
-    function(x, y, gene_id=NA)
-    {
-        if (missing(gene_id)) {
-            if (missing(y)) {
-                gene_id <- NA
-            } else {
-                gene_id <- y
-            }
-        } else {
-            if (!missing(y))
-                warning("'y' is ignored when plotting a SplicingGraphs ",
-                        "object and 'gene_id' is supplied")
-        }
-        if (!isSingleStringOrNA(gene_id))
-            stop("the supplied gene id must be a single string (or NA)")
-        x_names <- names(x)
-        if (!is.null(x_names) && is.na(gene_id))
-            stop("You need to specify a gene id when 'x' has names ",
-                 "e.g. 'plot(sg, \"some gene id\")'. Get all valid ",
-                 "gene ids with 'unique(names(sg))'.")
-        plot(sgraph(x, gene_id=gene_id))
-    }
-)
+setMethod("plot", c("SplicingGraphs", "ANY"), function(x, y) plot(sgraph(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -249,11 +215,12 @@ slideshow <- function(x)
     if (!is(x, "SplicingGraphs"))
         stop("'x' must be a SplicingGraphs object")
     x_eltlen <- elementLengths(x)
-    for (gene_id in names(x)) {
-        ntx <- x_eltlen[[gene_id]]
+    for (i in seq_along(x)) {
+        gene_id <- names(x_eltlen)[i]
+        ntx <- x_eltlen[[i]]
         cat("Plotting splicing graph for gene \"", gene_id, "\" ",
             "(", ntx, " transcript(s)). ", sep="")
-        plot(x, gene_id)
+        plot(x[i])
         cat("Press <Enter> for next...")
         readLines(n=1)
     }

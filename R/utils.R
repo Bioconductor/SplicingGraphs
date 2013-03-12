@@ -258,22 +258,21 @@ layout.sgraph <- function(graph)
     ans
 }
 
-.make_Ragraph_from_graphNEL <- function(graph_nel, gene_id=NA)
+.make_Ragraph_from_graphNEL <- function(graph_nel)
 {
     node_attrs <- .make_Ragraph_nodeAttrs_from_graphNEL(graph_nel)
     edge_attrs <- .make_Ragraph_edgeAttrs_from_graphNEL(graph_nel)
     ## Passing 'edge_attrs' directly to agopen() (thru the 'edgeAttrs' arg) is
     ## broken when there is more than 1 edge between the same 2 nodes, so we
     ## need to build and pass the lists of pNode and pEdge objects instead.
-    #agopen(graph_nel, name=gene_id, nodeAttrs=node_attrs, edgeAttrs=edge_attrs)
+    #agopen(graph_nel, name=NA, nodeAttrs=node_attrs, edgeAttrs=edge_attrs)
     nodes <- buildNodeList(graph_nel, nodeAttrs=node_attrs)
     edges <- .buildEdgeList2(graph_nel, edgeAttrs=edge_attrs)
-    agopen(name=gene_id, nodes=nodes, edges=edges,
-                         edgeMode=edgemode(graph_nel))
+    agopen(name=NA, nodes=nodes, edges=edges, edgeMode=edgemode(graph_nel))
 }
 
-make_Ragraph_from_igraph <- function(igraph, gene_id=NA)
+make_Ragraph_from_igraph <- function(igraph)
 {
-    .make_Ragraph_from_graphNEL(.igraph.to.graphNEL2(igraph), gene_id=gene_id)
+    .make_Ragraph_from_graphNEL(.igraph.to.graphNEL2(igraph))
 }
 

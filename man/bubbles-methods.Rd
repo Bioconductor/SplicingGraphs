@@ -17,15 +17,12 @@
 }
 
 \usage{
-bubbles(x, gene_id=NA)
+bubbles(x)
 }
 
 \arguments{
   \item{x}{
-    TODO
-  }
-  \item{gene_id}{
-    TODO
+    A \link{SplicingGraphs} object of length 1.
   }
 }
 
@@ -60,12 +57,12 @@ sg
 ## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
 names(sg)
 
-plot(sgraph(sg, gene_id="geneA", tx_id.as.edge.label=TRUE))
-bubbles(sg, gene_id="geneA")
+plot(sgraph(sg["geneA"], tx_id.as.edge.label=TRUE))
+bubbles(sg["geneA"])
 
-plot(sgraph(sg, gene_id="geneB", tx_id.as.edge.label=TRUE))
-bubbles(sg, gene_id="geneB")
+plot(sgraph(sg["geneB"], tx_id.as.edge.label=TRUE))
+bubbles(sg["geneB"])
 
-plot(sgraph(sg, gene_id="geneD", tx_id.as.edge.label=TRUE))
-bubbles(sg, gene_id="geneD")
+plot(sgraph(sg["geneD"], tx_id.as.edge.label=TRUE))
+bubbles(sg["geneD"])
 }
