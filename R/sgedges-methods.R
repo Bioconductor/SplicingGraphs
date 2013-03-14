@@ -52,10 +52,10 @@ setGeneric("txpaths", signature="x",
 setMethod("txpaths", "SplicingGraphs",
     function(x, as.matrix=FALSE)
     {
+        if (length(x) != 1L)
+            stop("'x' must be a SplicingGraphs object of length 1")
         if (!isTRUEorFALSE(as.matrix))
             stop("'as.matrix' must be TRUE or FALSE")
-        if (length(x) != 1L)
-            stop("'x' must be of length 1")
         ans <- mcols(unlist(x, use.names=FALSE))[ , "txpaths"]
         if (as.matrix)
             ans <- make_matrix_from_txpaths(ans)
@@ -77,7 +77,7 @@ setMethod("UATXHcount", "SplicingGraphs",
     function(x)
     {
         if (length(x) != 1L)
-            stop("'x' must be of length 1")
+            stop("'x' must be a SplicingGraphs object of length 1")
         mcols(unlist(x, use.names=FALSE))[["UATXHcount"]]
     }
 )

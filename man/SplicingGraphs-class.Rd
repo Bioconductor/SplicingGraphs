@@ -9,6 +9,11 @@
 
 \alias{show,SplicingGraphs-method}
 
+\alias{plotTranscripts}
+\alias{plotTranscripts,GRangesList-method}
+\alias{plotTranscripts,TranscriptDb-method}
+\alias{plotTranscripts,SplicingGraphs-method}
+
 
 \title{
   SplicingGraphs objects
@@ -21,6 +26,7 @@
 
 \usage{
 SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
+plotTranscripts(x)
 }
 
 \arguments{
@@ -176,10 +182,12 @@ names(sg)
 ## The transcripts of a given gene can be extracted as an *unnamed*
 ## GRangesList object with [[:
 sg[["geneB"]]
+plotTranscripts(sg[["geneB"]])
 
 ## The transcripts of all the genes can be extracted as a *named*
 ## GRangesList object with unlist():
 unlist(sg)
+plotTranscripts(unlist(sg))
 
 ## ---------------------------------------------------------------------
 ## 3. Extract information from the SplicingGraphs object

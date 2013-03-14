@@ -69,12 +69,9 @@ suppressWarnings(
   txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
 )
 
-## Plot the gene model:
+## Plot all the transcripts in the gene model:
 if (interactive()) {
-  library(Gviz)
-  ax_track <- GenomeAxisTrack()
-  tg_track <- GeneRegionTrack(txdb, name="toy genes")
-  plotTracks(list(ax_track, tg_track))
+  plotTranscripts(txdb)
 }
 
 ## ---------------------------------------------------------------------

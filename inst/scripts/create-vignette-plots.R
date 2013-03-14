@@ -47,24 +47,12 @@ pdf("CIB3-sg2.pdf", width=2.5, height=6)
 plot(sgraph2(sg["117286"])
 dev.off()
 
-library(Gviz)
-# Plotting to the PDF device produces an incomplete plot (ax_track is missing)!
-# Looks like a bug in Gviz.
-ax_track <- GenomeAxisTrack()
 grl <- sg[["117286"]]
-### We create 1 track per transcript.
-tx_tracks <- lapply(seq_along(grl),
-                    function(i) {
-                      tx <- grl[i]
-                      AnnotationTrack(tx, name=mcols(tx)$tx_id,
-                                      fill="orange", shape="box")
-                    })
-### Put the transcript tracks in an order that is visually more consistent
-### with the splicing graph plot.
-tx_tracks <- tx_tracks[c(3L, 1L, 2L, 4L)]
-
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[c(3L, 1L, 2L, 4L)]
 pdf("CIB3-gene.pdf", width=6, height=3)
-plotTracks(c(list(ax_track), tx_tracks))
+plotTranscripts(grl)
 dev.off()
 
 
@@ -81,24 +69,12 @@ pdf("ZNF813-sg2.pdf", width=5, height=6)
 plot(sgraph2(sg["126017"]))
 dev.off()
 
-library(Gviz)
-# Plotting to the PDF device produces an incomplete plot (ax_track is missing)!
-# Looks like a bug in Gviz.
-ax_track <- GenomeAxisTrack()
 grl <- sg[["126017"]]
-### We create 1 track per transcript.
-tx_tracks <- lapply(seq_along(grl),
-                    function(i) {
-                      tx <- grl[i]
-                      AnnotationTrack(tx, name=mcols(tx)$tx_id,
-                                      fill="orange", shape="box")
-                    })
-### Put the transcript tracks in an order that is visually more consistent
-### with the splicing graph plot.
-tx_tracks <- tx_tracks[2:1]
-
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[2:1]
 pdf("ZNF813-gene.pdf", width=6, height=3)
-plotTracks(c(list(ax_track), tx_tracks))
+plotTranscripts(grl)
 dev.off()
 
 

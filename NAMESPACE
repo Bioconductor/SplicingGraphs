@@ -66,6 +66,7 @@ export(
 
 export(
     ## SplicingGraphs-class.R:
+    plotTranscripts,
     SplicingGraphs,
 
     ## sgedges-methods.R:
@@ -85,6 +86,7 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
+    plotTranscripts,
     SplicingGraphs,
     txpaths,
     UATXHcount,
