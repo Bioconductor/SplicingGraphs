@@ -17,7 +17,7 @@ Suggests: igraph, Gviz,
 	 TxDb.Hsapiens.UCSC.hg19.knownGene,
 	 TxDb.Mmusculus.UCSC.mm9.knownGene, RNASeqDataSubset,
 	 RUnit
-Collate: utils.R
+Collate: igraph-utils.R
 	 SplicingGraphs-class.R
 	 sgedges-methods.R
 	 sgraph-methods.R

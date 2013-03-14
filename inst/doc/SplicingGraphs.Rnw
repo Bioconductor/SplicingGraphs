@@ -302,8 +302,6 @@ guaranteed to be consecutive elements in \Rcode{sg}:
 head(names(sg))
 @
 
-\end{document}
-
 \Rcode{sg} contains information about the underlying splicing mechanisms
 represented as splicing codes. Additionally the object contains mapping
 of edges to the individual bubbles and bubble parts.
@@ -318,6 +316,22 @@ of the \Rclass{GrangesList} object and can be accessed by using the
 
 In the code chunk below we access the information about the type of
 splicing events and try to quantify them later on.
+
+<<eval=FALSE>>=
+AScode_count <- sort(table(unlist(lapply(seq_along(sg),
+                                  function(i) bubbles(sg[i])$AScode))),
+                     decreasing=TRUE)
+AScode_table <- data.frame(AScode=names(AScode_count),
+                           NbOfEvents=as.vector(AScode_count),
+                           Desciption=SplicingGraphs:::AScode2desc[names(AScode_count)])
+@
+
+<<>>=
+head(AScode_table, n=10)
+@
+
+\end{document}
+
 
 \begin{scriptsize}
 <<spliceevents>>=

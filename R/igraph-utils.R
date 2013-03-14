@@ -107,6 +107,8 @@ layout.sgraph <- function(graph)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### make_Ragraph_from_igraph()
 ###
+### NOT exported
+###
 
 ### Mappings from igraph attribute names to Ragraph attribute names.
 .igraph2Ragraph_EDGE_ATTRNAMES <- c(
