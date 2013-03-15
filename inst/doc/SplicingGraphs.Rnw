@@ -48,6 +48,7 @@
 @ 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 The \Rpackage{SplicingGraphs} package creates splicing 
@@ -66,6 +67,7 @@ Cufflinks \cite{Roberts21062011} or the R package \Rpackage{DEXSeq}
 complete complex structure is still new. 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Splicing graphs}
 
 Alternative splicing is a frequently observed complex biological 
@@ -130,7 +132,7 @@ An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-gene.pdf}
   \hskip 0.5in
-  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{ZNF813-sg.pdf}}
+  \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the two transcript variants
     of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type vertex:
@@ -157,8 +159,7 @@ ends ($~]~$) and the leaf ($L$) contain neither an
 intron nor an exon because such edges contain usually no 
 sequence information at all.
 
-\subsection{Alternative splicing events form bubbles in the
-  splicing graph}
+\subsection{Uninformative nodes}
 
 Not all splicing sites (vertices) on the individual transcripts are alternative 
 splicing sites. Therefore the initial splicing graph outlined above can be
@@ -184,73 +185,9 @@ Figure \ref{img:CIB3-simplified}.
   \label{img:CIB3-simplified}
 \end{figure}
 
-[FIXME: The following statement is not true.] Between two remaining vertices
-there exists at least two edges which form a bubble. Such a bubble,
-representing an alternative splicing event, consists at least of two bubble
-parts. The exonic structures of the two bubble parts are exclusive.
-Bubbles in general can be nested or can intersect with other bubbles.
-The collapsed edges of the final splicing graph associated with one or more
-exons which do not overlap each other, form larger sequence regions providing 
-advantages in counting reads and testing for differential expression. 
 
-\subsection{Interpretation of the splicing codes}
-\label{sec:spliceCodes}
-
-[TODO: Revisit this sub-section entirely.]
-
-Splicing codes can be obtained by iterating over the individual
-bubbles and collecting the types of the original vertices associated 
-with the individual bubble edges and their ranks. This section
-makes use of simple toy examples to describe how the splicing code can 
-be interpreted in terms of well known splicing mechanisms like exon 
-skipping, alternative promotor usage, intron retention, etc.
-
-An example read out of a bubble could reveal the splicing code 
-($1~0~0~2~1 - 2~2~\wedge$ ) which would represent an 1 exon skip. 
-See Figure \ref{img:exskip}.
-The first part of the code ($1~0~0$) indicates that the first edge
-contains no exon at all. The first symbol of this code part
-indicates the edge number, the second symbol the vertex rank within 
-the bubble and the third symbol the vertex type. The second part of 
-the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2 
-containing exactly one exon described by the flanking vertices
-$-$ and $\wedge$. 
-
-\begin{figure}[H]
-  \begin{center}
-  \includegraphics[width=\textwidth]{exskip.png}
-  \end{center}
-  \caption{Splicing graph representation of an 1 exon skip leading to
-    one bubble. The associated splicing code is 
-    $1~0~0~2~1 - 2~2~\wedge$. Left: splicing graph
-    representation. Right: transcript representation
-  }
-  \label{img:exskip}
-\end{figure}
-
-Another example where disjoining comes into play is a
-an alternative splicing site acceptor in one of two transcripts.
-The code for an alternative splicing site acceptor would be 
-$1~0~0~2~1 - 2~2~{\wedge}{:}$ and can be seen as an exon 
-skip where the end of the exon is linked to a disjoint site. 
-In such a way it is possible to characterize and to
-distinguish a variety of different splicing events. 
-See Figure \ref{img:altaccept}
-
-\begin{figure}[H]
-  \begin{center}
-  \includegraphics[width=\textwidth]{altaccept.png}
-  \end{center}
-  \caption{Splicing graph representation of an alternative acceptor site
-    leading to one bubble. The associated splicing code is
-    $1~0~0~2~1 - 2~2~{\wedge}{:}$. 
-    Left: splicing graph representation. Right: transcript representation
-  }
-  \label{img:altaccept}
-\end{figure}
-
-
-\section{Creating the splicing graph}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Create splicing graphs from annotations}
 
 As outlined in the previous section the splicing graph approach
 extends the differential expression analysis of single exons
@@ -330,7 +267,10 @@ and plotted with \Rfunction{plotTranscripts}:
 <<eval=FALSE>>=
 plotTranscripts(sg[["107328"]])
 @
-<<echo=FALSE,result=FALSE>>=
+
+The resulting plot is shown on figure \ref{img:107328-transcripts}.
+
+<<echo=FALSE,results=hide>>=
 pdf("107328-transcripts.pdf", width=6, height=3)
 plotTranscripts(sg[["107328"]])
 dev.off()
@@ -365,7 +305,10 @@ To plot a given splicing graph:
 plot(sgraph(sg["107328"]))
 plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
 @
-<<echo=FALSE,result=FALSE>>=
+
+The resulting plots are shown on figure \ref{img:107328-sgraph}.
+
+<<echo=FALSE,results=hide>>=
 pdf("107328-sgraph.pdf", width=3, height=5)
 plot(sgraph(sg["107328"]))
 dev.off()
@@ -386,102 +329,110 @@ dev.off()
   \label{img:107328-sgraph}
 \end{figure}
 
-\Rcode{sg} contains information about the underlying splicing mechanisms
-represented as splicing codes. Additionally the object contains mapping
-of edges to the individual bubbles and bubble parts.
 
-Lets have a look at the resulting object.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Graph bubbles}
 
-As already mentioned in the introduction there is also information
-provided about the splicing events generating the individual
-transcript variants. This information is stored in the metadata slot
-of the \Rclass{GrangesList} object and can be accessed by using the 
-\Rfunction{metadata} function.
+Each graph in \Rcode{sg} contains information about the underlying splicing
+mechanisms for the corresponding gene. This information can be summarized
+by extracting the bubbles of a graph.
 
-In the code chunk below we access the information about the type of
-splicing events and try to quantify them later on.
+\subsection{Extract the bubbles}
 
 <<>>=
-AScode_table <- table(unlist(lapply(seq_along(sg),
-                                    function(i) bubbles(sg[i])$AScode)))
+bubbles(sg["107328"])
+@
+
+[TODO: Describe the output of bubbles().]
+
+\subsection{Interpretation of the alternative splicing codes}
+
+[TODO: Revisit this subsection entirely.]
+
+Splicing codes can be obtained by iterating over the individual
+bubbles and collecting the types of the original vertices associated 
+with the individual bubble edges and their ranks. This section
+makes use of simple toy examples to describe how the splicing code can 
+be interpreted in terms of well known splicing mechanisms like exon 
+skipping, alternative promotor usage, intron retention, etc.
+
+An example read out of a bubble could reveal the splicing code 
+($1~0~0~2~1 - 2~2~\wedge$ ) which would represent an 1 exon skip. 
+See Figure \ref{img:exskip}.
+The first part of the code ($1~0~0$) indicates that the first edge
+contains no exon at all. The first symbol of this code part
+indicates the edge number, the second symbol the vertex rank within 
+the bubble and the third symbol the vertex type. The second part of 
+the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2 
+containing exactly one exon described by the flanking vertices
+$-$ and $\wedge$. 
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=\textwidth]{exskip.png}
+  \end{center}
+  \caption{Splicing graph representation of an 1 exon skip leading to
+    one bubble. The associated splicing code is 
+    $1~0~0~2~1 - 2~2~\wedge$. Left: splicing graph
+    representation. Right: transcript representation
+  }
+  \label{img:exskip}
+\end{figure}
+
+Another example where disjoining comes into play is a
+an alternative splicing site acceptor in one of two transcripts.
+The code for an alternative splicing site acceptor would be 
+$1~0~0~2~1 - 2~2~{\wedge}{:}$ and can be seen as an exon 
+skip where the end of the exon is linked to a disjoint site. 
+In such a way it is possible to characterize and to
+distinguish a variety of different splicing events. 
+See Figure \ref{img:altaccept}
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=\textwidth]{altaccept.png}
+  \end{center}
+  \caption{Splicing graph representation of an alternative acceptor site
+    leading to one bubble. The associated splicing code is
+    $1~0~0~2~1 - 2~2~{\wedge}{:}$. 
+    Left: splicing graph representation. Right: transcript representation
+  }
+  \label{img:altaccept}
+\end{figure}
+
+\subsection{Tabulating all the alternative splicing codes for Mouse
+            chromosome 19}
+
+<<>>=
+AScode_list <- lapply(seq_along(sg), function(i) bubbles(sg[i])$AScode)
+names(AScode_list) <- names(sg)
+AScode_table <- table(unlist(AScode_list))
 AScode_table <- sort(AScode_table, decreasing=TRUE)
 AScode_summary <- data.frame(AScode=names(AScode_table),
                              NbOfEvents=as.vector(AScode_table),
                              Desciption=ASCODE2DESC[names(AScode_table)])
+nrow(AScode_summary)
 head(AScode_summary, n=10)
 @
 
-\end{document}
-
-
-\begin{scriptsize}
-<<spliceevents>>=
-metadata(sG)$spliceEvents[8,]
-@ 
-\end{scriptsize}
-
-The types of alternative splicing events are provided as a \Rclass{DataFrame}
-object. The first column provides the so-called bubble code. The
-bubble code assigns an unique identifier to the individual splicing events
-(bubbles) and consists basically of an bubble ID concatenated with the
-ENTREZ gene ID. The second column provides
-\Rclass{CompressedCharacterList}s representing the splicing codes.
-To explore the meaning of the code symbols go back to Section \ref{sec:spliceCodes}.
-The last three columns provide the name of the splicing event, the
-corresponding ENTREZ gene ID and the bubble ID unique within each gene.
-
-Back to quantifying the observed splicing events in the 
-annotation. Now we are interested which types of splicing events occur most
-often.
-
-<<bubbles>>=
-spliceEvents <- metadata(sG)$spliceEvents
-sp <- split(spliceEvents$bubbleCode, 
-                     factor(spliceEvents$eventType))
-eventSum <- data.frame(event=names(sp), Nr=elementLengths(sp),
-                                row.names=NULL)
-eventSum <- eventSum[order(eventSum$Nr, decreasing=TRUE), ]
-@ 
-
-We would expect that simple events occur more frequently than
-complex events.
-
-<<splicEventSum>>=
-head(eventSum)
-@ 
-
-The most often occurring splicing event on chromosome 19 is named skip
-one exon. At this point it should be mentioned that not all splicing
-events have names since there are a variety of different events. How many
-different events do we actually observe at chromosome 19? Lets check this.
-
-<<varietyOfEvents>>=
-allEvents <- lapply(spliceEvents$code, paste, collapse=" ")
-allEvents <- unlist(allEvents, use.names=FALSE)
-nrOfdiffEvents <- length(unique(allEvents))
-nrOfdiffEvents
-@ 
-
-We observe \Sexpr{nrOfdiffEvents} different events only on
-chromosome 19. So everybody can imagine that we have not given to all
-those events names. So don't be surprised if some NAs show up.
+Amongst the \Sexpr{nrow(AScode_summary)} distinct complete events we observe
+on Mouse chromosome 19, the most frequent one is named ``skip 1 exon''.
+At this point it should be mentioned that not all splicing
+events have names since there are a variety of different events.
 
 Another interesting information which we can gain from the splicing
-graph is how many splicing events does each individual gene have.
-To address this issue we have to count the number of bubbles within
+graph is how many complete events does each individual gene have.
+To answer this we have to count the number of bubbles within
 each gene.
 
 <<howManySpliceEvents>>=
-idx <- ! duplicated(spliceEvents$bubbleCode)
-nrOfBubs <- elementLengths(split(spliceEvents$bubbleCode[idx], 
-                                 spliceEvents$gn[idx]))
-nrOfBubs <- nrOfBubs[order(nrOfBubs,decreasing=TRUE)]
+nb_bubbles_per_gene <- elementLengths(AScode_list)
 @ 
 
 Below the genes with the most observed splicing events are shown.
 
 <<genesWithMostObservedSpliceEvents>>=
-head(nrOfBubs)
+head(sort(nb_bubbles_per_gene, decreasing=TRUE))
 @ 
 
 Next we want to see which genes show the highest heterogeneity of splicing
@@ -489,21 +440,19 @@ events.
 We check for the number of unique splicing events for each gene.
 
 <<genesWithHighestSpliceEventHeterogeneity>>=
-uniEventsPerGn <- lapply(split(allEvents, spliceEvents$gn), 
-                         unique)
-nrOfUniEvents <- elementLengths(uniEventsPerGn)
-nrOfUniEvents <- nrOfUniEvents[order(nrOfUniEvents, 
-                                     decreasing=TRUE)]
+nb_unique_bubbles_per_gene <- elementLengths(unique(CharacterList(AScode_list)))
 @ 
 
 Below the genes with the highest heterogeneity in observed splicing events
 are shown
 
 <<showGenesWithHighestSpliceEventHeterogeneity>>=
-head(nrOfUniEvents)
+head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 @ 
 
 \subsection{Mapping of edge elements to genes and exons}
+
+[TODO: Revisit or remove this subsection entirely]
 
 To get a mapping of the original exons to the new disjoined exons 
 the exons by edge object have to be unlisted first. 
@@ -512,7 +461,7 @@ original exon ids. For the mapping we utilize a simple
 \Rclass{data.frame} object because the mapping between the new disjoined
 exon ids and the original exon ids is ambiguous.
 
-<<mopOriginalExonIdsToDisjoint>>=
+<<mopOriginalExonIdsToDisjoint,eval=FALSE>>=
 sG.flat <- unlist(sG, use.names=FALSE)
 orig.Ex <- values(sG.flat)[["exon_ids"]]
 disJ.Ex <- values(sG.flat)[["disJ_exon_id"]]
@@ -530,7 +479,7 @@ object. To get the
 gene ids the \Rfunction{values} accessor function is used.
 The mapping from edges to genes is used further downstream in the analysis.
 
-<<getGeneToEdgeMappings>>=
+<<getGeneToEdgeMappings,eval=FALSE>>=
 gnIDs <- values(sG)[["gene_id"]]
 edgeIDs <- names(sG)
 gnToEdge <- setNames(gnIDs, edgeIDs)
@@ -541,7 +490,10 @@ The next step we want to perform is use the information computed above
 in terms of RNA-Seq and transcriptome analysis.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Counting reads}
+
+[TODO: Revisit this section]
 
 This section deals with counting the reads associated with the
 individual edges. To elucidate later in this vignette some
@@ -572,7 +524,7 @@ genes the read is counted to both genes and their associated edges.
 Counting is performed for each BAM file separately and could be
 parallelized to save computation time.
 
-<<CountReads>>=
+<<CountReads,eval=FALSE>>=
 library(parallel)
 cD.exByEdge <- countSpliceGraphReads(sG, bfs)
 @ 
@@ -582,20 +534,23 @@ The colum names correspond to the names of the
 \Rclass{BamFileList} object.
 
 \begin{small}
-<<theEdgeCountTable>>=
+<<theEdgeCountTable,eval=FALSE>>=
 head(cD.exByEdge)
 @ 
 \end{small}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The experimental design}
+
+[TODO: Revisit this section]
 
 The initial step for each RNA-Seq analysis is to set up the 
 design of the experiment. Basically we are interested in comparing knock-out samples
 with wild type samples. This means we have a three against three design and
 therefore for each condition three biological replicates.
 
-<<setUpTheDesign>>=
+<<setUpTheDesign,eval=FALSE>>=
 fn <- system.file("extdata", "phenoData.txt", 
                   package="RNASeqDataSubset")
 pd <- read.table(fn, header=TRUE,
@@ -607,7 +562,10 @@ design$condition <-
 @ 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Significant altered alternative splicing events}
+
+[TODO: Revisit this section]
 
 This section deals with testing for significant altered splicing events.
 We introduced a generalized linear model (GLM) to asses the
@@ -657,13 +615,13 @@ of two \Rclass{ExonCountSet}s and two \Rclass{CountDataSet}s
 representing multi element (edge, bubble part) genes and single
 element genes respectively. See the documentation for further details.
 
-<<creatingABubbleCountSet>>=
+<<creatingABubbleCountSet,eval=FALSE>>=
 spliceGraphCnts <- BubbleCountSet(cD.exByEdge, sG, design)
 @ 
 
 Estimating the size factors of the libraries.
 
-<<estimatingSizeFactors>>=
+<<estimatingSizeFactors,eval=FALSE>>=
 spliceGraphCnts <- estimateSizeFactorsSg( spliceGraphCnts )
 @
 
@@ -671,7 +629,7 @@ Estimating the dispersions for single and multi element genes.
 The utilized functions are basically wrappers for the \Rpackage{DESeq}
 and \Rpackage{DEXSeq} functions.
 
-<<estimatingDispersions>>= 
+<<estimatingDispersions,eval=FALSE>>= 
 ## estimate dispersions
 spliceGraphCnts <- estDispsMultiElements( spliceGraphCnts )
 spliceGraphCnts <- 
@@ -681,7 +639,7 @@ spliceGraphCnts <-
 Fitting the dispersion function for multi element genes and estimating
 the log2 fold changes.
 
-<<fittingTheDispersionFunctions>>=
+<<fittingTheDispersionFunctions,eval=FALSE>>=
 spliceGraphCnts <- fitDispFuncSg( spliceGraphCnts )
 spliceGraphCnts <- 
   estimatelog2FoldChangesSg( spliceGraphCnts )
@@ -689,7 +647,7 @@ spliceGraphCnts <-
 
 Now we are able to test for alternative splicing.
 
-<<testingForSignificantAlteredSpliceEvents>>=
+<<testingForSignificantAlteredSpliceEvents,eval=FALSE>>=
 res.bubbles <- testForSigSpliceEvents( spliceGraphCnts )
 res.bubbles <- res.bubbles[order(res.bubbles$pvalue), ]
 res.bubbles <- res.bubbles[abs(res.bubbles$maxLog2FC) > 1 |
@@ -701,17 +659,18 @@ use the acessor functions. By utilizing this functions dispersions and
 log2 fold changes can also be estimated manually by using the
 respective \Rpackage{DEXSeq} and \Rpackage{DESeq} functions. 
 
-<<accessingCounDataAndExonCountData, results=hide>>=
+<<accessingCounDataAndExonCountData,eval=FALSE,results=hide>>=
 multiEdgeCntSet(spliceGraphCnts)
 multiBpCntSet(spliceGraphCnts)
 sglEdgeCntSet(spliceGraphCnts)
 sglBpCntSet(spliceGraphCnts)
 @ 
 
-We found \Sexpr{sum(res.bubbles$padj < 0.05, na.rm=TRUE)} 
+%%We found Sexpr{sum(res.bubbles$padj < 0.05, na.rm=TRUE)} 
+We found \Rcode{<some number here>}
 alternative splicing events to be significantly (p $<$ 0.05) altered.
 
-<<printSigSpliceEvents, results=tex, echo=FALSE>>=
+<<printSigSpliceEvents,echo=FALSE,eval=FALSE,results=tex>>=
 library(xtable)
 T <- xtable(head(res.bubbles, n=10),
              caption=paste("Top 10 most significant altered alternative splicing events"))
@@ -973,7 +932,7 @@ print(T, table.placement="H", size="scriptsize",
 \section{Session Information}
 
 \begin{scriptsize}
-<<SessionInfo, echo=FALSE>>=
+<<SessionInfo,echo=FALSE>>=
 sessionInfo()
 @
 \end{scriptsize}
