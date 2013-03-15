@@ -7,6 +7,8 @@
 \usepackage{float}
 \usepackage{xcolor}
 
+\usepackage[margin=1in]{geometry}
+
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
@@ -32,9 +34,17 @@
 
 \maketitle
 
-<<results=hide, echo=FALSE>>=
-reCnt <- TRUE
-nr.cpu <- 3
+<<settings,echo=FALSE>>=
+.precomputed_results <- system.file("doc", "precomputed_results",
+                                    package="SplicingGraphs", mustWork=TRUE)
+.loadPrecomputed <- function(objname)
+{
+    filename <- paste0(objname, ".rda")
+    path <- file.path(.precomputed_results, filename)
+    tempenv <- new.env(parent=emptyenv())
+    load(path, envir=tempenv)
+    get(objname, envir=tempenv)
+}
 @ 
 
 
@@ -292,15 +302,89 @@ library(SplicingGraphs)
 sg <- SplicingGraphs(txdb)
 sg
 @
+%% We load a precomputed 'sg' that contains all the bubbles in its
+%% bubbles_cache slot.
+<<echo=FALSE>>=
+sg2 <- .loadPrecomputed("sg")
+sg@.bubbles_cache <- sg2@.bubbles_cache
+if (!identical(sg, sg2))
+    stop("'sg' is not identical to precomputed version")
+@
 
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
-transcript, and each transcript is assigned a name that is the id of the
-gene it belongs to. All the transcripts belonging to the same gene are
-guaranteed to be consecutive elements in \Rcode{sg}:
+gene and \Rcode{sg} gives the gene ids.
 
 <<>>=
-head(names(sg))
+names(sg)[1:20]
 @
+
+The transcripts of a given gene can be extracted as an \emph{unnamed}
+\Rclass{GRangesList} object with \Rfunction{[[}:
+
+<<>>=
+sg[["107328"]]
+@
+
+and plotted with \Rfunction{plotTranscripts}:
+
+<<eval=FALSE>>=
+plotTranscripts(sg[["107328"]])
+@
+<<echo=FALSE>>=
+pdf("107328-transcripts.pdf", width=6, height=3)
+plotTranscripts(sg[["107328"]])
+dev.off()
+@
+\begin{figure}[tbp]
+  \begin{center}
+  \includegraphics[width=6in,height=3in]{107328-transcripts.pdf}
+  \end{center}
+  \caption{The 3 transcripts of gene 107328 (Entrez ID).}
+  \label{img:107328-transcripts}
+\end{figure}
+
+The transcripts of all the genes can be extracted as a \emph{named}
+\Rclass{GRangesList} object with \Rfunction{unlist}:
+
+<<>>=
+unlist(sg)
+@
+
+The edges and nodes of the splicing graph of a given gene can be
+extracted with \Rfunction{sgedges} and \Rfunction{sgnodes} applied
+on the subsetted \Rclass{SplicingGraphs} object:
+
+<<>>=
+sgedges(sg["107328"])
+sgnodes(sg["107328"])
+@
+
+To plot a given splicing graph:
+
+<<eval=FALSE>>=
+plot(sgraph(sg["107328"]))
+plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
+@
+<<echo=FALSE>>=
+pdf("107328-sgraph.pdf", width=3, height=5)
+plot(sgraph(sg["107328"]))
+dev.off()
+pdf("107328-sgraph-labelled.pdf", width=3, height=5)
+plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
+dev.off()
+@
+\begin{figure}[tbp]
+  \begin{center}
+  \includegraphics[width=3in,height=5in]{107328-sgraph.pdf}
+  \hskip 0.25in
+  \includegraphics[width=3in,height=5in]{107328-sgraph-labelled.pdf}
+  \end{center}
+  \caption{Splicing graph representation of gene 107328 (Entrez ID).
+    Left: unlabelled edges. Right: edge labelled with the transcript
+    ids (or names).
+  }
+  \label{img:107328-sgraph}
+\end{figure}
 
 \Rcode{sg} contains information about the underlying splicing mechanisms
 represented as splicing codes. Additionally the object contains mapping
@@ -317,17 +401,14 @@ of the \Rclass{GrangesList} object and can be accessed by using the
 In the code chunk below we access the information about the type of
 splicing events and try to quantify them later on.
 
-<<eval=FALSE>>=
-AScode_count <- sort(table(unlist(lapply(seq_along(sg),
-                                  function(i) bubbles(sg[i])$AScode))),
-                     decreasing=TRUE)
-AScode_table <- data.frame(AScode=names(AScode_count),
-                           NbOfEvents=as.vector(AScode_count),
-                           Desciption=SplicingGraphs:::AScode2desc[names(AScode_count)])
-@
-
 <<>>=
-head(AScode_table, n=10)
+AScode_table <- table(unlist(lapply(seq_along(sg),
+                                    function(i) bubbles(sg[i])$AScode)))
+AScode_table <- sort(AScode_table, decreasing=TRUE)
+AScode_summary <- data.frame(AScode=names(AScode_table),
+                             NbOfEvents=as.vector(AScode_table),
+                             Desciption=ASCODE2DESC[names(AScode_table)])
+head(AScode_summary, n=10)
 @
 
 \end{document}
@@ -475,11 +556,9 @@ the file paths to the six selected BAM files.
 
 <<countingReads>>=
 library(RNASeqDataSubset)
-if(reCnt) {
-  require("Rsamtools")
-  fls <- getBamFileList()
-  bfs <- BamFileList(fls)
-}
+require("Rsamtools")
+fls <- getBamFileList()
+bfs <- BamFileList(fls)
 @ 
 
 \subsection{Counting reads per edges}
@@ -494,16 +573,8 @@ Counting is performed for each BAM file separately and could be
 parallelized to save computation time.
 
 <<CountReads>>=
-if(reCnt) {
-  library(parallel)
-  cD.exByEdge <- 
-    countSpliceGraphReads(sG, bfs)
-  save(cD.exByEdge, file="cD.exByEdge.Rda")
-} else {
-  fn <- system.file("extdata", "cD.exByEdge.Rda", 
-                    package="RNASeqDataSubset")
-  load(fn)
-}
+library(parallel)
+cD.exByEdge <- countSpliceGraphReads(sG, bfs)
 @ 
 
 The resulting count table contains one row for each edge.

@@ -205,7 +205,7 @@
               partitions=ans_partitions,
               paths=ans_paths,
               AScode=ans_AScode,
-              description=unname(AScode2desc[ans_AScode]))
+              description=unname(ASCODE2DESC[ans_AScode]))
 }
 
 
@@ -215,6 +215,22 @@
 
 setGeneric("bubbles", signature="x",
     function(x) standardGeneric("bubbles")
+)
+
+setMethod("bubbles", "SplicingGraphs",
+    function(x)
+    {
+        if (length(x) != 1L)
+            stop("'x' must be a SplicingGraphs object of length 1")
+        bubbles_cache <- x@.bubbles_cache
+        ans <- try(get(names(x), envir=bubbles_cache, inherits=FALSE),
+                   silent=TRUE)
+        if (is(ans, "try-error")) {
+            ans <- callNextMethod()
+            assign(names(x), ans, envir=bubbles_cache)
+        }
+        ans
+    }
 )
 
 setMethod("bubbles", "ANY",

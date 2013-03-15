@@ -170,48 +170,30 @@ ex_by_tx <- exonsBy(toy_genes_txdb, by="tx", use.names=TRUE)
 tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 
 sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
-## Note that 'sg' can also be constructed directly from the TranscriptDb
-## object:
-sg2 <- SplicingGraphs(toy_genes_txdb)
-stopifnot(identical(sg2, sg))
 sg
 
-## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
+## Alternatively 'sg' can be constructed directly from the TranscriptDb
+## object:
+sg2 <- SplicingGraphs(toy_genes_txdb)  # same as 'sg'
+sg2
+
+## Note that because SplicingGraphs objects have a slot that is an
+## environment (for caching the bubbles), they cannot be compared with
+## identical() (will always return FALSE). A workaround is to unlist
+## them before comparison (see below for what unlist() does exactly on
+## a SplicingGraphs object):
+stopifnot(identical(unlist(sg2), unlist(sg)))
+
+## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(sg)
 
 ## The transcripts of a given gene can be extracted as an *unnamed*
 ## GRangesList object with [[:
-sg[["geneB"]]
-plotTranscripts(sg[["geneB"]])
+sg[["geneD"]]
+plotTranscripts(sg[["geneD"]])
 
 ## The transcripts of all the genes can be extracted as a *named*
 ## GRangesList object with unlist():
 unlist(sg)
 plotTranscripts(unlist(sg))
-
-## ---------------------------------------------------------------------
-## 3. Extract information from the SplicingGraphs object
-## ---------------------------------------------------------------------
-
-if (FALSE) {
-  ## FIXME: All the stuff below is broken!
-  ## get the new disjoint exon ids
-  mcols(unlist(sgA))$disJ_exon_id
-
-  ## get the gene ids
-  mcols(sgA)$gene_id
-
-  ## get the original exon ids
-  mcols(unlist(sgA))$exon_ids
-
-  ## access the splicing events via the metadata slot
-  spliceEvents <- metadata(sgA)$spliceEvents
-  spliceEvents
-
-  ## count the splicing events
-  table(spliceEvents$eventType)
-
-  ## assignment of edges to bubbles
-  mcols(sgA)
-}
 }

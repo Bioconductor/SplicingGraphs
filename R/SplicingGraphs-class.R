@@ -3,16 +3,18 @@
 ### -------------------------------------------------------------------------
 
 
-### A simpler design would be to define only 1 class, the SplicingGraphs
-### class, and to define it the way the .SplicingGraphGenes class below is
-### defined. The problem with this is that the SplicingGraphs class then
-### inherits a very rich API (Vector + List) but many operations (like c()
-### or relist()) are broken, unless we implement specific methods for them.
-### But: (a) that's a lot of work (the API is huge), and (b) we don't need
-### those operations in the first place. All we need are: length(), names(),
-### [, [[, elementLengths(), and unlist(). Hence the 2 class definitions
-### below. The .SplicingGraphGenes class is an internal class that is not
-### intended to be exposed to the user.
+### With the 2-class design we choose below, the SplicingGraphs class does
+### NOT extend the CompressedList class, but has the slot ('genes') that
+### extends the CompressedList class. This avoids having the SplicingGraphs
+### class inherit a very rich API (Vector + List), which would be a problem
+### because many operations (like c() or relist()) would be broken, unless
+### we re-implement them for SplicingGraphs objects. But: (a) that's a lot of
+### work (the API is huge), and (b) we don't need those operations in the
+### first place. All we need are: length(), names(), [, [[, elementLengths(),
+### and unlist().
+### Note that the .SplicingGraphGenes class is an internal class that is not
+### intended to be exposed to the user. It's defined like the GRangesListList
+### class would be if we had one.
 
 setClass(".SplicingGraphGenes",
     contains="CompressedList",
@@ -28,7 +30,8 @@ setClass(".SplicingGraphGenes",
 setClass("SplicingGraphs",
     representation(
         genes=".SplicingGraphGenes",
-        in_by_tx="GRangesList"
+        in_by_tx="GRangesList",
+        .bubbles_cache="environment"
     )
 )
 
@@ -518,7 +521,10 @@ setMethod("SplicingGraphs", "GRangesList",
                             check.introns=check.introns)
         ans_genes <- .new_SplicingGraphGenes(unlisted_genes)
         ans_in_by_tx <- psetdiff(range(unlisted_genes), unlisted_genes)
-        new("SplicingGraphs", genes=ans_genes, in_by_tx=ans_in_by_tx)
+        ans_bubbles_cache <- new.env(parent=emptyenv())
+        new("SplicingGraphs", genes=ans_genes,
+                              in_by_tx=ans_in_by_tx,
+                              .bubbles_cache=ans_bubbles_cache)
     }
 )
 

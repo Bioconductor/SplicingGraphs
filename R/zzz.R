@@ -1,4 +1,4 @@
-AScode2desc <- NULL
+ASCODE2DESC <- NULL
 
 .onLoad <- function(libname, pkgname)
 {
@@ -8,6 +8,6 @@ AScode2desc <- NULL
     ASpatterns <- read.table(filepath, header=TRUE, stringsAsFactors=FALSE)
     tmp <- ASpatterns[ , "Description"]
     names(tmp) <- ASpatterns[ , "AScode"]
-    AScode2desc <<- tmp
+    ASCODE2DESC <<- tmp
 }
 

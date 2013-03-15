@@ -3,8 +3,11 @@
 \alias{bubbles-methods}
 
 \alias{bubbles}
+\alias{bubbles,SplicingGraphs-method}
 \alias{bubbles,ANY-method}
 \alias{bubbles,IntegerList-method}
+
+\alias{ASCODE2DESC}
 
 
 \title{
@@ -18,6 +21,8 @@
 
 \usage{
 bubbles(x)
+
+ASCODE2DESC
 }
 
 \arguments{
@@ -54,7 +59,7 @@ bubbles(x)
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
 sg
 
-## 'sg' has 1 element per gene. 'names(sg)' are the gene ids.
+## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(sg)
 
 plot(sgraph(sg["geneA"], tx_id.as.edge.label=TRUE))

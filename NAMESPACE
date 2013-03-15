@@ -36,7 +36,7 @@ exportMethods(
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Export non-generic functions
+### Export non-generic functions (and non-function symbols)
 ###
 
 export(
@@ -46,6 +46,9 @@ export(
     ## sgraph-methods.R:
     sgraph2,
     slideshow,
+
+    ## bubbles-methods.R:
+    ASCODE2DESC,
 
     ## countReads.R:
     assignSubfeatureHits,
