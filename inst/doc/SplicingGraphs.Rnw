@@ -330,7 +330,7 @@ and plotted with \Rfunction{plotTranscripts}:
 <<eval=FALSE>>=
 plotTranscripts(sg[["107328"]])
 @
-<<echo=FALSE>>=
+<<echo=FALSE,result=FALSE>>=
 pdf("107328-transcripts.pdf", width=6, height=3)
 plotTranscripts(sg[["107328"]])
 dev.off()
@@ -365,7 +365,7 @@ To plot a given splicing graph:
 plot(sgraph(sg["107328"]))
 plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
 @
-<<echo=FALSE>>=
+<<echo=FALSE,result=FALSE>>=
 pdf("107328-sgraph.pdf", width=3, height=5)
 plot(sgraph(sg["107328"]))
 dev.off()
