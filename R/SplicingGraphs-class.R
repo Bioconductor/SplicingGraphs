@@ -99,13 +99,16 @@ setValidity2("SplicingGraphs", .valid.SplicingGraphs)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Restricted SplicingGraphs API.
 ###
+### Contains a few core methods from the List API + the "intronsByTranscript"
+### method from the TranscriptDb API.
+###
 
 setMethod("length", "SplicingGraphs", function(x) length(x@genes))
 
 setMethod("names", "SplicingGraphs", function(x) names(x@genes))
 
 setMethod("[", "SplicingGraphs",
-    function(x, i, j, ... , drop=TRUE)
+    function(x, i, j, ..., drop=TRUE)
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
@@ -136,6 +139,13 @@ setMethod("unlist", "SplicingGraphs",
     function(x, recursive=TRUE, use.names=TRUE)
     {
         unlist(x@genes, recursive=recursive, use.names=use.names)
+    }
+)
+
+setMethod("intronsByTranscript", "SplicingGraphs",
+    function(x)
+    {
+        x@in_by_tx
     }
 )
 

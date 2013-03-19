@@ -7,6 +7,14 @@
 \alias{SplicingGraphs,GRangesList-method}
 \alias{SplicingGraphs,TranscriptDb-method}
 
+\alias{length,SplicingGraphs-method}
+\alias{names,SplicingGraphs-method}
+\alias{[,SplicingGraphs,ANY,ANY-method}
+\alias{[[,SplicingGraphs,ANY,ANY-method}
+\alias{elementLengths,SplicingGraphs-method}
+\alias{unlist,SplicingGraphs-method}
+\alias{intronsByTranscript,SplicingGraphs-method}
+
 \alias{show,SplicingGraphs-method}
 
 \alias{plotTranscripts}
@@ -26,6 +34,23 @@
 
 \usage{
 SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
+
+## SplicingGraphs basic API:
+
+\S4method{length}{SplicingGraphs}(x)
+
+\S4method{names}{SplicingGraphs}(x)
+
+\S4method{[}{SplicingGraphs,ANY,ANY}(x, i, j, ... , drop=TRUE)
+
+\S4method{[[}{SplicingGraphs,ANY,ANY}(x, i, j, ...)
+
+\S4method{elementLengths}{SplicingGraphs}(x)
+
+\S4method{unlist}{SplicingGraphs}(x, recursive=TRUE, use.names=TRUE)
+
+\S4method{intronsByTranscript}{SplicingGraphs}(x)
+
 plotTranscripts(x)
 }
 
@@ -47,6 +72,12 @@ plotTranscripts(x)
     TODO
   }
   \item{check.introns}{
+    TODO
+  }
+  \item{i, j, ..., drop}{
+    TODO
+  }
+  \item{recursive, use.names}{
     TODO
   }
 }
@@ -184,16 +215,29 @@ sg2
 ## a SplicingGraphs object):
 stopifnot(identical(unlist(sg2), unlist(sg)))
 
-## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
+## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids:
+length(sg)
 names(sg)
 
-## The transcripts of a given gene can be extracted as an *unnamed*
-## GRangesList object with [[:
+## The transcripts of a given gene can be extracted with [[. The result
+## is an *unnamed* GRangesList object containing the exons grouped by
+## transcript:
 sg[["geneD"]]
 plotTranscripts(sg[["geneD"]])
 
-## The transcripts of all the genes can be extracted as a *named*
-## GRangesList object with unlist():
-unlist(sg)
-plotTranscripts(unlist(sg))
+## The transcripts of all the genes can be extracted with unlist(). The
+## result is a *named* GRangesList object containing the exons grouped
+## by transcript. The names of the object are the gene ids:
+ex_by_tx <- unlist(sg)
+ex_by_tx
+plotTranscripts(ex_by_tx)
+
+## Similarly, the introns can be extracted with intronsByTranscript().
+## The result is a *named* GRangesList object containing the introns
+## grouped by transcript. The names of the object are the gene ids:
+in_by_tx <- intronsByTranscript(sg)
+in_by_tx
+
+## A sanity check:
+stopifnot(identical(elementLengths(in_by_tx) + 1L, elementLengths(ex_by_tx)))
 }
