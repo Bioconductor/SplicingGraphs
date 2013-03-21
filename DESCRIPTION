@@ -1,6 +1,6 @@
 Package: SplicingGraphs
 Title: Tools for creating splicing graphs from annotations and RNA-Seq data
-Version: 0.5.2
+Version: 0.5.3
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package provides tools for creating splicing graphs based on
@@ -8,7 +8,7 @@ Description: This package provides tools for creating splicing graphs based on
 	differential splicing event usage based on genomic count data from
 	RNA-seq experiments. 
 Maintainer: H. Pages <hpages@fhcrc.org>
-Depends: BiocGenerics, IRanges (>= 1.17.37), GenomicRanges,
+Depends: BiocGenerics, IRanges (>= 1.17.40), GenomicRanges,
 	 Rgraphviz (>= 2.3.7), GenomicFeatures (>= 1.11.8), Rsamtools
 Imports: methods, utils, igraph,
 	 BiocGenerics, IRanges, GenomicRanges,

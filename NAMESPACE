@@ -17,7 +17,7 @@ importFrom(Rgraphviz, agopen)
 import(GenomicFeatures)
 import(Rsamtools)
 
-exportClasses(SplicingGraphs)
+exportClasses(.SplicingGraphGenes, SplicingGraphs)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

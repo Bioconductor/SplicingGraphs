@@ -2,6 +2,24 @@ ASCODE2DESC <- NULL
 
 .onLoad <- function(libname, pkgname)
 {
+    ## We need to fix the prototypes of the .SplicingGraphGenes and
+    ## SplicingGraphs classes. Without these fixes,
+    ## 'new(".SplicingGraphGenes")' and 'new("SplicingGraphs")' would
+    ## return invalid objects e.g.
+    ##
+    ##     validObject(new("SplicingGraphs"), complete=TRUE)
+    ##
+    ## would fail.
+    sg0 <- emptySplicingGraphs()
+    IRanges:::setPrototypeFromObject(".SplicingGraphGenes",
+                                     sg0@genes,
+                                     where=asNamespace(pkgname))
+    IRanges:::setPrototypeFromObject("SplicingGraphs",
+                                     sg0,
+                                     where=asNamespace(pkgname))
+
+    ## Set the ASCODE2DESC global constant based on the content of the
+    ## extdata/ASpatterns.txt file.
     filepath <- system.file("extdata", "ASpatterns.txt",
                             package=pkgname, lib.loc=libname,
                             mustWork=TRUE)

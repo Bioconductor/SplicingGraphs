@@ -37,11 +37,7 @@ setClass("SplicingGraphs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
-###
-### A SplicingGraphs object 'x' should be validated with:
-###
-###   validObject(x, complete=TRUE)
+### .SplicingGraphGenes Validity.
 ###
 
 .valid.SplicingGraphGenes.names <- function(x)
@@ -73,16 +69,62 @@ setClass("SplicingGraphs",
 
 setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .SplicingGraphGenes API.
+###
+### .SplicingGraphGenes objects inherit the CompressedList API i.e. anything
+### that works on a CompressedList object works on a .SplicingGraphGenes
+### object. But the only things we're using are: length(), names(), [, [[,
+### elementLengths(), and unlist().
+###
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .SplicingGraphGenes() constructor.
+###
+### Used only in this file.
+###
+
+.SplicingGraphGenes <- function(ex_by_tx)
+{
+    ex_by_tx_names <- names(ex_by_tx)
+    if (is.null(ex_by_tx_names)) {
+        ans_partitioning <- PartitioningByEnd(length(ex_by_tx))
+    } else {
+        names(ex_by_tx) <- NULL
+        ans_end <- end(Rle(ex_by_tx_names))
+        ans_names <- ex_by_tx_names[ans_end]
+        ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
+    }
+    IRanges:::newCompressedList0(getClass(".SplicingGraphGenes"),
+                                 ex_by_tx, ans_partitioning)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### SplicingGraphs validity.
+###
+### A SplicingGraphs object 'x' should be validated with:
+###
+###   validObject(x, complete=TRUE)
+###
+
 .valid.SplicingGraphs.in_by_tx <- function(x)
 {
     x_in_by_tx <- x@in_by_tx
-    unlisted_x <- unlist(x)
-    if (length(x_in_by_tx) != length(unlisted_x))
-        return("'x@in_by_tx' must have the same length as 'unlist(x)'")
+    x_in_by_tx_names <- names(x_in_by_tx)
+    if (is.null(x_in_by_tx_names))
+        return("'x@in_by_tx' must have names")
+    x_ex_by_tx <- unlist(x@genes)
+    if (length(x_in_by_tx) != length(x_ex_by_tx))
+        return("'x@in_by_tx' must have the same length as 'unlist(x@genes)'")
+    if (!identical(x_in_by_tx_names, names(x_ex_by_tx)))
+        return("'x@in_by_tx' must have the same names as 'unlist(x@genes)'")
     if (!identical(elementLengths(x_in_by_tx) + 1L,
-                   elementLengths(unlisted_x))) {
+                   elementLengths(x_ex_by_tx))) {
         msg <- c("the shape of 'x@in_by_tx' is not compatible ",
-                 "with the shape of 'unlist(x)'")     
+                 "with the shape of 'unlist(x@genes)'")
         return(paste0(msg, collapse=""))
     }
     NULL
@@ -248,6 +290,8 @@ setMethod("plotTranscripts", "SplicingGraphs",
 ### gene grouped by transcripts. More precisely, each top-level element
 ### in 'gene' contains the genomic ranges of the exons for a particular
 ### transcript of the gene.
+### Should be able to deal with a GRangesList object of length 0 (i.e. a
+### gene with no transcripts).
 .setSplicingGraphInfo <- function(gene, check.introns=TRUE)
 {
     if (!is(gene, "GRangesList"))
@@ -255,21 +299,27 @@ setMethod("plotTranscripts", "SplicingGraphs",
     if (!isTRUEorFALSE(check.introns))
         stop("'check.introns' must be TRUE or FALSE")
     exons <- gene@unlistData
-    exons_strand <- strand(exons)
-    if (nrun(seqnames(exons)) != 1L || nrun(exons_strand) != 1L)
-        stop("all the exons in the gene must be on the same ",
-             "reference sequence and strand")
-    on.minus.strand <- runValue(exons_strand)[1L] == "-"
-    if (check.introns) {
-        ## We check that, within each transcript, exons are ordered from 5'
-        ## to 3' with gaps of at least 1 nucleotide between them.
-        ranges_by_tx <- ranges(gene)
-        if (on.minus.strand)
-            ranges_by_tx <- revElements(ranges_by_tx)
-        if (!all(isNormal(ranges_by_tx)))
-            stop("some transcripts in the gene don't have their exons ",
-                 "ordered from 5' to 3' with gaps of at least 1 nucleotide ",
-                 "between them (introns)")
+    if (length(exons) == 0L) {
+        ## An arbitrary choice. Won't have any impact on the final object
+        ## returned by .setSplicingGraphInfo().
+        on.minus.strand <- TRUE
+    } else {
+        exons_strand <- strand(exons)
+        if (nrun(seqnames(exons)) != 1L || nrun(exons_strand) != 1L)
+            stop("all the exons in the gene must be on the same ",
+                 "reference sequence and strand")
+        on.minus.strand <- runValue(exons_strand)[1L] == "-"
+        if (check.introns) {
+            ## We check that, within each transcript, exons are ordered from
+            ## 5' to 3' with gaps of at least 1 nucleotide between them.
+            ranges_by_tx <- ranges(gene)
+            if (on.minus.strand)
+                ranges_by_tx <- revElements(ranges_by_tx)
+            if (!all(isNormal(ranges_by_tx)))
+                stop("some transcripts in the gene don't have their exons ",
+                     "ordered from 5' to 3' with gaps of at least 1 ",
+                     "nucleotide between them (introns)")
+        }
     }
 
     ## Set splicing site ids.
@@ -284,14 +334,14 @@ setMethod("plotTranscripts", "SplicingGraphs",
     gene@unlistData <- exons
     gene_mcols <- mcols(gene)
 
-    ## Set tx_id metadata col.
+    ## Set "tx_id" metadata col.
     if ("tx_id" %in% colnames(gene_mcols))
         stop("'gene' already has metadata column tx_id")
     tx_id <- names(gene)
     if (!is.null(tx_id))
         gene_mcols$tx_id <- tx_id
 
-    ## Set txpaths metadata col.
+    ## Set "txpaths" metadata col.
     if ("txpaths" %in% colnames(gene_mcols))
         stop("'gene' already has metadata column txpaths")
     if (on.minus.strand) {
@@ -344,8 +394,10 @@ setMethod("plotTranscripts", "SplicingGraphs",
 {
     grouping_names <- names(grouping)
     if (is.null(grouping_names)) {
-        warning("set names on 'grouping' (with 'names(grouping) <- ",
-                "seq_along(grouping)') as artificial gene ids")
+        if (length(grouping) != 0L)
+            warning("'grouping' is unnamed. Setting names on it (with ",
+                    "'names(grouping) <- seq_along(grouping)') as artificial ",
+                    "gene ids.")
         names(grouping) <- seq_along(grouping)
         return(grouping)
     }
@@ -432,9 +484,9 @@ setMethod("plotTranscripts", "SplicingGraphs",
 
 ### TODO: Improve handling of invalid genes i.e. provide more details about
 ### which genes were considered invalid and why.
-.make_unlisted_genes_from_GRangesList <- function(x, grouping=NULL,
-                                                     min.ntx=2, max.ntx=NA,
-                                                     check.introns=TRUE)
+.make_ex_by_tx_from_GRangesList <- function(x, grouping=NULL,
+                                               min.ntx=2, max.ntx=NA,
+                                               check.introns=TRUE)
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
@@ -471,6 +523,15 @@ setMethod("plotTranscripts", "SplicingGraphs",
     if (!is.na(max.ntx))
         keep <- keep & grouping_eltlen <= max.ntx
     grouping <- grouping[keep]
+    if (length(grouping) == 0L) {
+        ## We need to return an empty GRangesList but it cannot be simply
+        ## made with GRangesList() or it wouldn't have the expected metadata
+        ## cols (outer and inner). So we call .setSplicingGraphInfo() on an
+        ## empty gene instead.
+        ans <- .setSplicingGraphInfo(x[NULL], check.introns=check.introns)
+        names(ans) <- character(0)
+        return(ans)
+    }
 
     ## Main loop.
     ans <- lapply(seq_along(grouping),
@@ -503,21 +564,6 @@ setMethod("plotTranscripts", "SplicingGraphs",
     ans
 }
 
-.new_SplicingGraphGenes <- function(unlisted_genes)
-{
-    unlisted_names <- names(unlisted_genes)
-    if (is.null(unlisted_names)) {
-        ans_partitioning <- PartitioningByEnd(length(unlisted_genes))
-    } else {
-        names(unlisted_genes) <- NULL
-        ans_end <- end(Rle(unlisted_names))
-        ans_names <- unlisted_names[ans_end]
-        ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
-    }
-    IRanges:::newCompressedList0(".SplicingGraphGenes",
-                                 unlisted_genes, ans_partitioning)
-}
-
 setGeneric("SplicingGraphs", signature="x",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
         standardGeneric("SplicingGraphs")
@@ -526,11 +572,12 @@ setGeneric("SplicingGraphs", signature="x",
 setMethod("SplicingGraphs", "GRangesList",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
-        unlisted_genes <- .make_unlisted_genes_from_GRangesList(x,
-                            grouping=grouping, min.ntx=min.ntx, max.ntx=max.ntx,
+        ans_ex_by_tx <- .make_ex_by_tx_from_GRangesList(x, grouping=grouping,
+                            min.ntx=min.ntx, max.ntx=max.ntx,
                             check.introns=check.introns)
-        ans_genes <- .new_SplicingGraphGenes(unlisted_genes)
-        ans_in_by_tx <- psetdiff(range(unlisted_genes), unlisted_genes)
+        ans_genes <- .SplicingGraphGenes(ans_ex_by_tx)
+        mcols(ans_ex_by_tx) <- NULL
+        ans_in_by_tx <- psetdiff(range(ans_ex_by_tx), ans_ex_by_tx)
         ans_bubbles_cache <- new.env(parent=emptyenv())
         new("SplicingGraphs", genes=ans_genes,
                               in_by_tx=ans_in_by_tx,
@@ -550,4 +597,14 @@ setMethod("SplicingGraphs", "TranscriptDb",
                        check.introns=check.introns)
     }
 )
+
+### Not exported. Only used in the .onLoad hook (see zzz.R file) for fixing
+### the prototypes of the .SplicingGraphGenes and SplicingGraphs classes.
+emptySplicingGraphs <- function()
+{
+    ans <- SplicingGraphs(GRangesList(), IntegerList())
+    ## We want to make sure 'ans' is *completely* valid.
+    validObject(ans, complete=TRUE)
+    ans
+}
 

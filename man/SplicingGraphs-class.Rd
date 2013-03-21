@@ -1,5 +1,8 @@
 \name{SplicingGraphs-class}
 
+\alias{class:.SplicingGraphGenes}
+\alias{.SplicingGraphGenes-class}
+
 \alias{class:SplicingGraphs}
 \alias{SplicingGraphs-class}
 
