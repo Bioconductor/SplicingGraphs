@@ -104,7 +104,7 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 \begin{figure}[tbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-gene.pdf}
+  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-transcripts.pdf}
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}}
   \end{center}
@@ -130,7 +130,7 @@ An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
 
 \begin{figure}[tbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-gene.pdf}
+  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-transcripts.pdf}
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
   \end{center}

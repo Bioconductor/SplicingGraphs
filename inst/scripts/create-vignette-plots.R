@@ -14,10 +14,7 @@ tx_by_gn <- tx_by_gn[elementLengths(runValue(strand(tx_by_gn))) == 1L]
 is_on_chr19 <- as.character(unlist(runValue(seqnames(tx_by_gn)))) == "chr19"
 tx_by_gn <- tx_by_gn[is_on_chr19]
 
-### Keep only genes that have at least 2 transcripts:
-tx_by_gn <- tx_by_gn[elementLengths(tx_by_gn) >= 2L]
-
-### Compute the splicing graphs (takes about 2 min. 30 sec.):
+### Compute the splicing graphs (takes about 4 min.):
 sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
 
 ### Slideshow of the graphs.
@@ -50,8 +47,8 @@ dev.off()
 grl <- sg[["117286"]]
 ### Put the transcripts in an order that is visually more consistent with
 ### the splicing graph plot.
-grl <- grl[c(3L, 1L, 2L, 4L)]
-pdf("CIB3-gene.pdf", width=6, height=3)
+grl <- grl[c(3L, 2L, 1L, 4L)]
+pdf("CIB3-transcripts.pdf", width=6, height=3)
 plotTranscripts(grl)
 dev.off()
 
@@ -73,7 +70,7 @@ grl <- sg[["126017"]]
 ### Put the transcripts in an order that is visually more consistent with
 ### the splicing graph plot.
 grl <- grl[2:1]
-pdf("ZNF813-gene.pdf", width=6, height=3)
+pdf("ZNF813-transcripts.pdf", width=6, height=3)
 plotTranscripts(grl)
 dev.off()
 
