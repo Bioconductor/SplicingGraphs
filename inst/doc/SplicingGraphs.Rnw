@@ -501,13 +501,13 @@ advantages of the splicing graph approach the reads for the
 exon model get also counted. As a starting point for counting the 
 aligned reads are required. The aligned reads used in this example 
 are stored as BAM files. The BAM files used for counting reads are
-provided in the \Rpackage{RNASeqDataSubset}.
+provided in the \Rpackage{TBX20BamSubset}.
 The \Rfunction{countSpliceGraphReads} function 
 requires a \Rclass{BamFileList} object which is created out of the
 the file paths to the six selected BAM files.
 
 <<countingReads>>=
-library(RNASeqDataSubset)
+library(TBX20BamSubset)
 require("Rsamtools")
 fls <- getBamFileList()
 bfs <- BamFileList(fls)
@@ -552,7 +552,7 @@ therefore for each condition three biological replicates.
 
 <<setUpTheDesign,eval=FALSE>>=
 fn <- system.file("extdata", "phenoData.txt", 
-                  package="RNASeqDataSubset")
+                  package="TBX20BamSubset")
 pd <- read.table(fn, header=TRUE,
                  stringsAsFactors=FALSE)
 design <- data.frame(condition=pd[, "condition"])
