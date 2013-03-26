@@ -299,27 +299,18 @@ setMethod("plotTranscripts", "SplicingGraphs",
     if (!isTRUEorFALSE(check.introns))
         stop("'check.introns' must be TRUE or FALSE")
     exons <- gene@unlistData
-    if (length(exons) == 0L) {
-        ## An arbitrary choice. Won't have any impact on the final object
-        ## returned by .setSplicingGraphInfo().
-        on.minus.strand <- TRUE
-    } else {
-        exons_strand <- strand(exons)
-        if (nrun(seqnames(exons)) != 1L || nrun(exons_strand) != 1L)
-            stop("all the exons in the gene must be on the same ",
-                 "reference sequence and strand")
-        on.minus.strand <- runValue(exons_strand)[1L] == "-"
-        if (check.introns) {
-            ## We check that, within each transcript, exons are ordered from
-            ## 5' to 3' with gaps of at least 1 nucleotide between them.
-            ranges_by_tx <- ranges(gene)
-            if (on.minus.strand)
-                ranges_by_tx <- revElements(ranges_by_tx)
-            if (!all(isNormal(ranges_by_tx)))
-                stop("some transcripts in the gene don't have their exons ",
-                     "ordered from 5' to 3' with gaps of at least 1 ",
-                     "nucleotide between them (introns)")
-        }
+    common_strand <- commonStrand(exons, what="exons in the gene")
+    on.minus.strand <- common_strand == "-"
+    if (check.introns && length(exons) != 0L) {
+        ## We check that, within each transcript, exons are ordered from
+        ## 5' to 3' with gaps of at least 1 nucleotide between them.
+        ranges_by_tx <- ranges(gene)
+        if (on.minus.strand)
+            ranges_by_tx <- revElements(ranges_by_tx)
+        if (!all(isNormal(ranges_by_tx)))
+            stop("some transcripts in the gene don't have their exons ",
+                 "ordered from 5' to 3' with gaps of at least 1 ",
+                 "nucleotide between them (introns)")
     }
 
     ## Set splicing site ids.

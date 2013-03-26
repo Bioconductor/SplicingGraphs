@@ -1,6 +1,6 @@
 Package: SplicingGraphs
 Title: Tools for creating splicing graphs from annotations and RNA-Seq data
-Version: 0.6.1
+Version: 0.6.2
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package provides tools for creating splicing graphs based on
@@ -17,7 +17,8 @@ Suggests: igraph, Gviz,
 	 TxDb.Hsapiens.UCSC.hg19.knownGene,
 	 TxDb.Mmusculus.UCSC.mm9.knownGene, TBX20BamSubset,
 	 RUnit
-Collate: igraph-utils.R
+Collate: utils.R
+	 igraph-utils.R
 	 SplicingGraphs-class.R
 	 sgedges-methods.R
 	 sgraph-methods.R

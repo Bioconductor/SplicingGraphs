@@ -476,6 +476,22 @@ bfs <- BamFileList(fls)
 
 \subsection{Counting reads per edges}
 
+<<>>=
+flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+                     isNotPassingQualityControls=FALSE,
+                     isDuplicate=FALSE)
+param0 <- ScanBamParam(flag=flag0)
+gal1 <- readGappedAlignments(fls[1], use.names=TRUE, param=param0)
+grl1 <- grglist(gal1, order.as.in.query=TRUE)
+## This takes about 1 hour!
+sg <- assignReads(sg, grl1, sample.name=names(fls[1]))
+@
+
+<<>>=
+unlist(sg)
+intronsByTranscript(sg)
+@
+
 The reads get counted based on the edge model created above.
 Thereby adjacent elements of an edge are summarized to one
 range before the counting is done. If an read overlaps two 

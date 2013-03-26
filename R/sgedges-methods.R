@@ -189,6 +189,55 @@ setMethod("UATXHcount", "SplicingGraphs",
     sgedges
 }
 
+### Returns a DataFrame with first 2 cols being "from" and "to".
+.extract_sgedges_exon_hits <- function(sg)
+{
+    if (length(sg) != 1L)
+        stop("'sg' must be a SplicingGraphs object of length 1")
+    ex_by_tx <- unlist(sg)
+    exons <- ex_by_tx@unlistData
+    common_strand <- commonStrand(exons, what="exons in the gene")
+    if (common_strand == "+") {
+        from_to_colnames <- c("start_SSid", "end_SSid")
+    } else {
+        from_to_colnames <- c("end_SSid", "start_SSid")
+    }
+    ex_mcols <- mcols(exons)
+    ex_colnames <- colnames(ex_mcols)
+    hits_idx <- grep("hits$", ex_colnames)
+    hits_colnames <- ex_colnames[hits_idx]
+    hits_colnames <- c(from_to_colnames, hits_colnames)
+    exon_hits <- ex_mcols[ , hits_colnames, drop=FALSE]
+    colnames(exon_hits)[1:2] <- c("from", "to")
+    exon_hits
+}
+
+### FIXME: Should return a DataFrame with first 2 cols being "from" and "to".
+.extract_sgedges_intron_hits <- function(sg)
+{
+    if (length(sg) != 1L)
+        stop("'sg' must be a SplicingGraphs object of length 1")
+    in_by_tx <- intronsByTranscript(sg)
+    introns <- in_by_tx@unlistData
+    common_strand <- commonStrand(introns, what="introns in the gene")
+    ## FIXME: No "from" or "to" cols for now. Add them. This might require
+    ## substantial changes upstream (i.e. SplicingGraphs() constructor) w.r.t
+    ## what we store in the in_by_tx slot of the 'sg' object.
+    #if (common_strand == "+") {
+    #    from_to_colnames <- c("start_SSid", "end_SSid")
+    #} else {
+    #    from_to_colnames <- c("end_SSid", "start_SSid")
+    #}
+    in_mcols <- mcols(introns)
+    in_colnames <- colnames(in_mcols)
+    hits_idx <- grep("hits$", in_colnames)
+    hits_colnames <- in_colnames[hits_idx]
+    #hits_colnames <- c(from_to_colnames, hits_colnames)
+    intron_hits <- in_mcols[ , hits_colnames, drop=FALSE]
+    #colnames(intron_hits)[1:2] <- c("from", "to")
+    intron_hits
+}
+
 setGeneric("sgedges", signature="x",
     function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
         standardGeneric("sgedges")
@@ -205,12 +254,16 @@ setMethod("sgedges", "SplicingGraphs",
         if (keep.dup.edges)
             return(sgedges(txpaths, UATXHcount=UATXHcount,
                                     keep.dup.edges=keep.dup.edges))
-        ex_by_tx <- unlist(x)
-        in_by_tx <- x@in_by_tx
         sgedges0 <- sgedges(txpaths, UATXHcount=UATXHcount,
                                      keep.dup.edges=TRUE)
-        ex_hits <- mcols(unlist(ex_by_tx, use.names=FALSE))[["hits"]]
-        in_hits <- mcols(unlist(in_by_tx, use.names=FALSE))[["hits"]]
+        exon_hits <- .extract_sgedges_exon_hits(x)
+        intron_hits <- .extract_sgedges_intron_hits(x)
+        ## FIXME: Once .extract_sgedges_intron_hits() is fixed, merge the
+        ## 'exon_hits' and 'intron_hits' DataFrame's with 'sgedges0' based
+        ## on their "from" and "to" cols. Then remove the 'ex_hits' and
+        ## 'in_hits' args from .make_sgedges_from_sgedges0().
+        ex_hits <- exon_hits$hits
+        in_hits <- intron_hits$hits
         .make_sgedges_from_sgedges0(sgedges0, ex_hits=ex_hits, in_hits=in_hits)
     }
 )
