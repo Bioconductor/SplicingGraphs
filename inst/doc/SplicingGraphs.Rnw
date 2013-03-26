@@ -425,13 +425,13 @@ graph is how many complete events does each individual gene have.
 To answer this we have to count the number of bubbles within
 each gene.
 
-<<howManySpliceEvents>>=
+<<nb_bubbles_per_gene>>=
 nb_bubbles_per_gene <- elementLengths(AScode_list)
 @ 
 
 Below the genes with the most observed splicing events are shown.
 
-<<genesWithMostObservedSpliceEvents>>=
+<<head_sort_nb_bubbles_per_gene>>=
 head(sort(nb_bubbles_per_gene, decreasing=TRUE))
 @ 
 
@@ -439,55 +439,16 @@ Next we want to see which genes show the highest heterogeneity of splicing
 events.
 We check for the number of unique splicing events for each gene.
 
-<<genesWithHighestSpliceEventHeterogeneity>>=
+<<nb_unique_bubbles_per_gene>>=
 nb_unique_bubbles_per_gene <- elementLengths(unique(CharacterList(AScode_list)))
 @ 
 
 Below the genes with the highest heterogeneity in observed splicing events
 are shown
 
-<<showGenesWithHighestSpliceEventHeterogeneity>>=
+<<head_sort_nb_unique_bubbles_per_gene>>=
 head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 @ 
-
-\subsection{Mapping of edge elements to genes and exons}
-
-[TODO: Revisit or remove this subsection entirely]
-
-To get a mapping of the original exons to the new disjoined exons 
-the exons by edge object have to be unlisted first. 
-From the flat \Rclass{Granges} object we can then easily retrieve the 
-original exon ids. For the mapping we utilize a simple
-\Rclass{data.frame} object because the mapping between the new disjoined
-exon ids and the original exon ids is ambiguous.
-
-<<mopOriginalExonIdsToDisjoint,eval=FALSE>>=
-sG.flat <- unlist(sG, use.names=FALSE)
-orig.Ex <- values(sG.flat)[["exon_ids"]]
-disJ.Ex <- values(sG.flat)[["disJ_exon_id"]]
-
-newExNames <- rep(disJ.Ex, elementLengths(orig.Ex))
-origExToNewEx <- data.frame(orig.Ex=unlist(orig.Ex), 
-                            disJ.Ex=newExNames, 
-                            row.names=NULL)
-
-head(origExToNewEx)
-@
-
-The gene ids are directly retrievable from the \Rclass{GrangesList}
-object. To get the
-gene ids the \Rfunction{values} accessor function is used.
-The mapping from edges to genes is used further downstream in the analysis.
-
-<<getGeneToEdgeMappings,eval=FALSE>>=
-gnIDs <- values(sG)[["gene_id"]]
-edgeIDs <- names(sG)
-gnToEdge <- setNames(gnIDs, edgeIDs)
-@ 
-
-
-The next step we want to perform is use the information computed above
-in terms of RNA-Seq and transcriptome analysis.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

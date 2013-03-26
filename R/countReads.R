@@ -12,7 +12,8 @@
 ### (CharacterList) reporting the hits for each subfeature.
 ### TODO: Current implementation is messy and inefficient. There must be
 ### a better way...
-assignSubfeatureHits <- function(query, subject, hits, ignore.strand=FALSE)
+.assignSubfeatureHits <- function(query, subject, hits, ignore.strand=FALSE,
+                                  hits.colname="hits")
 {
     if (!is(query, "GRangesList"))
         stop("'query' must be a GRangesList object")
@@ -30,6 +31,11 @@ assignSubfeatureHits <- function(query, subject, hits, ignore.strand=FALSE)
         stop("'hits' is not compatible with 'query' and 'subject'")
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
+    if (!isSingleString(hits.colname))
+        stop("'hits.colname' must be a single string")
+    unlisted_subject <- subject@unlistData
+    #if (hits.colname %in% colnames(unlisted_subject))
+    #    stop("'unlisted(subject)' already has metadata column ", hits.colname)
 
     subject_eltlens <- elementLengths(subject)  # nb of subfeatures per subject
     s_hits <- subjectHits(hits)
@@ -61,8 +67,40 @@ assignSubfeatureHits <- function(query, subject, hits, ignore.strand=FALSE)
                            hits
                          })
 
-    mcols(subject@unlistData)$hits <- CharacterList(character(0))
-    mcols(subject[unq_s_hits]@unlistData)$hits <- do.call(c, subfeature_hits)
+    mcols(subject@unlistData)[[hits.colname]] <- CharacterList(character(0))
+    mcols(subject[unq_s_hits]@unlistData)[[hits.colname]] <-
+                                                 do.call(c, subfeature_hits)
     subject
+}
+
+### FIXME: It's questionable whether this does the right thing on paired-end
+### reads. I guess not...
+assignReads <- function(sg, reads, sample.name=NA)
+{
+    if (!is(sg, "SplicingGraphs"))
+        stop("'sg' must be a SplicingGraphs object")
+    if (!is(reads, "GRangesList"))
+        stop("'reads' must be a GRangesList object")
+    if (!isSingleStringOrNA(sample.name))
+        stop("'sample.name' must be a single string or NA")
+    if (is.na(sample.name)) {
+        hits.colname <- "hits"
+    } else {
+        hits.colname <- paste0(sample.name, ".hits")
+    }
+
+    unlisted_sg <- unlist(sg)
+    ov0 <- findOverlaps(reads, unlisted_sg, ignore.strand=TRUE)
+    ovenc0 <- encodeOverlaps(reads, unlisted_sg, hits=ov0,
+                             flip.query.if.wrong.strand=TRUE)
+    ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
+    ov1 <- ov0[ov0_is_comp]
+    sg@genes@unlistData <- unname(.assignSubfeatureHits(reads, unlisted_sg,
+                                                    ov1, ignore.strand=TRUE,
+                                                    hits.colname=hits.colname))
+    sg@in_by_tx <- .assignSubfeatureHits(reads, sg@in_by_tx, ov1,
+                                         ignore.strand=TRUE,
+                                         hits.colname=hits.colname)
+    sg
 }
 

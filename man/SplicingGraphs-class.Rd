@@ -193,8 +193,8 @@ suppressWarnings(
 )
 
 ## ---------------------------------------------------------------------
-## 2. Compute all the splicing graphs (1 graph per gene) into a single
-##    GRangesList object
+## 2. Compute all the splicing graphs (1 graph per gene) and return them
+##    in a SplicingGraphs object
 ## ---------------------------------------------------------------------
 
 ## Extract the exons grouped by transcript:

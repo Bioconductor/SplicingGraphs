@@ -52,7 +52,7 @@ export(
     ASCODE2DESC,
 
     ## countReads.R:
-    assignSubfeatureHits,
+    assignReads,
 
     ## toy_data.R:
     toy_genes_gff,

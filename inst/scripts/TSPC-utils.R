@@ -25,23 +25,6 @@ loadModels <- function(models_path, check.transcripts=TRUE)
     ans
 }
 
-### It's questionable whether this does the right thing on paired-end reads.
-### I guess not...
-makeSgedgesWithHits <- function(grl, sg)
-{
-    unlisted_sg <- unlist(sg)
-    ov0 <- findOverlaps(grl, unlisted_sg, ignore.strand=TRUE)
-    ovenc0 <- encodeOverlaps(grl, unlisted_sg, hits=ov0,
-                             flip.query.if.wrong.strand=TRUE)
-    ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
-    ov1 <- ov0[ov0_is_comp]
-    sg@genes@unlistData <- unname(assignSubfeatureHits(grl, unlisted_sg, ov1,
-                                                       ignore.strand=TRUE))
-    sg@in_by_tx <- assignSubfeatureHits(grl, sg@in_by_tx, ov1,
-                                        ignore.strand=TRUE)
-    sgedges(sg, in_by_tx=in_by_tx)
-}
-
 makeTSPCsgedges <- function(subdir_path)
 {
     subdir_basename <- basename(subdir_path)
@@ -103,7 +86,8 @@ makeTSPCsgedges <- function(subdir_path)
                                              param=param0)
             grl <- grglist(galp, order.as.in.query=TRUE)
         }
-        sgedges <- makeSgedgesWithHits(grl, sg)
+        sg <- assignReads(sg, grl)
+        sgedges <- sgedges(sg)
         message("OK")
         sgedges[ , "nhits"]
     })
