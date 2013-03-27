@@ -104,3 +104,32 @@ assignReads <- function(sg, reads, sample.name=NA)
     sg
 }
 
+### Return a DataFrame with 1 row per unique splicing graph edge and 1 column
+### per sample.
+countReads <- function(sg)
+{
+    if (!is(sg, "SplicingGraphs"))
+        stop("'sg' must be a SplicingGraphs object")
+    sgedges0 <- mcols(unlist(sgedgesByTranscript(sg), use.names=FALSE))
+    sgedge_id <- sgedges0[ , "sgedge_id"]
+    ex_or_in <- sgedges0[ , "ex_or_in"]
+    sm <- match(sgedge_id, sgedge_id)
+    stopifnot(all(ex_or_in == ex_or_in[sm]))  # sanity check
+    is_not_dup <- sm == seq_along(sm)
+    ans <- DataFrame(sgedge_id=sgedge_id[is_not_dup],
+                     ex_or_in=ex_or_in[is_not_dup])
+    hits_idx <- grep("\\.hits$", colnames(sgedges0))
+    for (j in hits_idx) {
+        hits <- sgedges0[[j]]
+        stopifnot(is(hits, "CharacterList"))  # sanity check
+        ## FIXME: Very inefficient. Improve it.
+        for (i in which(!is_not_dup))
+            hits[[sm[i]]] <- unique(hits[[sm[i]]], hits[[i]])
+        hits <- hits[is_not_dup]
+        cn <- colnames(sgedges0)[j]
+        cn <- sub("\\.hits$", "", cn)
+        ans[[cn]] <- elementLengths(hits)
+    }
+    ans
+}
+

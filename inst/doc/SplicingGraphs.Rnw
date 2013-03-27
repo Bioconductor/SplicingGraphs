@@ -205,7 +205,7 @@ package.
 
 First we load the selected \Rclass{TranscriptDb} object.
 
-<<loadTxdb>>=
+<<txdb>>=
 library(TxDb.Mmusculus.UCSC.mm9.knownGene)
 txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
 @
@@ -224,7 +224,7 @@ to deactivate chromosomes in the \Rclass{TranscriptDb} object which should
 not be used. Usually one would deactivate random
 chromosomes often found in the annotation.
 
-<<deactChr>>=
+<<isActiveSeq>>=
 activeChr <- setNames(rep(FALSE, length(isActiveSeq(txdb))),
                       names(isActiveSeq(txdb)))
 activeChr[names(activeChr) == "chr19"] <- TRUE
@@ -234,14 +234,14 @@ isActiveSeq(txdb) <- activeChr
 Finally we can call the \Rfunction{SplicingGraphs} constructor on
 the modified \Rclass{TranscriptDb} object.
 
-<<loadGenomicFeatures>>=
+<<sg>>=
 library(SplicingGraphs)
 sg <- SplicingGraphs(txdb)
 sg
 @
 %% We load a precomputed 'sg' that contains all the bubbles in its
 %% bubbles_cache slot.
-<<echo=FALSE>>=
+<<loadPrecomputed_sg,echo=FALSE>>=
 sg2 <- .loadPrecomputed("sg")
 sg@.bubbles_cache <- sg2@.bubbles_cache
 if (!identical(sg, sg2))
@@ -251,26 +251,26 @@ if (!identical(sg, sg2))
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
 gene and \Rcode{sg} gives the gene ids.
 
-<<>>=
+<<names_sg>>=
 names(sg)[1:20]
 @
 
 The transcripts of a given gene can be extracted as an \emph{unnamed}
 \Rclass{GRangesList} object with \Rfunction{[[}:
 
-<<>>=
+<<sg_double_bracket_107328>>=
 sg[["107328"]]
 @
 
 and plotted with \Rfunction{plotTranscripts}:
 
-<<eval=FALSE>>=
+<<plotTranscripts_sg_107328,eval=FALSE>>=
 plotTranscripts(sg[["107328"]])
 @
 
 The resulting plot is shown on figure \ref{img:107328-transcripts}.
 
-<<echo=FALSE,results=hide>>=
+<<plotTranscripts_sg_107328_as_pdf,echo=FALSE,results=hide>>=
 pdf("107328-transcripts.pdf", width=6, height=3)
 plotTranscripts(sg[["107328"]])
 dev.off()
@@ -286,7 +286,7 @@ dev.off()
 The transcripts of all the genes can be extracted as a \emph{named}
 \Rclass{GRangesList} object with \Rfunction{unlist}:
 
-<<>>=
+<<unlist_sg>>=
 unlist(sg)
 @
 
@@ -294,21 +294,32 @@ The edges and nodes of the splicing graph of a given gene can be
 extracted with \Rfunction{sgedges} and \Rfunction{sgnodes} applied
 on the subsetted \Rclass{SplicingGraphs} object:
 
-<<>>=
+<<sgedges_sg>>=
 sgedges(sg["107328"])
 sgnodes(sg["107328"])
 @
 
+Alternatively the edges of all the genes can be extracted with
+\Rfunction{sgedgesByTranscript}. They are returned in a
+\Rclass{GRangesList} object where they are grouped by transcript.
+Note that only the \emph{internal} edges are returned i.e.
+edges starting from the root node ($R$) or ending at the leaf
+node ($L$) are omitted:
+
+<<sgedgesByTranscript_sg>>=
+sgedgesByTranscript(sg)
+@
+
 To plot a given splicing graph:
 
-<<eval=FALSE>>=
+<<plot_sg_107328,eval=FALSE>>=
 plot(sgraph(sg["107328"]))
 plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
 @
 
 The resulting plots are shown on figure \ref{img:107328-sgraph}.
 
-<<echo=FALSE,results=hide>>=
+<<plot_sg_107328_as_pdf,echo=FALSE,results=hide>>=
 pdf("107328-sgraph.pdf", width=3, height=5)
 plot(sgraph(sg["107328"]))
 dev.off()
@@ -339,7 +350,7 @@ by extracting the bubbles of a graph.
 
 \subsection{Extract the bubbles}
 
-<<>>=
+<<bubbles_sg_107328>>=
 bubbles(sg["107328"])
 @
 
@@ -403,7 +414,7 @@ See Figure \ref{img:altaccept}
 \subsection{Tabulating all the alternative splicing codes for Mouse
             chromosome 19}
 
-<<>>=
+<<AScode_summary>>=
 AScode_list <- lapply(seq_along(sg), function(i) bubbles(sg[i])$AScode)
 names(AScode_list) <- names(sg)
 AScode_table <- table(unlist(AScode_list))
@@ -454,7 +465,7 @@ head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Counting reads}
 
-[TODO: Revisit this section]
+[TODO: Revisit this section.]
 
 This section deals with counting the reads associated with the
 individual edges. To elucidate later in this vignette some
@@ -467,29 +478,65 @@ The \Rfunction{countSpliceGraphReads} function
 requires a \Rclass{BamFileList} object which is created out of the
 the file paths to the six selected BAM files.
 
-<<countingReads>>=
+<<bam_files>>=
 library(TBX20BamSubset)
-require("Rsamtools")
-fls <- getBamFileList()
-bfs <- BamFileList(fls)
+bam_files <- getBamFileList()
 @ 
 
 \subsection{Counting reads per edges}
 
-<<>>=
+[TODO: Try to optimize assignReads() so we can do the full count below
+ in reasonable time.]
+
+In order to keep things running in a reasonable time in this vignette,
+we reduce the size of \Rclass{SplicingGraphs} object \Rcode{sg} by
+keeping only 50 randomly chosen genes:
+
+<<sg50>>=
+set.seed(33)
+sg50 <- sample(sg, 50)
+@
+
+We're also going to assign only 20\% (randomly sampled) of the reads
+in each BAM file:
+
+<<assignReads,eval=FALSE>>=
+library(Rsamtools)
 flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-gal1 <- readGappedAlignments(fls[1], use.names=TRUE, param=param0)
-grl1 <- grglist(gal1, order.as.in.query=TRUE)
-## This takes about 1 hour!
-sg <- assignReads(sg, grl1, sample.name=names(fls[1]))
+## The following loop takes about 10 minutes!
+for (i in seq_along(bam_files)) {
+    bam_file <- bam_files[i]
+    cat("Processing sample ", names(bam_file), " ... ", sep="")
+    gal0 <- readGappedAlignments(bam_file, use.names=TRUE, param=param0)
+    gal <- sample(gal0, length(gal0) * 0.2)
+    grl <- grglist(gal, order.as.in.query=TRUE)
+    sg50 <- assignReads(sg50, grl, sample.name=names(bam_file))
+    cat("OK\n")
+}
+@
+<<loadPrecomputed_sg50,echo=FALSE>>=
+sg50 <- .loadPrecomputed("sg50")
 @
 
-<<>>=
-unlist(sg)
-intronsByTranscript(sg)
+<<countReads_sg50,eval=FALSE>>=
+## Takes about 1 minute...
+sg50_counts <- countReads(sg50)
+@
+<<loadPrecomputed_sg50_counts,echo=FALSE>>=
+sg50_counts <- .loadPrecomputed("sg50_counts")
+@
+
+The returned object is a \Rclass{DataFrame} with one row per unique
+splicing graph edge and one column of counts per sample. Two additional
+columns contain the splicing graph edge ids and the type of edge (exon
+or intron):
+
+<<head_sg50_counts>>=
+dim(sg50_counts)
+head(sg50_counts)
 @
 
 The reads get counted based on the edge model created above.
@@ -520,7 +567,7 @@ head(cD.exByEdge)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The experimental design}
 
-[TODO: Revisit this section]
+[TODO: Revisit this section.]
 
 The initial step for each RNA-Seq analysis is to set up the 
 design of the experiment. Basically we are interested in comparing knock-out samples
@@ -542,7 +589,7 @@ design$condition <-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Significant altered alternative splicing events}
 
-[TODO: Revisit this section]
+[TODO: Revisit this section.]
 
 This section deals with testing for significant altered splicing events.
 We introduced a generalized linear model (GLM) to asses the

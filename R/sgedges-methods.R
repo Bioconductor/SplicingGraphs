@@ -178,11 +178,12 @@ setMethod("UATXHcount", "SplicingGraphs",
             stop("'in_hits' is incompatible with 'sgedges0'")
         hits[in_idx] <- in_hits
     }
-    ## TODO: This is quite inefficient. Improve it.
+    ## FIXME: Very inefficient. Improve it.
     for (i in which(!is_not_dup))
         hits[[sm[i]]] <- unique(hits[[sm[i]]], hits[[i]])
-    sgedges$hits <- hits[is_not_dup]
-    sgedges$nhits <- elementLengths(sgedges$hits)
+    hits <- hits[is_not_dup]
+    sgedges$hits <- hits
+    sgedges$nhits <- elementLengths(hits)
     sgedges
 }
 

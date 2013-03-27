@@ -11,9 +11,9 @@
 }
 
 \description{
-  \code{sgedgesByTranscript} extract the splicing graph edges of all
+  \code{sgedgesByTranscript} extracts the splicing graph edges of all
   the genes from a \link{SplicingGraphs} object. Return them in a
-  \link[GenomicRanges]{GRangesList} class where they are grouped by
+  \link[GenomicRanges]{GRangesList} object where they are grouped by
   transcript.
 }
 

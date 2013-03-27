@@ -53,6 +53,7 @@ export(
 
     ## countReads.R:
     assignReads,
+    countReads,
 
     ## toy_data.R:
     toy_genes_gff,
