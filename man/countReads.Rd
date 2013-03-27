@@ -1,13 +1,50 @@
 \name{countReads}
 
+\alias{assignReads}
 \alias{countReads}
 
 \title{
-  Tools for assigning read counts to splicing graphs
+  Assign reads to splicing graphs and count them
 }
 
 \description{
+  \code{assignReads} assigns reads to the exons and introns of a
+  \link{SplicingGraphs} object.
+  \code{countReads} count the assigned reads.
+}
+
+\usage{
+assignReads(sg, reads, sample.name=NA)
+countReads(sg)
+}
+
+\arguments{
+  \item{sg}{
+    A \link{SplicingGraphs} object.
+  }
+  \item{reads}{
+    A \link[GenomicRanges]{GRangesList} object containing the reads
+    to assign to the exons and introns in \code{sg}.
+  }
+  \item{sample.name}{
+    A single string containing the name of the sample where the reads
+    are coming from.
+  }
+}
+
+\details{
   TODO
+}
+
+\value{
+  For \code{assignReads}: the supplied \link{SplicingGraphs} object with
+  the reads assigned to it.
+
+  For \code{countReads}: a \link[IRanges]{DataFrame} object with one row
+  per unique splicing graph edge and one column of counts per sample.
+  Two additional columns (\code{"sgedge_id"} and \code{"ex_or_in"}) contain
+  the splicing graph edge ids and the type of edge (exon or intron),
+  respectively.
 }
 
 \author{
@@ -16,24 +53,25 @@
 
 \seealso{
   \itemize{
-    \item \code{\link[IRanges]{findOverlaps}} and
-          \code{\link[IRanges]{encodeOverlaps}} in the IRanges
-          package for finding overlapping ranges and encode the overlaps.
+    \item The \link{SplicingGraphs} class.
 
-    \item \code{\link[GenomicFeatures]{exonsBy}},
-          \code{\link[GenomicFeatures]{transcriptsBy}}, and the
-          \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
-          package.
+    \item \code{\link{sgedgesByTranscript}} for extracting all the splicing
+          graph edges from a \link{SplicingGraphs} object.
 
-    \item \code{\link{SplicingGraphs}} and related tools for creating and
-          plotting splicing graphs from transcript annotations.
+    \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
+          splicing graph.
+
+    \item \code{\link{sgraph}} for extracting a splicing graph as a
+          plottable graph-like object.
+
+    \item \code{\link{bubbles}} for extracting the bubbles of a splicing graph.
   }
 }
 
 \examples{
 ## ---------------------------------------------------------------------
-## 1. Make SplicingGraphs object 'sg' from toy gene model in
-##    toy_genes_gff() (see '?SplicingGraphs')
+## 1. Make SplicingGraphs object 'sg' from toy gene model (see
+##    '?SplicingGraphs')
 ## ---------------------------------------------------------------------
 
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
@@ -43,8 +81,7 @@ sg
 names(sg)
 
 ## ---------------------------------------------------------------------
-## 2. Load toy reads and find the hits that are "compatible" with the
-##    splicing of the transcripts
+## 2. Load toy reads
 ## ---------------------------------------------------------------------
 
 ## Load toy reads (single-end) from a BAM file. We filter out secondary
@@ -62,18 +99,23 @@ gal
 ## in the correct order.
 grl <- grglist(gal, order.as.in.query=TRUE)
 
-## Assign the reads to the exons/introns in 'sg'. The same read can be
-## assigned to more than 1 exon or intron (e.g. a junction read with
-## 1 gap can be assigned to 2 exons and 1 intron).
+## ---------------------------------------------------------------------
+## 3. Assign the reads to the exons and introns in 'sg'
+## ---------------------------------------------------------------------
+## The same read can be assigned to more than 1 exon or intron (e.g. a
+## junction read with 1 gap can be assigned to 2 exons and 1 intron).
 sg <- assignReads(sg, grl)
 
 sg[["geneA"]]
-unlist(sg)
-intronsByTranscript(sg)
 sgedges(sg["geneA"])
 
 ## ---------------------------------------------------------------------
-## 3. Count nb of unambiguous compatible hits per transcript
+## 4. Count the number of reads per splicing graph edge
+## ---------------------------------------------------------------------
+countReads(sg)
+
+## ---------------------------------------------------------------------
+## 5. Count nb of unambiguous compatible hits per transcript
 ## ---------------------------------------------------------------------
 
 #ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]

@@ -96,6 +96,9 @@ uninformativeSSids(x)
           plottable graph-like object.
 
     \item \code{\link{bubbles}} for extracting the bubbles of a splicing graph.
+
+    \item \code{\link{countReads}} for assigning reads to a
+          \link{SplicingGraphs} object and counting them.
   }
 }
 

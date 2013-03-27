@@ -22,8 +22,9 @@
 
 \title{Splicing graph analysis of RNA-Seq data}
 \author{Martin Morgan\and
-  Marc Carlson \and
-  Daniel Bindreither}
+  Marc Carlson\and
+  Daniel Bindreither\and
+  Herv\'e Pag\`es}
 
 \SweaveOpts{keep.source=TRUE}
 
@@ -483,7 +484,13 @@ library(TBX20BamSubset)
 bam_files <- getBamFileList()
 @ 
 
-\subsection{Counting reads per edges}
+\subsection{Assigning reads to a \Rclass{SplicingGraphs} object}
+
+We can use the \Rcode{assignReads} function to assign reads to the
+exons and introns in \Rclass{SplicingGraphs} object \Rcode{sg}.
+Note that the same read can be assigned to more than one exon or
+intron (e.g. a junction read with 1 gap can be assigned to 2 exons
+and 1 intron).
 
 [TODO: Try to optimize assignReads() so we can do the full count below
  in reasonable time.]
@@ -497,8 +504,8 @@ set.seed(33)
 sg50 <- sample(sg, 50)
 @
 
-We're also going to assign only 20\% (randomly sampled) of the reads
-in each BAM file:
+We're also going to use only 20\% (randomly sampled) of the reads
+from each BAM file.
 
 <<assignReads,eval=FALSE>>=
 library(Rsamtools)
@@ -521,6 +528,8 @@ for (i in seq_along(bam_files)) {
 sg50 <- .loadPrecomputed("sg50")
 @
 
+\subsection{Counting the number of reads per splicing graph edge}
+
 <<countReads_sg50,eval=FALSE>>=
 ## Takes about 1 minute...
 sg50_counts <- countReads(sg50)
@@ -534,421 +543,19 @@ splicing graph edge and one column of counts per sample. Two additional
 columns contain the splicing graph edge ids and the type of edge (exon
 or intron):
 
+\begin{small}
 <<head_sg50_counts>>=
 dim(sg50_counts)
 head(sg50_counts)
 @
-
-The reads get counted based on the edge model created above.
-Thereby adjacent elements of an edge are summarized to one
-range before the counting is done. If an read overlaps two 
-edges of the same gene, the read is counted for both edges of 
-the gene. If a read hits an exon part which is shared between two 
-genes the read is counted to both genes and their associated edges.
-Counting is performed for each BAM file separately and could be
-parallelized to save computation time.
-
-<<CountReads,eval=FALSE>>=
-library(parallel)
-cD.exByEdge <- countSpliceGraphReads(sG, bfs)
-@ 
-
-The resulting count table contains one row for each edge.
-The colum names correspond to the names of the 
-\Rclass{BamFileList} object.
-
-\begin{small}
-<<theEdgeCountTable,eval=FALSE>>=
-head(cD.exByEdge)
-@ 
 \end{small}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The experimental design}
-
-[TODO: Revisit this section.]
-
-The initial step for each RNA-Seq analysis is to set up the 
-design of the experiment. Basically we are interested in comparing knock-out samples
-with wild type samples. This means we have a three against three design and
-therefore for each condition three biological replicates.
-
-<<setUpTheDesign,eval=FALSE>>=
-fn <- system.file("extdata", "phenoData.txt", 
-                  package="TBX20BamSubset")
-pd <- read.table(fn, header=TRUE,
-                 stringsAsFactors=FALSE)
-design <- data.frame(condition=pd[, "condition"])
-design$condition <- 
-  factor(design$condition,
-         levels=c("Tbx20 knockout", "normal"))
-@ 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Significant altered alternative splicing events}
-
-[TODO: Revisit this section.]
-
-This section deals with testing for significant altered splicing events.
-We introduced a generalized linear model (GLM) to asses the
-significance of changes in the alternative splicing events between
-treated and untreated cells. The utilized GLM is a modified
-version of the GLM employed in the \Rpackage{DEXSeq} package.
-To get from the \Rpackage{DEXSeq} model to the model usable for
-testing alternative splicing events, represented by bubbles in the
-splicing graph, exon terms are replaced by the bubble part terms. 
-Depending on the number of out edges at the source of the bubble
-and the number of in edges at the sink of a bubble the bubble can be
-divided into two or more bubble parts.
-A bubble part in the simplest case consist of only one splicing graph edge.
-This means if we would have a bubble with only two edges, we would
-also have two bubble parts which have to be incorporated into our model. 
-See Equation \ref{eq:fullModel}. 
-Our utilized null model would have the following layout, which is
-quite similar to the model in the \Rpackage{DEXSeq} package, but can
-have many terms. 
-
-\begin{equation} 
-sample + bp + condition
-\end{equation} 
-
-Note that in contrast to \Rpackage{DEXSeq} the model term composition 
-not fixed anymore.
-
-\begin{small}
-\begin{equation} 
-sample + bp + condition \times \color{red}I(bp == bpID1) \color{black}
-+ condition \times \color{blue}I(bp
-== bpID2) + ...
-\label{eq:fullModel}
-\end{equation}
-\end{small}
-
-Sometimes genes can consist of only one bubble part. E.g.:
-A gene consisting of two transcripts and three exons.
-Transcript 1 contains all three exons and transcript 2 contains only of
-exon 1 and exon 3. Therefore one bubble can be observed where only one
-bubble part consists of exonic structure elements.
-
-To perform the analysis we create a \Rclass{BubbleCountSet} object for
-keeping the edge and the bubble part counts together in the same data structure. 
-This \Rclass{BubbleCountSet} object is a simple container 
-of two \Rclass{ExonCountSet}s and two \Rclass{CountDataSet}s
-representing multi element (edge, bubble part) genes and single
-element genes respectively. See the documentation for further details.
-
-<<creatingABubbleCountSet,eval=FALSE>>=
-spliceGraphCnts <- BubbleCountSet(cD.exByEdge, sG, design)
-@ 
-
-Estimating the size factors of the libraries.
-
-<<estimatingSizeFactors,eval=FALSE>>=
-spliceGraphCnts <- estimateSizeFactorsSg( spliceGraphCnts )
-@
-
-Estimating the dispersions for single and multi element genes.
-The utilized functions are basically wrappers for the \Rpackage{DESeq}
-and \Rpackage{DEXSeq} functions.
-
-<<estimatingDispersions,eval=FALSE>>= 
-## estimate dispersions
-spliceGraphCnts <- estDispsMultiElements( spliceGraphCnts )
-spliceGraphCnts <- 
-  estDispsSglElements( spliceGraphCnts, fitType="local")
-@ 
-
-Fitting the dispersion function for multi element genes and estimating
-the log2 fold changes.
-
-<<fittingTheDispersionFunctions,eval=FALSE>>=
-spliceGraphCnts <- fitDispFuncSg( spliceGraphCnts )
-spliceGraphCnts <- 
-  estimatelog2FoldChangesSg( spliceGraphCnts )
-@ 
-
-Now we are able to test for alternative splicing.
-
-<<testingForSignificantAlteredSpliceEvents,eval=FALSE>>=
-res.bubbles <- testForSigSpliceEvents( spliceGraphCnts )
-res.bubbles <- res.bubbles[order(res.bubbles$pvalue), ]
-res.bubbles <- res.bubbles[abs(res.bubbles$maxLog2FC) > 1 |
-                           abs(res.bubbles$minLog2FC) > 1, ]
-@ 
-
-To accsess the individual objects contained in the \Rclass{BubbleCountSet} 
-use the acessor functions. By utilizing this functions dispersions and
-log2 fold changes can also be estimated manually by using the
-respective \Rpackage{DEXSeq} and \Rpackage{DESeq} functions. 
-
-<<accessingCounDataAndExonCountData,eval=FALSE,results=hide>>=
-multiEdgeCntSet(spliceGraphCnts)
-multiBpCntSet(spliceGraphCnts)
-sglEdgeCntSet(spliceGraphCnts)
-sglBpCntSet(spliceGraphCnts)
-@ 
-
-%%We found Sexpr{sum(res.bubbles$padj < 0.05, na.rm=TRUE)} 
-We found \Rcode{<some number here>}
-alternative splicing events to be significantly (p $<$ 0.05) altered.
-
-<<printSigSpliceEvents,echo=FALSE,eval=FALSE,results=tex>>=
-library(xtable)
-T <- xtable(head(res.bubbles, n=10),
-             caption=paste("Top 10 most significant altered alternative splicing events"))
-align(T) <- "rrrrrrlp{3cm}"
-print(T, table.placement="H", size="scriptsize", 
-      include.rownames=FALSE)
-@ 
-
-%
-%\section{Differential edge expression analysis}
-%
-%This section deals with differential edge analysis. This chapter
-%should demonstrate the increased statistical power of using the
-%spliche graph edge approach. A comparison to the classic \Rpackage{DEXSeq}
-%analysis is shown. To perform the differential edge analysis run the
-%following command
-%
-%<<differentialEdgeAnalysis>>=
-%res.edges <- testForDiffEdgeExp(spliceGraphCnts)
-%@ 
-%
-%
-%\subsection{Differential exon usage}
-%
-%A \Rpackage{DEXSeq} analysis is performed to compare the results with
-%the differential edge expression analysis. Counting the reads for a \Rpackage{DEXSeq}
-%is similar to counting \Rpackage{SplicingGraphs} reads. The same function
-%can be utilized but the gene model is different.
-%
-%\subsubsection{Counting reads per exon}
-%
-%The cunk below creates a exon model to count the read to the
-%individual disjoint exons. We utilize also the 
-%\Rfunction{countSpliceGraphReads} function for counting the exon reads
-%because the strategy remains the same. The only difference is that
-%exons are used as outer level elements. Exon to gene mapping is
-%gathered from the elemen meta data.
-%
-%<<createAnExonModel>>=
-%djEx <- unlist(sG, use.names=FALSE)
-%idx <- rep(seq(1, length(sG)), elementLengths(sG))
-%val.ex <- values(sG)[idx,]
-%ex <- split(djEx, values(djEx)[["disJ_exon_id"]])
-%values(ex) <- val.ex
-%@ 
-%
-%Now the reads landing on the individual exons get counted.
-%
-%<<countExonReads>>=
-%exonsByGn <- exonsBy(txdb, "gene")
-%
-%## counting reads
-%countReads <- function(run, fls, exonsByGn) {
-%
-%  fl <- fls[run]
-%  print(paste("Counting reads per exon for ",fl,sep=""))
-%
-%  ## read gapped alignments
-%  gal <- readGappedAlignments(fl, format="BAM", use.names=FALSE)
-%  
-%  ## coerce to GRangesList
-%  gr <- as(gal, "GRanges")
-%
-%  ## creating a exons model
-%  exonsByGn.flat <- unlist(exonsByGn, use.names=FALSE)
-%
-%  ## check to which gn each exon maps
-%  gn <- rep(names(exonsByGn), elementLengths(exonsByGn))
-%  ex <- as.character(values(unlist(exonsByGn, use.names=FALSE))[["exon_id"]])
-%
-%  res <- setNames(rep(0, length(gn)), paste(gn, ex, sep=":"))
-%  
-%  exToGn <- split(gn, ex)
-%
-%  ## overlaps between model and gapped alignements
-%  ov <- findOverlaps(exonsByGn.flat, gr, ignore.strand=FALSE)
-%
-%  gn.q <- gn[queryHits(ov)]
-%  ex.q <- ex[queryHits(ov)]
-%  exonsByGn.flat <- exonsByGn.flat[queryHits(ov)]
-%
-%  exToGn <- exToGn[ex.q]
-%
-%  ## check for not expected dubble matches
-%  gn.q <- rep(gn.q, elementLengths(exToGn))
-%  exonsByGn.flat <- rep(exonsByGn.flat, elementLengths(exToGn))
-%  ex.q <- rep(ex.q, elementLengths(exToGn))
-%  y <- unlist(exToGn, use.names=FALSE)
-%  ov.idx <- rep(seq(1, length(ov)), elementLengths(exToGn))
-%
-%  bool <- gn.q == y
-%
-%  ## remove not accepted dubble matches
-%  gn.q <- gn.q[bool]
-%  exonsByGn.flat <- exonsByGn.flat[bool]
-%  ex.q <- ex.q[bool]
-%  ov.idx <- ov.idx[bool]
-%  ov.fin <- ov[ov.idx]
-%
-%  ## summarize overlaps per gene
-%  tab <- table(paste(gn.q, ex.q, sep=":"))
-%  prim.res <- setNames(as.vector(as.integer(tab)),
-%                       unlist(dimnames(tab),
-%                              use.names=FALSE))
-%  
-%  n <- names(res)
-%  res[names(prim.res)] <- prim.res
-%  res[n]
-%
-%}
-%
-%## perform the counting
-%cnt <- mclapply(pd$SRR, countReads, fls, exonsByGn,
-%                mc.cores=nr.cpu)
-%names(cnt) <- names(fls)
-%cD.ex <- simplify2array(cnt)
-%@ 
-%
-%
-%%\subsubsection{DESeq analysis for single exon genes}
-%%
-%%In this section the \Rpackage{DESeq} analysis of the single
-%%edge and single exon genes is performed. First we create count data sets
-%%and set up the testing conditions for the differential expression analysis.
-%%
-%%Creating a \Rclass{CountDataSet} and subsetting to single exon gene exons.
-%%
-%%<<se, results=hide>>=
-%%library(DESeq)
-%%gn <- rep(names(exonsByGn), elementLengths(exonsByGn))
-%%el <- elementLengths(split(values(unlist(exonsByGn, use.names=FALSE))[["exon_id"]], gn ))
-%%sglExGns <- names(el[el < 2])
-%%cds.Ex <- newCountDataSet(countData=cD.ex[! duplicated(rownames(cD.ex)),], 
-%%                          design$condition)
-%%@ 
-%%
-%%Next we compute the size factor, estimate the dispersion and test for
-%%differentially expression of single exon genes
-%%
-%%<<difExEx>>=
-%%cds.Ex <- estimateSizeFactors( cds.Ex )
-%%cds.Ex <- estimateDispersions( cds.Ex )
-%%ttSingle.Ex <- nbinomTest( cds.Ex, condA="Tbx20 knockout", condB="Normal" )
-%%
-%%
-%%
-%%@ 
-%
-%
-%\subsubsection{DEXSeq analysis for multi exon genes}
-%
-%Creating a \Rclass{ExonCountSet} and subsetting to multi exon gene exons.
-%
-%<<>>=
-%gnID <- values(ex)[, "gene_id"]
-%names(gnID) <- rownames(cD.exByEx)
-%exID <- names(ex)
-%names(exID) <- rownames(cD.exByEx)
-%eData.Ex <- 
-%  newExonCountSet(countData = cD.exByEx,
-%                  design = design$condition,
-%                  geneIDs = gnID,
-%                  exonIDs = exID)
-%eData.Ex <- eData.Ex[! gn %in% sglExGns, ]
-%@
-%
-%Next we compute the size factor, estimate the dispersion and test for
-%differentially expression of single exon genes
-%
-%
-%<<>>=
-%eData.Ex <- estimateSizeFactors(eData.Ex)
-%eData.Ex <- estimateDispersions(eData.Ex)
-%eData.Ex <- fitDispersionFunction(eData.Ex)
-%eData.Ex <- testForDEU(eData.Ex)
-%eData.Ex <- estimatelog2FoldChanges(eData.Ex)
-%tt.Ex <- DEUresultTable(eData.Ex) 
-%
-%
-%eData.Edge <- multiEdgeCntSet(spliceGraphCnts)
-%eData.Edge <- estimateSizeFactors(eData.Edge)
-%eData.Edge <- estimateDispersions(eData.Edge)
-%eData.Edge <- fitDispersionFunction(eData.Edge)
-%eData.Edge <- testForDEU(eData.Edge)
-%eData.Edge <- estimatelog2FoldChanges(eData.Edge)
-%tt.Edge <- DEUresultTable(eData.Edge) 
-%
-%tt.Edge <- 
-%  DEUresultTable(testForDEU(multiEdgeCntSet(spliceGraphCnts)))
-%@ 
-%
-%
-%
-%
-%
-%
-%<<pcutSum, results=hide>>=
-%p.cuts <- 10^seq( 0, -5, length.out=100 )
-%
-%ps.Ex <- sapply(p.cuts, function(p.cut) {
-%  sum(tt.Ex$padjust < p.cut, na.rm=TRUE)*100/
-%    sum(is.na(tt.Ex$padjust))
-%})
-%
-%ps.Edge <- sapply(p.cuts, function(p.cut) {
-%  sum(tt.Edge$padjust < p.cut, na.rm=TRUE)*100/
-%    sum(is.na(tt.Edge$padjust))
-%})
-%
-%
-%fn <- "Comparison-edges-exons.png"
-%png(fn,  width=7, height=7, res=300, units="in")
-%plot(ps.Edge, p.cuts, type="l", col="purple",
-%     xlab="% of differentially expressed elements",
-%     ylab="P-value cut off", lwd=2, frame.plot=FALSE, 
-%     log="xy", main="Exons versus edges")
-%lines(ps.Ex, p.cuts, lty=2, lwd=2)
-%grid(lwd=2)
-%legend("bottomright", legend=c("Edges", "Exons"), 
-%       col=c("purple", "black"), lty=c(1,2), lwd=2,
-%       border=NA, box.col=NA, bg=NA)
-%dev.off()
-%
-%
-%
-%
-%Table \ref{table:ex} and Table \ref{table:edge} show the 10 most
-%significant differentially expressed edges and exons. The most promising hit 
-%common in both top tables is ENTREZ gene id 90522 (YIF1B, Yip1 interacting factor homolog B). 
-%This protein is a multi-pass membrane protein, but there is not much known about 
-%its function. However it just serves as an example in here.
-%
-%<<pp, results=tex, echo=FALSE>>=
-%library(xtable)
-%T <- xtable(head(finTT.Ex[order(finTT.Ex$padj),], n=10), 
-%            caption="Top table of the exon model", label="table:ex",
-%            display=c("s","d","E","E","f","f","d"))
-%print(T, include.rownames=FALSE, table.placement="H")
-%@ 
-%
-%<<rr, results=tex, echo=FALSE>>=
-%library(xtable)
-%T <- xtable(head(finTT.Edge[order(finTT.Edge$padj),], n=10), 
-%            caption="Top table of the edge model", label="table:edge",
-%            display=c("s","d","E","E","f","f","d"))
-%print(T, include.rownames=FALSE, table.placement="H")
-%@ 
-%
-%
-%
-%
-%
-%
-%
+[NOTE: Topics/sections in the old SpliceGraph vignette not covered here:
+ ``The experimental design'', ``Significant altered alternative splice
+ events'', modification of GLM employed in the \Rpackage{DEXSeq} package,
+ ``Differential edge expression analysis'', comparison to the classic
+ \Rpackage{DEXSeq} analysis]
+ 
 \bibliography{SplicingGraphs}
 \bibliographystyle{plain}
 
