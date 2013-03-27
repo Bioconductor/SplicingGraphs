@@ -10,6 +10,11 @@
 
 \usepackage[margin=1in]{geometry}
 
+\setlength{\parindent}{0pt}
+
+\usepackage{enumitem}
+\setlist{nolistsep}
+
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
@@ -19,6 +24,7 @@
 \newcommand{\Rcode}[1]{{\texttt{#1}}}
 \newcommand{\software}[1]{\textsf{#1}}
 \newcommand{\R}{\software{R}}
+\newcommand{\Bioconductor}{\software{Bioconductor}}
 
 \bibliographystyle{plainnat}
 
@@ -52,25 +58,58 @@
 
 \tableofcontents
 
+\setlength{\parskip}{\baselineskip}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-The \Rpackage{SplicingGraphs} package creates splicing 
-graphs \cite{Sammeth:2010} based on a given annotation 
-provided as \Rclass{TranscriptDb} or \Rclass{GRangesList} 
-objects. An already published RNA-Seq experiment is used
-to demonstrate the usage of the \Rpackage{SplicingGraphs} package. 
-The utilized study, performed in \textit{Mus musculus}, compares 
-TBX20 (T-box protein 20) knock-out with wilde type heart 
-tissue samples \cite{Sakabe:2012}. The presented workflow 
-analyzes the data set in terms of differential alternative splicing. 
-Although there exist several software solutions for RNA-Seq 
-based transcriptome analysis, like RSEM \cite{RSEM2011},
-Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq} 
-\cite{Anders:2010}, the approach of analyzing splicing events as
-complete complex structure is still new. 
+The \Rpackage{SplicingGraphs} package allows the user to create and
+manipulate splicing graphs \cite{Sammeth:2010} based on annotations
+for a given organism. The annotations must describe a \textit{gene model},
+that is, they must contain the following information:
+\begin{itemize}
+  \item The exact exon/intron structure (i.e. genomic coordinates)
+        for the known transcripts.
+  \item The grouping of transcripts by gene.
+\end{itemize}
 
+The annotations need to be provided as a \Rclass{TranscriptDb} or
+\Rclass{GRangesList} object, which is how a gene model is typically
+represented in \Bioconductor.
+
+Additionally the package allows the user to assign RNA-Seq reads to
+a SplicingGraphs object, and to count them. This requires that the
+reads have been previously aligned to the exact same reference genome
+that the gene model is based on. RNA-Seq data from an already published
+study is used to illustrate this functionality. The study, performed on
+\textit{Mus musculus}, compares TBX20 (T-box protein 20) knock-out
+with wilde type heart tissue samples \cite{Sakabe:2012}.
+
+%Although there exist several software solutions for RNA-Seq 
+%based transcriptome analysis, like RSEM \cite{RSEM2011},
+%Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq} 
+%\cite{Anders:2010}, the approach of analyzing splicing events as
+%complete complex structure is still new. 
+
+[TODO: Remove the following TEMPORARY NOTE before BioC 2.12 release.]
+
+TEMPORARY NOTE: The scope of the new \Rpackage{SplicingGraphs} package
+has been reduced roughly to the following functionalities:
+creating/manipulating/plotting splicing graphs, computing the bubbles
+and AS codes, and counting reads. In particular anything in the old
+\Rpackage{SpliceGraph} package that was related to the downstream
+statistical analysis has been dropped. As a consequence the following
+topics/sections from the old \Rpackage{SpliceGraph} vignette are not
+covered in this vignette:
+\begin{itemize}
+  \item ``The experimental design''
+  \item ``Significant altered alternative splice events''
+  \item Modification of GLM employed in the \Rpackage{DEXSeq} package.
+  \item ``Differential edge expression analysis''
+  \item Comparison to the classic \Rpackage{DEXSeq} analysis.
+\end{itemize}
+ 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Splicing graphs}
@@ -81,28 +120,37 @@ transcript variants of genes. Those variants can often be plentiful.
 Especially for large genes it is often difficult to describe their
 structure in a formal, logical, short and convenient way. To capture 
 the full variety of splicing variants of a certain gene in one single 
-data structure Heber at al \cite{Heber:2002} introduced the term 
-splicing graph and provided a formal frame work for representing
+data structure, Heber at al \cite{Heber:2002} introduced the term 
+\textit{splicing graph} and provided a formal framework for representing
 the different choices of the splicing machinery. 
 
-Splicing graphs in general are directed acyclic graphs (DAGs) and
-consist of two main structure elements designated as vertices 
-and edges. Vertices represent different types of sites at the annotated 
-transcripts and edges, connecting the vertices, represent the respective 
-exonic and intronic structure. Wether the edge is representing an exon 
-or an intron is determined by the types of the two flanking vertices. 
-Vertices according \cite{Heber:2002} can be of type 
-acceptor splicing site ($-$), donor splicing site ($\wedge$), transcript start 
-site ($~[~$) or transcript end ($~]~$).  For the correctness of the splicing 
-graph framework artificial sites designated as root ($R$) and leaf ($L$) 
-attached to the start and the end of each graph are required. It is important 
-to note that root and leaf will never represent real observed sites at the 
-transcripts and act just as a common sources and sink of the splicing graph. 
-The symbols associated with the individual types of vertices shown in braces 
-above are used for the identification of complete alternative splicing events.
-For details about gathering the alternative splicing events and their
-associated splicing codes see \cite{Heber:2002} and 
-\cite{Sammeth:2010}.
+\subsection{Definitions and example}
+
+For a comprehensive explanation of the splicing graph theory,
+please refer to \cite{Heber:2002} and \cite{Sammeth:2010}.
+
+A splicing graph is a directed acyclic graph (DAG) where:
+\begin{itemize}
+  \item The vertices (a.k.a. \textit{nodes}) represent the splicing sites
+        for a given gene. Splicing sites are numbered from $1$ to $n$
+        based on their order of appearance when moving in the 5' to 3'
+        direction along the strand where the transcripts are located.
+        Note that splicing graphs are only defined for genes that have all
+        the exons of all their transcripts on the same chromosome and
+        strand. In particular, in its current form, the splicing graph
+        theory cannot describe \textit{trans-plicing} events.
+  \item The edges are the exons and introns between the splicing sites.
+        Their orientation follows the 5' to 3' direction i.e. they go
+        from low to high splicing site numbers.
+\end{itemize}
+
+Two artificial nodes that don't represent real observed splicing sites
+are added to the graph: the root ($R$) and the leaf ($L$). Also artificial
+edges are added so that all the transcripts are represented by a path that
+goes from $R$ to $L$. That way the graph is connected. Note that not all
+paths in the graph are necessarily supported by a transcript.
+The non-artifical nodes (i.e. $1$ to $n$) and edges are the
+\textit{internal nodes} and \textit{internal edges} of the splicing graph.
 
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
@@ -121,14 +169,31 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
   \label{img:CIB3}
 \end{figure}
 
-\subsection{Details about vertices and edges}
+\subsection{Details about nodes and edges}
 
-In many cases one vertex can represent two different types of sites, but
-the combinations of types for such vertices is limited. 
+Internal nodes can be of the following types:
+\begin{itemize}
+  \item acceptor splicing site ($-$);
+  \item donor splicing site ($\wedge$);
+  \item transcript start site ($~[~$);
+  \item transcript end site ($~]~$).
+\end{itemize}
+
+Wether the edge is representing an exon or an intron is determined by
+the types of the two flanking nodes.
+ 
+The symbols associated with the individual types of nodes shown in braces 
+above are used for the identification of complete alternative splicing
+events. For more information about gathering the alternative splicing
+events and their associated splicing codes, please refer to
+\cite{Heber:2002} and \cite{Sammeth:2010}.
+
+In many cases one node can represent two different types of sites, but
+the combinations of types for such nodes is limited. 
 Only splicing site acceptors ($-$) and transcript start sites ($~[~$) or
 splicing site donors ($\wedge$) and transcript ends ($~]~$) can occur as
 a pair of site types.
-Such a two-type vertex occurs when the start of an exon, which is not
+Such a two-type node occurs when the start of an exon, which is not
 the first exon of a transcript falls together with the
 transcription start site of another transcript of the same gene.
 An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
@@ -140,7 +205,7 @@ An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
   \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the two transcript variants
-    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type vertex:
+    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type node:
     splicing site acceptor ($-$) for transcript {\tt uc002qbu.2},
     and transcript start site ($~[~$) for transcript {\tt uc010eqq.1}.
   }
@@ -151,14 +216,14 @@ A similar case occurs when the end of an exon, which is not the last
 exon of a transcript falls together with the transcript
 end of another transcript isoform belonging to the same gene. 
 As mentioned above the edges can either represent introns or exons
-depending on the types of the flanking vertices.
+depending on the types of the flanking nodes.
 An edge between a splicing site acceptor ($-$) and a splice site donor
-($\wedge$) vertex for example would represent an exon whereas the edge
+($\wedge$) node for example would represent an exon whereas the edge
 between a splicing site donor ($\wedge$) and an splicing site acceptor ($-$)
 would represent an intron.
 Exons are also described between transcription start sites ($~[~$) and splicing
 site donors ($\wedge$) or splicing site acceptors ($-$) and transcript
-ends ($~]~$). The edges between the root vertex ($R$) and the transcription
+ends ($~]~$). The edges between the root node ($R$) and the transcription
 start sites ($~[~$) as well as the edges between the transcript 
 ends ($~]~$) and the leaf ($L$) contain neither an
 intron nor an exon because such edges contain usually no 
@@ -166,13 +231,13 @@ sequence information at all.
 
 \subsection{Uninformative nodes}
 
-Not all splicing sites (vertices) on the individual transcripts are alternative 
+Not all splicing sites (nodes) on the individual transcripts are alternative 
 splicing sites. Therefore the initial splicing graph outlined above can be
-simplified by removing vertices of in- and out- degree equal to one because
+simplified by removing nodes of in- and out- degree equal to one because
 they are supposed to be non-informative in terms of alternative splicing.
-Edges associated with such vertices get sequentially merged with
+Edges associated with such nodes get sequentially merged with
 the previous ones and result in longer edges capturing several exons.
-The final splicing graph only contains vertices involved in alternative
+The final splicing graph only contains nodes involved in alternative
 splicing. The process of removing uninformative nodes is illustrated in
 Figure \ref{img:CIB3-simplified}.
 
@@ -366,7 +431,7 @@ bubbles(sg["107328"])
 [TODO: Revisit this subsection entirely.]
 
 Splicing codes can be obtained by iterating over the individual
-bubbles and collecting the types of the original vertices associated 
+bubbles and collecting the types of the original nodes associated 
 with the individual bubble edges and their ranks. This section
 makes use of simple toy examples to describe how the splicing code can 
 be interpreted in terms of well known splicing mechanisms like exon 
@@ -377,10 +442,10 @@ An example read out of a bubble could reveal the splicing code
 See Figure \ref{img:exskip}.
 The first part of the code ($1~0~0$) indicates that the first edge
 contains no exon at all. The first symbol of this code part
-indicates the edge number, the second symbol the vertex rank within 
-the bubble and the third symbol the vertex type. The second part of 
+indicates the edge number, the second symbol the node rank within 
+the bubble and the third symbol the node type. The second part of 
 the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2 
-containing exactly one exon described by the flanking vertices
+containing exactly one exon described by the flanking nodes
 $-$ and $\wedge$. 
 
 \begin{figure}[H]
@@ -554,12 +619,6 @@ head(sg50_counts)
 @
 \end{small}
 
-[NOTE: Topics/sections in the old SpliceGraph vignette not covered here:
- ``The experimental design''; ``Significant altered alternative splice
- events''; modification of GLM employed in the \Rpackage{DEXSeq} package;
- ``Differential edge expression analysis''; comparison to the classic
- \Rpackage{DEXSeq} analysis]
- 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Session Information}
@@ -568,7 +627,7 @@ All of the output in this vignette was produced under the following
 conditions:
 
 <<SessionInfo>>=
-toLatex(sessionInfo())
+sessionInfo()
 @
 
 
