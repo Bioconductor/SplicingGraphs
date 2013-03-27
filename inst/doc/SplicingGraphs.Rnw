@@ -1,4 +1,5 @@
 %\VignetteIndexEntry{Splicing graph analysis of RNA-Seq data}
+%\VignetteDepends{SplicingGraphs,TxDb.Mmusculus.UCSC.mm9.knownGene,TBX20BamSubset,Rsamtools}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass[11pt]{article}
@@ -19,17 +20,18 @@
 \newcommand{\software}[1]{\textsf{#1}}
 \newcommand{\R}{\software{R}}
 
+\bibliographystyle{plainnat}
+
+\SweaveOpts{keep.source=TRUE}
 
 \title{Splicing graph analysis of RNA-Seq data}
+
 \author{Martin Morgan\and
   Marc Carlson\and
   Daniel Bindreither\and
   Herv\'e Pag\`es}
 
-\SweaveOpts{keep.source=TRUE}
-
-\definecolor{c1}{HTML}{008C73}
-\definecolor{c2}{HTML}{BFFF00}
+\date{Last modified: March 2013; Compiled: \today}
 
 \begin{document}
 
@@ -48,23 +50,25 @@
 }
 @ 
 
+\tableofcontents
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 The \Rpackage{SplicingGraphs} package creates splicing 
-graphs \cite{Sammeth:2009:GB} based on a given annotation 
+graphs \cite{Sammeth:2010} based on a given annotation 
 provided as \Rclass{TranscriptDb} or \Rclass{GRangesList} 
 objects. An already published RNA-Seq experiment is used
 to demonstrate the usage of the \Rpackage{SplicingGraphs} package. 
 The utilized study, performed in \textit{Mus musculus}, compares 
 TBX20 (T-box protein 20) knock-out with wilde type heart 
-tissue samples \cite{Sakabe15052012}. The presented workflow 
+tissue samples \cite{Sakabe:2012}. The presented workflow 
 analyzes the data set in terms of differential alternative splicing. 
 Although there exist several software solutions for RNA-Seq 
 based transcriptome analysis, like RSEM \cite{RSEM2011},
-Cufflinks \cite{Roberts21062011} or the R package \Rpackage{DEXSeq} 
-\cite{Anders:2010:GB}, the approach of analyzing splicing events as
+Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq} 
+\cite{Anders:2010}, the approach of analyzing splicing events as
 complete complex structure is still new. 
 
 
@@ -77,7 +81,7 @@ transcript variants of genes. Those variants can often be plentiful.
 Especially for large genes it is often difficult to describe their
 structure in a formal, logical, short and convenient way. To capture 
 the full variety of splicing variants of a certain gene in one single 
-data structure Heber at al \cite{Heber01072002} introduced the term 
+data structure Heber at al \cite{Heber:2002} introduced the term 
 splicing graph and provided a formal frame work for representing
 the different choices of the splicing machinery. 
 
@@ -87,7 +91,7 @@ and edges. Vertices represent different types of sites at the annotated
 transcripts and edges, connecting the vertices, represent the respective 
 exonic and intronic structure. Wether the edge is representing an exon 
 or an intron is determined by the types of the two flanking vertices. 
-Vertices according \cite{Heber01072002} can be of type 
+Vertices according \cite{Heber:2002} can be of type 
 acceptor splicing site ($-$), donor splicing site ($\wedge$), transcript start 
 site ($~[~$) or transcript end ($~]~$).  For the correctness of the splicing 
 graph framework artificial sites designated as root ($R$) and leaf ($L$) 
@@ -97,8 +101,8 @@ transcripts and act just as a common sources and sink of the splicing graph.
 The symbols associated with the individual types of vertices shown in braces 
 above are used for the identification of complete alternative splicing events.
 For details about gathering the alternative splicing events and their
-associated splicing codes see \cite{Heber01072002} and 
-\cite{Sammeth:2009:GB}.
+associated splicing codes see \cite{Heber:2002} and 
+\cite{Sammeth:2010}.
 
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
@@ -466,7 +470,7 @@ head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Counting reads}
 
-[TODO: Revisit this section.]
+[TODO: Complete this section.]
 
 This section deals with counting the reads associated with the
 individual edges. To elucidate later in this vignette some
@@ -551,22 +555,57 @@ head(sg50_counts)
 \end{small}
 
 [NOTE: Topics/sections in the old SpliceGraph vignette not covered here:
- ``The experimental design'', ``Significant altered alternative splice
- events'', modification of GLM employed in the \Rpackage{DEXSeq} package,
- ``Differential edge expression analysis'', comparison to the classic
+ ``The experimental design''; ``Significant altered alternative splice
+ events''; modification of GLM employed in the \Rpackage{DEXSeq} package;
+ ``Differential edge expression analysis''; comparison to the classic
  \Rpackage{DEXSeq} analysis]
  
-\bibliography{SplicingGraphs}
-\bibliographystyle{plain}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Session Information}
 
-\begin{scriptsize}
-<<SessionInfo,echo=FALSE>>=
-sessionInfo()
+All of the output in this vignette was produced under the following
+conditions:
+
+<<SessionInfo>>=
+toLatex(sessionInfo())
 @
-\end{scriptsize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{thebibliography}{}
+
+\bibitem{Sammeth:2010}
+{Michael Sammeth}.
+\newblock Complete Alternative Splicing Events Are Bubbles in Splicing Graphs
+\newblock {\em Computational Biology}, \textbf{16}, 1117-1140, 2010.
+
+\bibitem{Sakabe:2012}
+{Sakabe, Noboru J.} and {Aneas, Ivy} and {Shen, Tao} and {Shokri, Leila} and {Park, Soo-Young} and {Bulyk, Martha L.} and {Evans, Sylvia M.} and {Nobrega, Marcelo A.}
+\newblock Dual transcriptional activator and repressor roles of TBX20 regulate adult cardiac structure and function
+\newblock {\em Human Molecular Genetics}, \textbf{21}(10), 2194-2204, 2012.
+
+\bibitem{RSEM2011}
+{LI, Bo} and {Dewey, Colin}.
+\newblock RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome
+\newblock {\em BMC Bioinformatics}, \textbf{12}(1), 323, 2011.
+
+\bibitem{Roberts:2011}
+{Roberts, Adam} and {Pimentel, Harold} and {Trapnell, Cole} and {Pachter, Lior}.
+\newblock Identification of novel transcripts in annotated genomes using RNA-Seq
+\newblock {\em BIOINFORMATICS}, 2011
+
+\bibitem{Anders:2010}
+{Simon Anders} and {Wolfgang Huber}.
+\newblock {D}ifferential expression analysis for sequence count data
+\newblock {\em Genome Biology}, \textbf{11}, R106, 2010.
+
+\bibitem{Heber:2002}
+{Heber, Steffen} and {Alekseyev, Max} and {Sze, Sing-Hoi} and {Tang, Haixu} and {Pevzner, Pavel A.}
+\newblock Splicing graphs and EST assembly problem
+\newblock {\em Bioinformatics}, \textbf{18}(suppl 1), S181-S188, 2002.
+
+\end{thebibliography}
 
 \end{document}
 
