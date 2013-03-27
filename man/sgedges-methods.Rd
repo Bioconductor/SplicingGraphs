@@ -113,4 +113,11 @@ indeg(sg["geneD"])
 
 txpaths(sg["geneD"])
 txpaths(sg["geneD"], as.matrix=TRUE)  # splicing matrix
+
+## Sanity check:
+geneD_sgedges1 <- sgedges(sg["geneD"], keep.dup.edges=TRUE)
+geneD_sgedges1 <- geneD_sgedges1[geneD_sgedges1$ex_or_in != "", ]
+geneD_sgedges2 <- unlist(sgedgesByTranscript(sg["geneD"]), use.names=FALSE)
+geneD_sgedges2 <- mcols(geneD_sgedges2)[ , colnames(geneD_sgedges1)]
+stopifnot(identical(DataFrame(geneD_sgedges1), geneD_sgedges2))
 }
