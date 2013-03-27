@@ -196,7 +196,7 @@ setMethod("UATXHcount", "SplicingGraphs",
         stop("'sg' must be a SplicingGraphs object of length 1")
     ex_by_tx <- unlist(sg)
     exons <- ex_by_tx@unlistData
-    common_strand <- commonStrand(exons, what="exons in the gene")
+    common_strand <- commonStrand.GRanges(exons, what="exons in the gene")
     if (common_strand == "+") {
         from_to_colnames <- c("start_SSid", "end_SSid")
     } else {
@@ -219,7 +219,7 @@ setMethod("UATXHcount", "SplicingGraphs",
         stop("'sg' must be a SplicingGraphs object of length 1")
     in_by_tx <- intronsByTranscript(sg)
     introns <- in_by_tx@unlistData
-    common_strand <- commonStrand(introns, what="introns in the gene")
+    common_strand <- commonStrand.GRanges(introns, what="introns in the gene")
     ## FIXME: No "from" or "to" cols for now. Add them. This might require
     ## substantial changes upstream (i.e. SplicingGraphs() constructor) w.r.t
     ## what we store in the in_by_tx slot of the 'sg' object.

@@ -299,7 +299,7 @@ setMethod("plotTranscripts", "SplicingGraphs",
     if (!isTRUEorFALSE(check.introns))
         stop("'check.introns' must be TRUE or FALSE")
     exons <- gene@unlistData
-    common_strand <- commonStrand(exons, what="exons in the gene")
+    common_strand <- commonStrand.GRanges(exons, what="exons in the gene")
     on.minus.strand <- common_strand == "-"
     if (check.introns && length(exons) != 0L) {
         ## We check that, within each transcript, exons are ordered from
@@ -569,6 +569,8 @@ setMethod("SplicingGraphs", "GRangesList",
         ans_genes <- .SplicingGraphGenes(ans_ex_by_tx)
         mcols(ans_ex_by_tx) <- NULL
         ans_in_by_tx <- psetdiff(range(ans_ex_by_tx), ans_ex_by_tx)
+        common_strand <- commonStrand.GRangesList(ans_in_by_tx)
+        ans_in_by_tx <- revElements(ans_in_by_tx, common_strand == "-")
         ans_bubbles_cache <- new.env(parent=emptyenv())
         new("SplicingGraphs", genes=ans_genes,
                               in_by_tx=ans_in_by_tx,

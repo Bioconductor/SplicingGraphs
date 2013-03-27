@@ -172,6 +172,9 @@ plotTranscripts(x)
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
 
+    \item \code{\link{sgedgesByTranscript}} for extracting all the splicing
+          graph edges from a SplicingGraphs object.
+
     \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
           splicing graph.
 
@@ -242,5 +245,6 @@ in_by_tx <- intronsByTranscript(sg)
 in_by_tx
 
 ## A sanity check:
-stopifnot(identical(elementLengths(in_by_tx) + 1L, elementLengths(ex_by_tx)))
+stopifnot(identical(elementLengths(in_by_tx) + 1L,
+                    elementLengths(ex_by_tx)))
 }

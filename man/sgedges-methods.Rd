@@ -89,6 +89,9 @@ uninformativeSSids(x)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
+    \item \code{\link{sgedgesByTranscript}} for extracting all the splicing
+          graph edges from a \link{SplicingGraphs} object.
+
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
 
