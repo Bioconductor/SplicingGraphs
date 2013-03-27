@@ -15,6 +15,8 @@
 \usepackage{enumitem}
 \setlist{nolistsep}
 
+\usepackage[margin=0.5in]{caption}
+
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
@@ -144,18 +146,16 @@ A splicing graph is a directed acyclic graph (DAG) where:
         from low to high splicing site numbers.
 \end{itemize}
 
-Two artificial nodes that don't represent real observed splicing sites
+Two artificial nodes that don't correspond to any splicing site
 are added to the graph: the root ($R$) and the leaf ($L$). Also artificial
 edges are added so that all the transcripts are represented by a path that
 goes from $R$ to $L$. That way the graph is connected. Note that not all
 paths in the graph are necessarily supported by a transcript.
-The non-artifical nodes (i.e. $1$ to $n$) and edges are the
-\textit{internal nodes} and \textit{internal edges} of the splicing graph.
 
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-transcripts.pdf}
   \hskip 0.5in
@@ -171,63 +171,55 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 \subsection{Details about nodes and edges}
 
-Internal nodes can be of the following types:
+Splicing sites can be of the following types:
 \begin{itemize}
-  \item acceptor splicing site ($-$);
-  \item donor splicing site ($\wedge$);
-  \item transcript start site ($~[~$);
-  \item transcript end site ($~]~$).
+  \item \textit{acceptor} site (symbol: $-$);
+  \item \textit{donor} site (symbol: $\wedge$);
+  \item \textit{transcription start} site (symbol: $~[~$);
+  \item \textit{transcription end} site (symbol: $~]~$).
 \end{itemize}
 
-Wether the edge is representing an exon or an intron is determined by
-the types of the two flanking nodes.
- 
 The symbols associated with the individual types of nodes shown in braces 
 above are used for the identification of complete alternative splicing
 events. For more information about gathering the alternative splicing
 events and their associated splicing codes, please refer to
 \cite{Heber:2002} and \cite{Sammeth:2010}.
 
-In many cases one node can represent two different types of sites, but
-the combinations of types for such nodes is limited. 
-Only splicing site acceptors ($-$) and transcript start sites ($~[~$) or
-splicing site donors ($\wedge$) and transcript ends ($~]~$) can occur as
-a pair of site types.
-Such a two-type node occurs when the start of an exon, which is not
-the first exon of a transcript falls together with the
-transcription start site of another transcript of the same gene.
+In some cases a given splicing site can be associated with 2 types
+but the combinations of types for such sites is limited.
+Only \textit{acceptor} ($-$) and \textit{transcription start} ($~[~$),
+or \textit{donor} ($\wedge$) and \textit{transcription end} ($~]~$), can
+occur as a pair of types. Such a dual-type node occurs when the start
+of an exon, which is not the first exon of a transcript, falls together
+with the transcription start site of another transcript of the same gene.
 An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-transcripts.pdf}
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the two transcript variants
-    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a two-type node:
-    splicing site acceptor ($-$) for transcript {\tt uc002qbu.2},
-    and transcript start site ($~[~$) for transcript {\tt uc010eqq.1}.
+    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a ($-$,$~[~$)
+    dual-type node: \textit{acceptor} ($-$) for transcript {\tt uc002qbu.2},
+    and \textit{transcription start} ($~[~$) for transcript {\tt uc010eqq.1}.
   }
   \label{img:ZNF813}
 \end{figure}
 
 A similar case occurs when the end of an exon, which is not the last
-exon of a transcript falls together with the transcript
-end of another transcript isoform belonging to the same gene. 
-As mentioned above the edges can either represent introns or exons
-depending on the types of the flanking nodes.
-An edge between a splicing site acceptor ($-$) and a splice site donor
-($\wedge$) node for example would represent an exon whereas the edge
-between a splicing site donor ($\wedge$) and an splicing site acceptor ($-$)
-would represent an intron.
-Exons are also described between transcription start sites ($~[~$) and splicing
-site donors ($\wedge$) or splicing site acceptors ($-$) and transcript
-ends ($~]~$). The edges between the root node ($R$) and the transcription
-start sites ($~[~$) as well as the edges between the transcript 
-ends ($~]~$) and the leaf ($L$) contain neither an
-intron nor an exon because such edges contain usually no 
-sequence information at all.
+exon of a transcript, falls together with the transcription end site
+of another transcript of the same gene.
+
+Whether a non-artificial edge represents an exon or an intron is
+determined by the types of its two flanking nodes:
+\begin{itemize}
+  \item \textbf{exon} if going from \textit{acceptor} ($-$), or
+        ($-$,$~[~$) dual-type, to \textit{donor} ($\wedge$), or
+        ($\wedge$,$~]~$) dual-type;
+  \item \textbf{intron} if the otherway around.
+\end{itemize}
 
 \subsection{Uninformative nodes}
 
@@ -241,7 +233,7 @@ The final splicing graph only contains nodes involved in alternative
 splicing. The process of removing uninformative nodes is illustrated in
 Figure \ref{img:CIB3-simplified}.
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}
   \hskip 0.5in
@@ -345,7 +337,7 @@ pdf("107328-transcripts.pdf", width=6, height=3)
 plotTranscripts(sg[["107328"]])
 dev.off()
 @
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=6in,height=3in]{107328-transcripts.pdf}
   \end{center}
@@ -372,9 +364,8 @@ sgnodes(sg["107328"])
 Alternatively the edges of all the genes can be extracted with
 \Rfunction{sgedgesByTranscript}. They are returned in a
 \Rclass{GRangesList} object where they are grouped by transcript.
-Note that only the \emph{internal} edges are returned i.e.
-edges starting from the root node ($R$) or ending at the leaf
-node ($L$) are omitted:
+Note that the artificial edges (i.e. edges starting from the root
+node ($R$) or ending at the leaf node ($L$)) are omitted:
 
 <<sgedgesByTranscript_sg>>=
 sgedgesByTranscript(sg)
@@ -397,7 +388,7 @@ pdf("107328-sgraph-labelled.pdf", width=3, height=5)
 plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
 dev.off()
 @
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=3in,height=5in]{107328-sgraph.pdf}
   \hskip 0.25in
@@ -448,7 +439,7 @@ the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2
 containing exactly one exon described by the flanking nodes
 $-$ and $\wedge$. 
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=\textwidth]{exskip.png}
   \end{center}
@@ -469,7 +460,7 @@ In such a way it is possible to characterize and to
 distinguish a variety of different splicing events. 
 See Figure \ref{img:altaccept}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
   \begin{center}
   \includegraphics[width=\textwidth]{altaccept.png}
   \end{center}
