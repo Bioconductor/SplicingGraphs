@@ -158,10 +158,12 @@ setMethod("[", "SplicingGraphs",
             return(x)
         if (is.null(names(x)))
             stop("subsetting a SplicingGraphs with no names is not supported")
-        i <- seq_along(x)[i]
         x_genes <- x@genes
-        x@genes <- x@genes[i]
+        seqx <- seq_along(x_genes)
+        names(seqx) <- names(x_genes)
+        i <- seqx[i]
         ii <- unlist(IRanges(PartitioningByEnd(x_genes))[i], use.names=FALSE)
+        x@genes <- x_genes[i]
         x@in_by_tx <- x@in_by_tx[ii]
         x
     }
