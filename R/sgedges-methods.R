@@ -3,12 +3,6 @@
 ### -------------------------------------------------------------------------
 
 
-.get_sgnodes_from_txpaths <- function(txpaths)
-{
-    SSids <- unique(unlist(txpaths, use.names=FALSE))
-    c("R", sort(SSids), "L")
-}
-
 .get_sgnodes_from_sgedges <- function(sgedges)
 {
     from <- sgedges[ , "from"]
@@ -17,68 +11,6 @@
     c("R", sort(SSids), "L")
 }
 
-make_matrix_from_txpaths <- function(txpaths)
-{
-    sgnodes <- .get_sgnodes_from_txpaths(txpaths)
-    ans_nrow <- length(txpaths)
-    ans_ncol <- length(sgnodes)
-    ans_dimnames <- list(names(txpaths), sgnodes)
-    ans <- matrix(FALSE , nrow=ans_nrow, ncol=ans_ncol, dimnames=ans_dimnames)
-    ans[ , 1L] <- ans[ , ans_ncol] <- TRUE
-    i <- cbind(rep.int(seq_along(txpaths), elementLengths(txpaths)),
-               unlist(txpaths, use.names=FALSE) + 1L)
-    ans[i] <- TRUE
-    ans
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### txpaths() accessor
-###
-### Gets the splicing paths.
-### Returns them in a named IntegerList with 1 top-level element per
-### transcript in the specified gene. Each top-level element 'txpaths[[i]]'
-### contains the splicing site ids for the i-th transcript.
-###
-
-setGeneric("txpaths", signature="x",
-    function(x, as.matrix=FALSE) standardGeneric("txpaths")
-)
-
-### Should return a CompressedIntegerList.
-setMethod("txpaths", "SplicingGraphs",
-    function(x, as.matrix=FALSE)
-    {
-        if (length(x) != 1L)
-            stop("'x' must be a SplicingGraphs object of length 1")
-        if (!isTRUEorFALSE(as.matrix))
-            stop("'as.matrix' must be TRUE or FALSE")
-        ans <- mcols(unlist(x, use.names=FALSE))[ , "txpaths"]
-        if (as.matrix)
-            ans <- make_matrix_from_txpaths(ans)
-        ans
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### UATXHcount() accessor
-###
-
-setGeneric("UATXHcount", signature="x",
-    function(x) standardGeneric("UATXHcount")
-)
-
-### Should return an integer vector or a NULL.
-setMethod("UATXHcount", "SplicingGraphs",
-    function(x)
-    {
-        if (length(x) != 1L)
-            stop("'x' must be a SplicingGraphs object of length 1")
-        mcols(unlist(x, use.names=FALSE))[["UATXHcount"]]
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### sgedges() extractor
@@ -86,29 +18,29 @@ setMethod("UATXHcount", "SplicingGraphs",
 ### Returns the splicing graph in a DataFrame with 1 row per edge.
 ###
 
-### 'txpaths' must be an IntegerList containing all the splicing paths (1 per
-### transcript) for a given gene. Should have been obtained thru the txpaths()
+### 'txpath' must be an IntegerList containing all the splicing paths (1 per
+### transcript) for a given gene. Should have been obtained thru the txpath()
 ### accessor. Returns a 4-col (or 5-col if 'UATXHcount' is supplied) data.frame
 ### representing the splicing graph.
-.make_sgedges0_from_txpaths <- function(txpaths, UATXHcount=NULL)
+.make_sgedges0_from_txpath <- function(txpath, UATXHcount=NULL)
 {
     if (!is.null(UATXHcount)) {
         if (!is.integer(UATXHcount))
             stop("'UATXHcount' must be an integer vector or NULL")
-        if (length(UATXHcount) != length(txpaths))
+        if (length(UATXHcount) != length(txpath))
             stop("when not NULL, 'UATXHcount' must have ",
-                 "the same length as 'txpaths'")
+                 "the same length as 'txpath'")
     }
-    sgedges0s <- lapply(seq_along(txpaths),
+    sgedges0s <- lapply(seq_along(txpath),
                         function(i) {
-                            txpath <- txpaths[[i]]
-                            txpath_len <- length(txpath)
-                            if (txpath_len %% 2L != 0L)
-                                stop("some paths in 'txpaths' contain ",
+                            txpath_i <- txpath[[i]]
+                            txpath_i_len <- length(txpath_i)
+                            if (txpath_i_len %% 2L != 0L)
+                                stop("some paths in 'txpath' contain ",
                                      "an odd number of splicing site ids")
-                            from <- c("R", txpath)
-                            to <- c(txpath, "L")
-                            nexons <- txpath_len %/% 2L
+                            from <- c("R", txpath_i)
+                            to <- c(txpath_i, "L")
+                            nexons <- txpath_i_len %/% 2L
                             if (nexons == 0L) {
                                 ex_or_in <- EX_OR_IN_LEVELS[3L]
                             } else {
@@ -128,9 +60,9 @@ setMethod("UATXHcount", "SplicingGraphs",
                         })
     nedges_per_tx <- sapply(sgedges0s, nrow)
     sgedges0 <- do.call(rbind, sgedges0s)
-    tx_id <- names(txpaths)
+    tx_id <- names(txpath)
     if (is.null(tx_id))
-        tx_id <- seq_along(txpaths)
+        tx_id <- seq_along(txpath)
     tx_id <- rep.int(factor(tx_id, levels=tx_id), nedges_per_tx)
     sgedges0$tx_id <- tx_id
     if (!is.null(UATXHcount))
@@ -246,13 +178,13 @@ setMethod("sgedges", "SplicingGraphs",
     {
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
-        txpaths <- txpaths(x)
+        txpath <- txpath(x)
         if (is.null(UATXHcount))
             UATXHcount <- UATXHcount(x)
         if (keep.dup.edges)
-            return(sgedges(txpaths, UATXHcount=UATXHcount,
+            return(sgedges(txpath, UATXHcount=UATXHcount,
                                     keep.dup.edges=keep.dup.edges))
-        sgedges0 <- sgedges(txpaths, UATXHcount=UATXHcount,
+        sgedges0 <- sgedges(txpath, UATXHcount=UATXHcount,
                                      keep.dup.edges=TRUE)
         exon_hits <- .extract_sgedges_exon_hits(x)
         intron_hits <- .extract_sgedges_intron_hits(x)
@@ -269,7 +201,7 @@ setMethod("sgedges", "SplicingGraphs",
 setMethod("sgedges", "IntegerList",
     function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
     {
-        sgedges0 <- .make_sgedges0_from_txpaths(x, UATXHcount=UATXHcount)
+        sgedges0 <- .make_sgedges0_from_txpath(x, UATXHcount=UATXHcount)
         sgedges(sgedges0, keep.dup.edges=keep.dup.edges)
     }
 )
@@ -300,13 +232,13 @@ setGeneric("sgnodes", signature="x",
 setMethod("sgnodes", "ANY",
     function(x)
     {
-        txpaths <- txpaths(x)
-        sgnodes(txpaths)
+        txpath <- txpath(x)
+        sgnodes(txpath)
     }
 )
 
 setMethod("sgnodes", "IntegerList",
-    function(x) .get_sgnodes_from_txpaths(x)
+    function(x) get_sgnodes_from_txpath(x)
 )
 
 setMethod("sgnodes", "data.frame",

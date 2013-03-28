@@ -6,9 +6,9 @@
 \alias{class:SplicingGraphs}
 \alias{SplicingGraphs-class}
 
-\alias{SplicingGraphs}
-\alias{SplicingGraphs,GRangesList-method}
-\alias{SplicingGraphs,TranscriptDb-method}
+\alias{seqnames,.SplicingGraphGenes-method}
+\alias{strand,.SplicingGraphGenes-method}
+\alias{seqinfo,.SplicingGraphGenes-method}
 
 \alias{length,SplicingGraphs-method}
 \alias{names,SplicingGraphs-method}
@@ -26,6 +26,10 @@
 \alias{plotTranscripts,GRangesList-method}
 \alias{plotTranscripts,TranscriptDb-method}
 \alias{plotTranscripts,SplicingGraphs-method}
+
+\alias{SplicingGraphs}
+\alias{SplicingGraphs,GRangesList-method}
+\alias{SplicingGraphs,TranscriptDb-method}
 
 
 \title{
@@ -180,6 +184,9 @@ plotTranscripts(x)
 
     \item \code{\link{sgedgesByTranscript}} for extracting all the introns
           or splicing graph edges from a SplicingGraphs object.
+
+    \item \code{\link{txpath}} for extracting the transcript paths of a
+          splicing graph.
 
     \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
           splicing graph.

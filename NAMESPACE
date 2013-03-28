@@ -80,9 +80,11 @@ export(
     ## sgedgesByTranscript-methods.R:
     sgedgesByTranscript,
 
-    ## sgedges-methods.R:
-    txpaths,
+    ## txpath-methods.R:
+    txpath,
     UATXHcount,
+
+    ## sgedges-methods.R:
     sgedges,
     sgnodes,
     outdeg, indeg,
@@ -100,7 +102,7 @@ exportMethods(
     plotTranscripts,
     SplicingGraphs,
     sgedgesByTranscript,
-    txpaths,
+    txpath,
     UATXHcount,
     sgedges,
     sgnodes,

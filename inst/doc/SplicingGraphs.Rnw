@@ -135,7 +135,7 @@ A splicing graph is a directed acyclic graph (DAG) where:
 \begin{itemize}
   \item The vertices (a.k.a. \textit{nodes}) represent the splicing sites
         for a given gene. Splicing sites are numbered from $1$ to $n$
-        based on their order of appearance when moving in the 5' to 3'
+        based on the order they occur when moving in the 5' to 3'
         direction along the strand where the transcripts are located.
         Note that splicing graphs are only defined for genes that have all
         the exons of all their transcripts on the same chromosome and
@@ -337,12 +337,12 @@ elementLengths(sg)[1:20]
 @
 
 \Rfunction{elementLengths} is a core accessor for list-like objects
-that returns
+that returns the lengths of the individual list elements.
 
 At this point you might wonder why \Rfunction{elementLengths} works on
-\Rclass{SplicingGraphs} object. Does this mean that those objects are
+\Rclass{SplicingGraphs} objects. Does this mean that those objects are
 list-like objects? The answer is yes. The next thing you might wonder
-is what do the list elements look like and how can I access them?
+is what do the list elements look like and how you can access them.
 This is answered in the next subsection.
 
 \subsection{Basic manipulation of a \Rclass{SplicingGraphs} object}
@@ -350,8 +350,8 @@ This is answered in the next subsection.
 The list elements of a list-like object can be accessed \textbf{one at a
 time} with \Rfunction{[[}. On a \Rclass{SplicingGraphs} object, this will
 extract the transcripts of a given gene. More precisely it will return
-an \emph{unnamed} \Rclass{GRangesList} object containing the exons grouped
-by transcript:
+an \emph{unnamed} \Rclass{GRangesList} object containing the exons of the
+gene grouped by transcript:
 
 \begin{small}
 <<sg_double_bracket_107328>>=
@@ -364,29 +364,33 @@ The exon-level metadata columns are:
   \item \Rcode{exon\_id}: The original internal exon id as stored in the
         \Rclass{TranscriptDb} object. This id was created and assigned to
         each exon when the \Rclass{TranscriptDb} object was created.
-        It's not a public id like, say, an Ensembl, RefSeq, or GenBank id,
-        and it's only guaranteed to be unique within a \Rclass{TranscriptDb}
-        object.
+        It's not a public id like, say, an Ensembl, RefSeq, or GenBank id.
+        Furthermore, it's only guaranteed to be unique within a
+        \Rclass{TranscriptDb} object.
   \item \Rcode{exon\_name}: The original exon name as provided by the
         annotation resource (e.g. UCSC, Ensembl, or GFF file) and stored
         in the \Rclass{TranscriptDb} object when it was created.
-        \Rcode{NA} if no exon name was provided.
+        Set to \Rcode{NA} if no exon name was provided.
   \item \Rcode{exon\_rank}: The rank of the exon in the transcript.
   \item \Rcode{start\_SSid}, \Rcode{end\_SSid}: The ids of the splicing
-        sites corresponding to the start and end coordinates of the exon.
+        sites (a.k.a. \textit{Splicing Site ids}) corresponding to the
+        \textit{start} and \textit{end} coordinates of the exon.
+        (Please be cautious to not misinterpret the meaning of \textit{start}
+        and \textit{end} here. See IMPORTANT NOTE below.)
         Those ids were assigned by the \Rfunction{SplicingGraphs} constructor.
-        IMPORTANT NOTE: Please keep in mind that the start and end
-        coordinates of an exon, like the start and end coordinates of
-        a genomic range in general, are following the almost universal
-        convention that $start$ is $<= end$, and this \textbf{regardless
-        of the direction of transcription}.
 \end{itemize}
 
-As mentioned previously, the splicing site ids are assigned based on their
-order of appearance when moving in the 5' to 3' direction along the strand
+IMPORTANT NOTE: Please be aware that the \textit{start} and \textit{end}
+coordinates of an exon, like the \textit{start} and \textit{end}
+coordinates of a genomic range in general, are following the almost
+universal convention that \textit{start} is $<=$ \textit{end}, and this
+\textbf{regardless of the direction of transcription}.
+
+As mentioned previously, the \textit{Splicing Site ids} are assigned based
+on the order they occur when moving in the 5' to 3' direction along the strand
 of the gene. This means that, for a gene on the plus (resp. minus) strand,
 the ids in the \Rcode{start\_SSid} metadata column are always lower (resp.
-greater) than those in the \Rcode{end\_SSid} metadata column:
+greater) than those in the \Rcode{end\_SSid} metadata column.
 
 \begin{small}
 <<sg_double_bracket_104252>>=
@@ -394,7 +398,7 @@ sg[["104252"]]
 @
 \end{small}
 
-However, on both strands, the splicing site id increases with the
+However, on both strands, the \textit{Splicing Site id} increases with the
 rank of the exon.
 
 The \Rfunction{show} method for \Rclass{GRangesList} objects only
@@ -412,20 +416,27 @@ The transcript-level metadata columns are:
   \item \Rcode{tx\_id}: The original transcript id as provided by the
         annotation resource (e.g. UCSC, Ensembl, or GFF file) and stored
         in the \Rclass{TranscriptDb} object when it was created.
-  \item \Rcode{txpaths}: A named list-like object with one list element
-        per transcript. Each list element is an integer vector that
-        describes the \textit{path} of the transcript i.e. the splicing
-        site ids that it goes thru.
+  \item \Rcode{txpath}: A named list-like object with one list element
+        per transcript in the gene. Each list element is an integer vector
+        that describes the \textit{path} of the transcript i.e. the
+        \textit{Splicing Site ids} that it goes thru.
 \end{itemize}
 
 <<mcols_sg_double_bracket_107328>>=
-mcols(sg[["107328"]])$txpaths
-mcols(sg[["104252"]])$txpaths
+mcols(sg[["107328"]])$txpath
+mcols(sg[["104252"]])$txpath
 @
 
-Note that the list elements of the \Rcode{txpaths} metadata column
-always consist of an even number of splicing site ids in ascending
-order.
+A more convenient way to extract this information is to use the
+\Rfunction{txpath} accessor:
+
+<<txpath_sg_104252>>=
+txpath(sg[["104252"]])
+@
+
+Note that the list elements of the \Rcode{txpath} metadata column
+always consist of an even number of \textit{Splicing Site ids} in
+ascending order.
 
 The transcripts in a \Rclass{GRangesList} object like \Rcode{sg[["107328"]]}
 can be plotted with \Rfunction{plotTranscripts}:

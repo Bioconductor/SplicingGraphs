@@ -369,19 +369,19 @@ setMethod("plotTranscripts", "SplicingGraphs",
     if (!is.null(tx_id))
         gene_mcols$tx_id <- tx_id
 
-    ## Set "txpaths" metadata col.
-    if ("txpaths" %in% colnames(gene_mcols))
-        stop("'gene' already has metadata column txpaths")
+    ## Set "txpath" metadata col.
+    if ("txpath" %in% colnames(gene_mcols))
+        stop("'gene' already has metadata column txpath")
     if (on.minus.strand) {
-        txpaths <- rbind(SSids$end_SSid, SSids$start_SSid)
+        txpath <- rbind(SSids$end_SSid, SSids$start_SSid)
     } else {
-        txpaths <- rbind(SSids$start_SSid, SSids$end_SSid)
+        txpath <- rbind(SSids$start_SSid, SSids$end_SSid)
     }
-    txpaths_partitioning_end <- end(PartitioningByEnd(gene)) * 2L
-    txpaths_partitioning <- PartitioningByEnd(txpaths_partitioning_end)
-    names(txpaths_partitioning) <- tx_id
-    txpaths <- splitAsList(as.vector(txpaths), txpaths_partitioning)
-    gene_mcols$txpaths <- txpaths
+    txpath_partitioning_end <- end(PartitioningByEnd(gene)) * 2L
+    txpath_partitioning <- PartitioningByEnd(txpath_partitioning_end)
+    names(txpath_partitioning) <- tx_id
+    txpath <- splitAsList(as.vector(txpath), txpath_partitioning)
+    gene_mcols$txpath <- txpath
 
     mcols(gene) <- gene_mcols
     gene

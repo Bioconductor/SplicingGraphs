@@ -2,12 +2,6 @@
 
 \alias{sgedges-methods}
 
-\alias{txpaths}
-\alias{txpaths,SplicingGraphs-method}
-
-\alias{UATXHcount}
-\alias{UATXHcount,SplicingGraphs-method}
-
 \alias{sgedges}
 \alias{sgedges,SplicingGraphs-method}
 \alias{sgedges,IntegerList-method}
@@ -51,10 +45,7 @@ indeg(x)
 
 sgedges2(x)
 
-## Related utilities:
-
-txpaths(x, as.matrix=FALSE)
-UATXHcount(x)
+## Related utility:
 uninformativeSSids(x)
 }
 
@@ -66,9 +57,6 @@ uninformativeSSids(x)
     TODO
   }
   \item{keep.dup.edges}{
-    TODO
-  }
-  \item{as.matrix}{
     TODO
   }
 }
@@ -92,6 +80,9 @@ uninformativeSSids(x)
     \item \code{\link{sgedgesByTranscript}} for extracting all the introns
           or splicing graph edges from a \link{SplicingGraphs} object.
 
+    \item \code{\link{txpath}} for extracting the transcript paths of a
+          splicing graph.
+
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
 
@@ -113,9 +104,6 @@ sgedges(sg["geneD"])
 sgnodes(sg["geneD"])
 outdeg(sg["geneD"])
 indeg(sg["geneD"])
-
-txpaths(sg["geneD"])
-txpaths(sg["geneD"], as.matrix=TRUE)  # splicing matrix
 
 ## Sanity check:
 geneD_sgedges1 <- sgedges(sg["geneD"], keep.dup.edges=TRUE)

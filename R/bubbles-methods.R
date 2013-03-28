@@ -236,15 +236,15 @@ setMethod("bubbles", "SplicingGraphs",
 setMethod("bubbles", "ANY",
     function(x)
     {
-        txpaths <- txpaths(x)
-        bubbles(txpaths)
+        txpath <- txpath(x)
+        bubbles(txpath)
     }
 )
 
 setMethod("bubbles", "IntegerList",
     function(x)
     {
-        txpathmat <- make_matrix_from_txpaths(x)
+        txpathmat <- make_matrix_from_txpath(x)
         #outdeg <- outdeg(x)
         #indeg <- indeg(x)
         #.extract_bubbles_from_txpathmat(txpathmat, outdeg, indeg)
