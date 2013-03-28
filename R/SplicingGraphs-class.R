@@ -81,7 +81,7 @@ setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
 ### elementLengths(), and unlist().
 
 ### From the GRanges API:
-### We also need seqnames() and strand() from the GRanges API.
+### We only need seqnames(), strand(), and seqinfo() from the GRanges API.
 
 setMethod("seqnames", ".SplicingGraphGenes",
     function(x)
@@ -105,6 +105,10 @@ setMethod("strand", ".SplicingGraphGenes",
         names(ans) <- names(x)
         ans
     }
+)
+
+setMethod("seqinfo", ".SplicingGraphGenes",
+    function(x) seqinfo(unlist(x, use.names=FALSE))
 )
 
 
@@ -169,8 +173,9 @@ setValidity2("SplicingGraphs", .valid.SplicingGraphs)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Restricted SplicingGraphs API.
 ###
-### Contains a few core methods from the List API + seqnames() & strand()
-### from the GRanges API + intronsByTranscript() from the TranscriptDb API.
+### Here we only implement:
+###   - a few core methods from the List API,
+###   - seqnames(), strand(), seqinfo() from the GRanges API.
 ###
 
 setMethod("length", "SplicingGraphs", function(x) length(x@genes))
@@ -221,12 +226,7 @@ setMethod("seqnames", "SplicingGraphs", function(x) seqnames(x@genes))
 
 setMethod("strand", "SplicingGraphs", function(x) strand(x@genes))
 
-setMethod("intronsByTranscript", "SplicingGraphs",
-    function(x)
-    {
-        x@in_by_tx
-    }
-)
+setMethod("seqinfo", "SplicingGraphs", function(x) seqinfo(x@genes))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

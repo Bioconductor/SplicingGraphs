@@ -2,22 +2,32 @@
 
 \alias{sgedgesByTranscript-methods}
 
+\alias{intronsByTranscript,SplicingGraphs-method}
+
 \alias{sgedgesByTranscript}
 \alias{sgedgesByTranscript,SplicingGraphs-method}
 
 
 \title{
-  Extract all the splicing graph edges from a SplicingGraphs object
+  Extract all the introns or splicing graph edges from a SplicingGraphs object
 }
 
 \description{
-  \code{sgedgesByTranscript} extracts the splicing graph edges of all
-  the genes from a \link{SplicingGraphs} object. Return them in a
-  \link[GenomicRanges]{GRangesList} object where they are grouped by
-  transcript.
+  \code{intronsByTranscript} extracts all the introns of all
+  the genes from a \link{SplicingGraphs} object.
+
+  \code{sgedgesByTranscript} extracts all the splicing graph edges of all
+  the genes from a \link{SplicingGraphs} object.
+
+  Both functions return a named \link[GenomicRanges]{GRangesList} object
+  where the items (i.e. introns for the former, splicing graph edges for
+  the latter) are grouped by transcript. The names of this object are the
+  gene ids.
 }
 
 \usage{
+\S4method{intronsByTranscript}{SplicingGraphs}(x)
+
 sgedgesByTranscript(x)
 }
 
@@ -63,8 +73,13 @@ sg
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(sg)
 
-ex_by_tx <- unlist(sg)
 in_by_tx <- intronsByTranscript(sg)
+in_by_tx
+
+## A sanity check:
+ex_by_tx <- unlist(sg)
+stopifnot(identical(elementLengths(in_by_tx) + 1L,
+                    elementLengths(ex_by_tx)))
 
 ## 'sgedgesByTranscript(sg)' combines 'ex_by_tx' and 'in_by_tx' in
 ## a single GRangesList object.

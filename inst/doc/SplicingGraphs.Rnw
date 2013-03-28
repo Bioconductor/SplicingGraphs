@@ -296,10 +296,9 @@ names(which(isActiveSeq(txdb)))
 \subsection{Generating a \Rclass{SplicingGraphs} object}
 
 Splicing graphs are computed by calling the \Rfunction{SplicingGraphs}
-function on the gene model. This is the constructor function for the
-\Rclass{SplicingGraphs} class. It will compute information about all
-the splicing graphs (1 per gene) and store it in the returned
-\Rclass{SplicingGraphs} object.
+function on the gene model. This is the constructor function for
+\Rclass{SplicingGraphs} objects. It will compute information about all
+the splicing graphs (1 per gene) and store it in the returned object.
 
 <<sg>>=
 library(SplicingGraphs)
@@ -322,11 +321,37 @@ gene and \Rcode{names(sg)} gives the gene ids:
 names(sg)[1:20]
 @
 
-\subsection{Extracting information from a \Rclass{SplicingGraphs} object}
+\Rcode{seqnames(sg)} and \Rcode{strand(sg)} return the chromosome and
+strand of the genes:
 
-The transcripts of a given gene can be extracted with \Rfunction{[[}.
-The result is an \emph{unnamed} \Rclass{GRangesList} object containing
-the exons grouped by transcript:
+<<seqnames_sg>>=
+seqnames(sg)[1:20]
+strand(sg)[1:20]
+@
+
+The number of transcripts per gene can be obtained with
+\Rcode{elementLengths(sg)}:
+
+<<elementLengths_sg>>=
+elementLengths(sg)[1:20]
+@
+
+\Rfunction{elementLengths} is a core accessor for list-like objects
+that returns
+
+At this point you might wonder why \Rfunction{elementLengths} works on
+\Rclass{SplicingGraphs} object. Does this mean that those objects are
+list-like objects? The answer is yes. The next thing you might wonder
+is what do the list elements look like and how can I access them?
+This is answered in the next subsection.
+
+\subsection{Basic manipulation of a \Rclass{SplicingGraphs} object}
+
+The list elements of a list-like object can be accessed \textbf{one at a
+time} with \Rfunction{[[}. On a \Rclass{SplicingGraphs} object, this will
+extract the transcripts of a given gene. More precisely it will return
+an \emph{unnamed} \Rclass{GRangesList} object containing the exons grouped
+by transcript:
 
 \begin{small}
 <<sg_double_bracket_107328>>=
@@ -424,12 +449,16 @@ dev.off()
   \label{img:107328-transcripts}
 \end{figure}
 
-The transcripts of all the genes can be extracted as a \emph{named}
-\Rclass{GRangesList} object with \Rfunction{unlist}:
+\Rclass{SplicingGraphs} objects, like most list-like objects, can be
+unlisted with \Rfunction{unlist}. This will extract the transcripts of
+all the genes and return them as a \emph{named} \Rclass{GRangesList} object:
 
 <<unlist_sg>>=
 unlist(sg)
 @
+
+\subsection{Extracting and plotting graphs from a \Rclass{SplicingGraphs}
+            object}
 
 The edges and nodes of the splicing graph of a given gene can be
 extracted with \Rfunction{sgedges} and \Rfunction{sgnodes} applied
@@ -449,8 +478,6 @@ node ($R$) or ending at the leaf node ($L$)) are omitted:
 <<sgedgesByTranscript_sg>>=
 sgedgesByTranscript(sg)
 @
-
-\subsection{Plotting a splicing graph}
 
 To plot a given splicing graph:
 
@@ -709,7 +736,7 @@ conditions:
 <<SessionInfo>>=
 sessionInfo()
 @
-\begin{end}
+\end{small}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

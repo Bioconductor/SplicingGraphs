@@ -1,11 +1,12 @@
 ### =========================================================================
-### "sgedgesByTranscript" methods
+### "sgedgesByTranscript" (and related) methods
 ### -------------------------------------------------------------------------
 
 
 EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
 EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 
+setMethod("intronsByTranscript", "SplicingGraphs", function(x) x@in_by_tx)
 
 setGeneric("sgedgesByTranscript",
     function(x) standardGeneric("sgedgesByTranscript")

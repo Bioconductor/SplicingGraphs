@@ -18,7 +18,7 @@
 \alias{unlist,SplicingGraphs-method}
 \alias{seqnames,SplicingGraphs-method}
 \alias{strand,SplicingGraphs-method}
-\alias{intronsByTranscript,SplicingGraphs-method}
+\alias{seqinfo,SplicingGraphs-method}
 
 \alias{show,SplicingGraphs-method}
 
@@ -58,7 +58,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 \S4method{unlist}{SplicingGraphs}(x, recursive=TRUE, use.names=TRUE)
 
-\S4method{intronsByTranscript}{SplicingGraphs}(x)
+\S4method{seqinfo}{SplicingGraphs}(x)
 
 plotTranscripts(x)
 }
@@ -178,8 +178,8 @@ plotTranscripts(x)
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
 
-    \item \code{\link{sgedgesByTranscript}} for extracting all the splicing
-          graph edges from a SplicingGraphs object.
+    \item \code{\link{sgedgesByTranscript}} for extracting all the introns
+          or splicing graph edges from a SplicingGraphs object.
 
     \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
           splicing graph.
@@ -233,8 +233,14 @@ stopifnot(identical(unlist(sg2), unlist(sg)))
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids:
 length(sg)
 names(sg)
+
+## Basic accessors:
 seqnames(sg)
 strand(sg)
+seqinfo(sg)
+
+## Number of transcripts per gene:
+elementLengths(sg)
 
 ## The transcripts of a given gene can be extracted with [[. The result
 ## is an *unnamed* GRangesList object containing the exons grouped by
@@ -248,14 +254,4 @@ plotTranscripts(sg[["geneD"]])
 ex_by_tx <- unlist(sg)
 ex_by_tx
 plotTranscripts(ex_by_tx)
-
-## Similarly, the introns can be extracted with intronsByTranscript().
-## The result is a *named* GRangesList object containing the introns
-## grouped by transcript. The names of the object are the gene ids:
-in_by_tx <- intronsByTranscript(sg)
-in_by_tx
-
-## A sanity check:
-stopifnot(identical(elementLengths(in_by_tx) + 1L,
-                    elementLengths(ex_by_tx)))
 }

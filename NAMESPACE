@@ -33,6 +33,7 @@ exportMethods(
     unlist,
     seqnames,
     strand,
+    seqinfo,
     intronsByTranscript,
     plot
 )

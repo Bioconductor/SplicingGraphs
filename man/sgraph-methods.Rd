@@ -67,8 +67,8 @@ slideshow(x)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
-    \item \code{\link{sgedgesByTranscript}} for extracting all the splicing
-          graph edges from a \link{SplicingGraphs} object.
+    \item \code{\link{sgedgesByTranscript}} for extracting all the introns
+          or splicing graph edges from a \link{SplicingGraphs} object.
 
     \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
           splicing graph.
