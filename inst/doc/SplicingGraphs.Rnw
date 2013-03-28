@@ -15,7 +15,7 @@
 \usepackage{enumitem}
 \setlist{nolistsep}
 
-\usepackage[margin=0.5in]{caption}
+\usepackage[margin=0.75in]{caption}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -228,10 +228,10 @@ splicing sites. Therefore the initial splicing graph outlined above can be
 simplified by removing nodes of in- and out- degree equal to one because
 they are supposed to be non-informative in terms of alternative splicing.
 Edges associated with such nodes get sequentially merged with
-the previous ones and result in longer edges capturing several exons.
-The final splicing graph only contains nodes involved in alternative
-splicing. The process of removing uninformative nodes is illustrated in
-Figure \ref{img:CIB3-simplified}.
+the previous ones and result in longer edges capturing adjacent
+exons/introns. The final splicing graph only contains nodes involved in
+alternative splicing. The result of removing uninformative nodes is
+illustrated in Figure \ref{img:CIB3-simplified}.
 
 \begin{figure}[!htbp]
   \begin{center}
@@ -249,52 +249,54 @@ Figure \ref{img:CIB3-simplified}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Create splicing graphs from annotations}
+\section{Computing splicing graphs from annotations}
 
-As outlined in the previous section the splicing graph approach
-extends the differential expression analysis of single exons
-implemented by in \Rpackage{DEXSeq} towards
-the analysis of a priori known alternative splicing events.
-The starting point for creating a splicing graph is a
-\Rclass{TranscriptDb} object containing all required gene 
-and transcript annotation of a certain reference genome.
-Here the \Rpackage{TxDb.Mmusculus.UCSC.mm9.knownGenee} 
-package is used.
 
-If other annotations are needed such objects can easily be
-created by using functions of the \Rpackage{GenomicFeatures} 
+\subsection{Choose and load a gene model}
+
+The starting point for computing splicing graphs is a set of annotations
+describing a \textit{gene model} for a given organism. In \Bioconductor,
+a gene model is typically represented as a \Rclass{TranscriptDb}.
+A few prepackaged \Rclass{TranscriptDb} objects are available as
+\Rpackage{TxDb.*} annotation packages in the \Bioconductor package
+repositories. Here the \Rpackage{TxDb.Mmusculus.UCSC.mm9.knownGene}
+package is used. Note that if there is no prepackaged \Rclass{TranscriptDb}
+object for the genome/track that the user wants to use, such objects can
+easily be created by using tools from the \Rpackage{GenomicFeatures} 
 package.
 
-First we load the selected \Rclass{TranscriptDb} object.
+First we load the \Rpackage{TxDb.*} package:
 
 <<txdb>>=
 library(TxDb.Mmusculus.UCSC.mm9.knownGene)
 txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
 @
 
-Creating a splicing graph for the whole \Rclass{TranscriptDb}
-object usually takes about 20 minutes if the information 
-about the types of alternative splicing events is retrieved on a normal 
-desktop computer. If only the edges of the splicing graph are retrieved
-the computation time shortens to about 5 minutes for the 
-whole \Rclass{TranscriptDb} object.
-To save some time we utilize only chromosome 19. 
-To run the \Rfunction{SplicingGraphs} constructor only on a subset of
-the \Rclass{TranscriptDb} object the \Rpackage{GenomicFeatures}
-package provides the \Rfunction{isActiveSeq} function
-to deactivate chromosomes in the \Rclass{TranscriptDb} object which should
-not be used. Usually one would deactivate random
-chromosomes often found in the annotation.
+Creating the splicing graphs for all the genes in the \Rclass{TranscriptDb}
+object can take a long time (up to 20 minutes or more). In order to keep
+things running in a reasonable time in this vignette, we restrict the gene
+model to the genes located on chromosome 19. Let's use the
+\Rfunction{isActiveSeq} getter/setter for this. By default, all the
+chromosomes in a \Rclass{TranscriptDb} object are ``active'':
 
 <<isActiveSeq>>=
-activeChr <- setNames(rep(FALSE, length(isActiveSeq(txdb))),
-                      names(isActiveSeq(txdb)))
-activeChr[names(activeChr) == "chr19"] <- TRUE
-isActiveSeq(txdb) <- activeChr
+isActiveSeq(txdb)
 @
 
-Finally we can call the \Rfunction{SplicingGraphs} constructor on
-the modified \Rclass{TranscriptDb} object.
+Next we set all the values in this named logical vector to \Rcode{FALSE},
+except the value for \Rcode{chr19}:
+
+<<keep_chr19_only>>=
+isActiveSeq(txdb)[-match("chr19", names(isActiveSeq(txdb)))] <- FALSE
+@
+
+\subsection{Generate a \Rclass{SplicingGraphs} object}
+
+Splicing graphs are computed by calling the \Rfunction{SplicingGraphs}
+function on the gene model. This is the constructor function for the
+\Rclass{SplicingGraphs} class. It will compute information about all
+the splicing graphs (1 per gene) and store it in the returned
+\Rclass{SplicingGraphs} object.
 
 <<sg>>=
 library(SplicingGraphs)
@@ -311,20 +313,41 @@ if (!identical(sg, sg2))
 @
 
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
-gene and \Rcode{sg} gives the gene ids.
+gene and \Rcode{names(sg)} gives the gene ids.
 
 <<names_sg>>=
 names(sg)[1:20]
 @
 
-The transcripts of a given gene can be extracted as an \emph{unnamed}
-\Rclass{GRangesList} object with \Rfunction{[[}:
+The transcripts of a given gene can be extracted with \Rfunction{[[}.
+The result is an \emph{unnamed} \Rclass{GRangesList} object containing
+the exons grouped by transcript:
 
 <<sg_double_bracket_107328>>=
 sg[["107328"]]
 @
 
-and plotted with \Rfunction{plotTranscripts}:
+The exon-level metadata columns are:
+\begin{enumerate}
+  \item \Rcode{exon\_id}:
+  \item \Rcode{exon\_name}:
+  \item \Rcode{exon\_rank}:
+  \item \Rcode{start\_SSid}:
+  \item \Rcode{end\_SSid}:
+\end{enumerate}
+
+The \Rfunction{show} method for \Rclass{GRangesList} objects only
+displays the inner metadata columns (which are at the exon level in
+the case of \Rcode{sg[["107328"]]}). To see the outer metadata columns
+(transcript-level metadata columns in the case of \Rcode{sg[["107328"]]}),
+we need to extract them explicitely:
+
+<<mcols_sg_double_bracket_107328>>=
+mcols(sg[["107328"]])
+@
+
+The transcripts in \Rcode{sg[["107328"]]} can be plotted with
+\Rfunction{plotTranscripts}:
 
 <<plotTranscripts_sg_107328,eval=FALSE>>=
 plotTranscripts(sg[["107328"]])
