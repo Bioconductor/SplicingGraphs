@@ -11,11 +11,11 @@
 
 
 \title{
-  Extract the bubbles of a splicing graph
+  Compute the bubbles of a splicing graph
 }
 
 \description{
-  \code{bubbles} extracts the bubbles of the splicing graph of a given gene
+  \code{bubbles} computes the bubbles of the splicing graph of a given gene
   from a \link{SplicingGraphs} object.
 }
 

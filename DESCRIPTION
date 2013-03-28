@@ -1,6 +1,6 @@
 Package: SplicingGraphs
 Title: Tools for creating splicing graphs from annotations and RNA-Seq data
-Version: 0.7.1
+Version: 0.7.2
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package provides tools for creating splicing graphs based on
