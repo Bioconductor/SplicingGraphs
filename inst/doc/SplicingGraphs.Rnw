@@ -705,9 +705,11 @@ head(sg50_counts)
 All of the output in this vignette was produced under the following
 conditions:
 
+\begin{small}
 <<SessionInfo>>=
 sessionInfo()
 @
+\begin{end}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

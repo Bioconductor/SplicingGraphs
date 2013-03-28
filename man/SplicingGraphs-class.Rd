@@ -16,6 +16,8 @@
 \alias{[[,SplicingGraphs,ANY,ANY-method}
 \alias{elementLengths,SplicingGraphs-method}
 \alias{unlist,SplicingGraphs-method}
+\alias{seqnames,SplicingGraphs-method}
+\alias{strand,SplicingGraphs-method}
 \alias{intronsByTranscript,SplicingGraphs-method}
 
 \alias{show,SplicingGraphs-method}
@@ -43,6 +45,10 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 \S4method{length}{SplicingGraphs}(x)
 
 \S4method{names}{SplicingGraphs}(x)
+
+\S4method{seqnames}{SplicingGraphs}(x)
+
+\S4method{strand}{SplicingGraphs}(x)
 
 \S4method{[}{SplicingGraphs,ANY,ANY}(x, i, j, ... , drop=TRUE)
 
@@ -227,6 +233,8 @@ stopifnot(identical(unlist(sg2), unlist(sg)))
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids:
 length(sg)
 names(sg)
+seqnames(sg)
+strand(sg)
 
 ## The transcripts of a given gene can be extracted with [[. The result
 ## is an *unnamed* GRangesList object containing the exons grouped by

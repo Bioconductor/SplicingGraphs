@@ -73,11 +73,39 @@ setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .SplicingGraphGenes API.
 ###
+
+### From the CompressedList API:
 ### .SplicingGraphGenes objects inherit the CompressedList API i.e. anything
 ### that works on a CompressedList object works on a .SplicingGraphGenes
 ### object. But the only things we're using are: length(), names(), [, [[,
 ### elementLengths(), and unlist().
-###
+
+### From the GRanges API:
+### We also need seqnames() and strand() from the GRanges API.
+
+setMethod("seqnames", ".SplicingGraphGenes",
+    function(x)
+    {
+        x_unlisted <- unlist(x)
+        unlisted_seqnames <- commonSeqnames.GRangesList(x_unlisted)
+        relisted_seqnames <- relist(unlisted_seqnames, x)
+        ans <- commonSeqnames.RleList(relisted_seqnames)
+        names(ans) <- names(x)
+        ans
+    }
+)
+
+setMethod("strand", ".SplicingGraphGenes",
+    function(x)
+    {
+        x_unlisted <- unlist(x)
+        unlisted_strand <- commonStrand.GRangesList(x_unlisted)
+        relisted_strand <- relist(unlisted_strand, x)
+        ans <- commonStrand.RleList(relisted_strand)
+        names(ans) <- names(x)
+        ans
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,8 +169,8 @@ setValidity2("SplicingGraphs", .valid.SplicingGraphs)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Restricted SplicingGraphs API.
 ###
-### Contains a few core methods from the List API + the "intronsByTranscript"
-### method from the TranscriptDb API.
+### Contains a few core methods from the List API + seqnames() & strand()
+### from the GRanges API + intronsByTranscript() from the TranscriptDb API.
 ###
 
 setMethod("length", "SplicingGraphs", function(x) length(x@genes))
@@ -188,6 +216,10 @@ setMethod("unlist", "SplicingGraphs",
         unlist(x@genes, recursive=recursive, use.names=use.names)
     }
 )
+
+setMethod("seqnames", "SplicingGraphs", function(x) seqnames(x@genes))
+
+setMethod("strand", "SplicingGraphs", function(x) strand(x@genes))
 
 setMethod("intronsByTranscript", "SplicingGraphs",
     function(x)

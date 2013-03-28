@@ -31,6 +31,8 @@ exportMethods(
     "[[",
     elementLengths,
     unlist,
+    seqnames,
+    strand,
     intronsByTranscript,
     plot
 )
