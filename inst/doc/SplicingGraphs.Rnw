@@ -174,10 +174,10 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 Splicing sites can be of the following types:
 \begin{itemize}
-  \item \textit{acceptor} site (symbol: $-$);
-  \item \textit{donor} site (symbol: $\wedge$);
-  \item \textit{transcription start} site (symbol: $~[~$);
-  \item \textit{transcription end} site (symbol: $~]~$).
+  \item \textit{acceptor} site (symbol: \Rcode{-});
+  \item \textit{donor} site (symbol: \Rcode{\^});
+  \item \textit{transcription start} site (symbol: \Rcode{[});
+  \item \textit{transcription end} site (symbol: \Rcode{]}).
 \end{itemize}
 
 The symbols associated with the individual types of nodes shown in braces 
@@ -188,11 +188,12 @@ events and their associated codes, please refer to \cite{Heber:2002} and
 
 In some cases a given splicing site can be associated with 2 types
 but the combinations of types for such sites is limited.
-Only \textit{acceptor} ($-$) and \textit{transcription start} ($~[~$),
-or \textit{donor} ($\wedge$) and \textit{transcription end} ($~]~$), can
-occur as a pair of types. Such a dual-type node occurs when the start
-of an exon, which is not the first exon of a transcript, falls together
-with the transcription start site of another transcript of the same gene.
+Only \textit{acceptor} (\Rcode{-}) and \textit{transcription start}
+(\Rcode{[}), or \textit{donor} (\Rcode{\^}) and \textit{transcription end}
+(\Rcode{]}), can occur as a pair of types. Such a dual-type node occurs
+when the start of an exon, which is not the first exon of a transcript,
+falls together with the transcription start site of another transcript
+of the same gene.
 An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
 
 \begin{figure}[!htbp]
@@ -201,10 +202,11 @@ An example of such splicing graph is shown in Figure \ref{img:ZNF813}.
   \hskip 0.5in
   \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
   \end{center}
-  \caption{Splicing graph representation of the two transcript variants
-    of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a ($-$,$~[~$)
-    dual-type node: \textit{acceptor} ($-$) for transcript {\tt uc002qbu.2},
-    and \textit{transcription start} ($~[~$) for transcript {\tt uc010eqq.1}.
+  \caption{Splicing graph representation of the two transcript
+    variants of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a
+    (\Rcode{-},\Rcode{[}) dual-type node: \textit{acceptor} (\Rcode{-})
+    for transcript {\tt uc002qbu.2}, and \textit{transcription start}
+    (\Rcode{[}) for transcript {\tt uc010eqq.1}.
   }
   \label{img:ZNF813}
 \end{figure}
@@ -216,9 +218,9 @@ of another transcript of the same gene.
 Whether a non-artificial edge represents an exon or an intron is
 determined by the types of its two flanking nodes:
 \begin{itemize}
-  \item \textbf{exon} if going from \textit{acceptor} ($-$), or
-        ($-$,$~[~$) dual-type, to \textit{donor} ($\wedge$), or
-        ($\wedge$,$~]~$) dual-type;
+  \item \textbf{exon} if going from \textit{acceptor} (\Rcode{-}),
+        or (\Rcode{-},\Rcode{[}) dual-type, to \textit{donor} (\Rcode{\^}),
+        or (\Rcode{\^},\Rcode{]}) dual-type;
   \item \textbf{intron} if the otherway around.
 \end{itemize}
 
@@ -659,6 +661,11 @@ The dimension of this bubble is 2.
 However, there is no bubble between nodes \Rcode{2} and \Rcode{9} because
 the 3 valid paths between them also share nodes \Rcode{5} and \Rcode{6}.
 
+Finally, the set of all valid paths that form a bubble describes
+a ``complete alternative splicing event'' (a.k.a. ``complete AS event'',
+or simply ``complete event''). The individual valid paths that form
+the bubble are sometimes called the ``variants'' of the bubble or event.
+
 \subsection{Computing the bubbles of a splicing graph}
 
 Like with the \Rfunction{sgedges} and \Rfunction{sgnodes} functions,
@@ -680,7 +687,8 @@ per bubble in the graph and the following columns:
         source and sink nodes are not reported in the paths). The former
         contains the list of transcripts associated with each of these paths.
   \item \Rcode{AScode}, \Rcode{description}: The AS code (Alternative Splicing
-        code) and its description. More on these in the next subsection.
+        code) and its verbose description. More on these in the next
+        subsection.
 \end{itemize}
 
 \subsection{AS codes}
@@ -699,61 +707,41 @@ in gene 107328 is obtained. In 3 steps:
         is set to \Rcode{0} if the path is empty. So path \Rcode{\{\}}
         and \Rcode{\{5,6\}} generate strings \Rcode{0} and \Rcode{0,1-2\^},
         respectively.
-  \item Finally, the strings for all the paths are concatenated together
-        separated by a comma (\Rcode{,}).
+  \item Finally, the strings obtained previously are sorted in
+        lexicographical order and concatenated together separated
+        by commas (\Rcode{,}).
 \end{enumerate}
 
 The verbose descriptions of the AS codes are obtained by looking them up
 thru the \Rcode{ASCODE2DESC} predefined object. \Rcode{ASCODE2DESC} is a
-named character vector that contains the descriptions for the AS codes of
-the 50 most frequent patterns of internal complete events found in Human
-as reported in Table $1$ of Sammeth's paper \cite{Sammeth:2010}.
+named character vector that contains the verbose descriptions for the AS
+codes of the 50 most frequent patterns of internal complete events found
+in Human as reported in Table $1$ of Sammeth's paper \cite{Sammeth:2010}.
 
-[TODO: Revisit stuff below]
+<<ASCODE2DESC>>=
+codes <- bubbles(sg["107328"])$AScode
+data.frame(AScode=codes, description=ASCODE2DESC[codes])
+@
 
-An example read out of a bubble could reveal the splicing code 
-($1~0~0~2~1 - 2~2~\wedge$ ) which would represent an 1 exon skip. 
-See Figure \ref{img:exskip}.
-The first part of the code ($1~0~0$) indicates that the first edge
-contains no exon at all. The first symbol of this code part
-indicates the edge number, the second symbol the node rank within 
-the bubble and the third symbol the node type. The second part of 
-the splicing code ($2~1 - 2~2~\wedge$) represents edge number 2 
-containing exactly one exon described by the flanking nodes
-$-$ and $\wedge$. 
-
-\begin{figure}[!htbp]
-  \begin{center}
-  \includegraphics[width=\textwidth]{exskip.png}
-  \end{center}
-  \caption{Splicing graph representation of an 1 exon skip leading to
-    one bubble. The associated splicing code is 
-    $1~0~0~2~1 - 2~2~\wedge$. Left: splicing graph
-    representation. Right: transcript representation
-  }
-  \label{img:exskip}
-\end{figure}
-
-Another example where disjoining comes into play is a
-an alternative splicing site acceptor in one of two transcripts.
-The code for an alternative splicing site acceptor would be 
-$1~0~0~2~1 - 2~2~{\wedge}{:}$ and can be seen as an exon 
-skip where the end of the exon is linked to a disjoint site. 
-In such a way it is possible to characterize and to
-distinguish a variety of different splicing events. 
-See Figure \ref{img:altaccept}
-
-\begin{figure}[!htbp]
-  \begin{center}
-  \includegraphics[width=\textwidth]{altaccept.png}
-  \end{center}
-  \caption{Splicing graph representation of an alternative acceptor site
-    leading to one bubble. The associated splicing code is
-    $1~0~0~2~1 - 2~2~{\wedge}{:}$. 
-    Left: splicing graph representation. Right: transcript representation
-  }
-  \label{img:altaccept}
-\end{figure}
+\Rcode{ASCODE2DESC} only contains the 50 code descriptions reported in
+Table $1$ of Sammeth's paper \cite{Sammeth:2010}. Therefore looking
+up codes thru \Rcode{ASCODE2DESC} returns \Rcode{NA} for some codes.
+Even a simple code like \Rcode{0,1[2\^} is not given a code in Sammeth's
+paper \cite{Sammeth:2010} (would be \Rcode{"skip first exon"} if it was),
+because, for some reasons, Table $1$ in the paper is only considering
+\textbf{internal} complete events (as its title indicates), that is,
+bubbles with source and sink nodes that are not \Rcode{R} and \Rcode{L},
+or, equivalently, complete events with a code that has no \Rcode{[} or
+\Rcode{]} in it
+\footnote{Strangely, Table $1$ of Sammeth's paper \cite{Sammeth:2010}
+actually contains AS codes that seem to correspond to complete events
+that are not internal. For example, the 16th AS code in the table is
+\Rcode{1*2\^,3*4\^} and its description is \Rcode{"2 alternative first
+exons"} indicates that this is not an internal complete event.
+This raises at least 2 questions: (1) why is it in the table?, and
+(2) why \Rcode{[} has been replaced with \Rcode{*} in the code?
+A 3rd question could be: why exclude non-internal complete events
+from this table in the first place?}).
 
 \subsection{Tabulating all the AS codes for Mouse chromosome 19}
 
