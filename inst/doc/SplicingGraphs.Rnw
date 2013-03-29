@@ -134,23 +134,24 @@ please refer to \cite{Heber:2002} and \cite{Sammeth:2010}.
 A splicing graph is a directed acyclic graph (DAG) where:
 \begin{itemize}
   \item The vertices (a.k.a. \textit{nodes}) represent the splicing sites
-        for a given gene. Splicing sites are numbered from $1$ to $n$
-        based on the order they occur when moving in the 5' to 3'
-        direction along the strand where the transcripts are located.
+        for a given gene. Splicing sites are ordered by their position from
+        5' to 3' and numbered from \Rcode{1} to \Rcode{n}. This number
+        is the \textit{Splicing Site id}.
         Note that splicing graphs are only defined for genes that have all
         the exons of all their transcripts on the same chromosome and
         strand. In particular, in its current form, the splicing graph
         theory cannot describe \textit{trans-plicing} events.
   \item The edges are the exons and introns between the splicing sites.
         Their orientation follows the 5' to 3' direction i.e. they go
-        from low to high splicing site numbers.
+        from low to high \textit{Splicing Site ids}.
 \end{itemize}
 
 Two artificial nodes that don't correspond to any splicing site
-are added to the graph: the root ($R$) and the leaf ($L$). Also artificial
-edges are added so that all the transcripts are represented by a path that
-goes from $R$ to $L$. That way the graph is connected. Note that not all
-paths in the graph are necessarily supported by a transcript.
+are added to the graph: the \textit{root} (\Rcode{R}) and the \textit{leaf}
+(\Rcode{L}). Also artificial edges are added so that all the transcripts are
+represented by a path that goes from \Rcode{R} to \Rcode{L}. That way the
+graph is connected. Note that not all paths in the graph are necessarily
+supported by a transcript.
 
 Figure \ref{img:CIB3} shows the splicing graph representation
 of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
@@ -239,10 +240,10 @@ illustrated in Figure \ref{img:CIB3-simplified}.
   \hskip 0.5in
   \includegraphics[width=2in,height=5.5in]{CIB3-sg2.pdf}
   \end{center}
-  \caption{Nodes $1$, $3$, $5$, $6$, $9$, $11$, $12$, and $13$ are
-    uninformative and can be removed.
-    Left: before removal of the uninformative nodes. Right: after their
-    removal.
+  \caption{Nodes \Rcode{1}, \Rcode{3}, \Rcode{5}, \Rcode{6}, \Rcode{9},
+    \Rcode{11}, \Rcode{12}, and \Rcode{13}, are uninformative and can be
+    removed. Left: before removal of the uninformative nodes. Right: after
+    their removal.
   }
   \label{img:CIB3-simplified}
 \end{figure}
@@ -374,11 +375,10 @@ The exon-level metadata columns are:
         in the \Rclass{TranscriptDb} object when it was created.
         Set to \Rcode{NA} if no exon name was provided.
   \item \Rcode{exon\_rank}: The rank of the exon in the transcript.
-  \item \Rcode{start\_SSid}, \Rcode{end\_SSid}: The ids of the splicing
-        sites (a.k.a. \textit{Splicing Site ids}) corresponding to the
-        \textit{start} and \textit{end} coordinates of the exon.
-        (Please be cautious to not misinterpret the meaning of \textit{start}
-        and \textit{end} here. See IMPORTANT NOTE below.)
+  \item \Rcode{start\_SSid}, \Rcode{end\_SSid}: The \textit{Splicing Site
+        ids} corresponding to the \textit{start} and \textit{end} coordinates
+        of the exon. (Please be cautious to not misinterpret the meaning
+        of \textit{start} and \textit{end} here. See IMPORTANT NOTE below.)
         Those ids were assigned by the \Rfunction{SplicingGraphs} constructor.
 \end{itemize}
 
@@ -389,10 +389,10 @@ universal convention that \textit{start} is $<=$ \textit{end}, and this
 \textbf{regardless of the direction of transcription}.
 
 As mentioned previously, the \textit{Splicing Site ids} are assigned based
-on the order they occur when moving in the 5' to 3' direction along the strand
-of the gene. This means that, for a gene on the plus (resp. minus) strand,
-the ids in the \Rcode{start\_SSid} metadata column are always lower (resp.
-greater) than those in the \Rcode{end\_SSid} metadata column.
+on the order of the site positions from 5' to 3'. This means that, for a
+gene on the plus (resp. minus) strand, the ids in the \Rcode{start\_SSid}
+metadata column are always lower (resp. greater) than those in the
+\Rcode{end\_SSid} metadata column.
 
 \begin{small}
 <<sg_double_bracket_104252>>=
@@ -523,6 +523,12 @@ Let's extract the splicing graph nodes for that gene:
 sgnodes(sg["107328"])
 @
 
+The character vector returned by \Rfunction{sgnodes} contains the node
+ids, that is, \Rcode{R} and \Rcode{L} for the \textit{root} and \textit{leaf}
+nodes, and the \textit{Splicing Site ids} for the other nodes.
+The node ids are always returned in ascending order with \Rcode{R} and
+\Rcode{L} being always the first and last nodes, respectively.
+
 The \Rclass{DataFrame} object returned by \Rfunction{sgedges} has the
 following columns:
 \begin{itemize}
@@ -566,7 +572,7 @@ The edge-level metadata columns are the following:
 \end{itemize}
 
 Note that the artificial edges (i.e. edges starting from the root
-node ($R$) or ending at the leaf node ($L$)) are omitted!
+node (\Rcode{R}) or ending at the leaf node (\Rcode{L})) are omitted!
 
 Finally, to plot a given splicing graph:
 
@@ -600,13 +606,33 @@ dev.off()
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Graph bubbles}
+\section{Splicing graph bubbles}
 
-Each graph in \Rcode{sg} contains information about the underlying splicing
-mechanisms for the corresponding gene. This information can be summarized
-by computing the bubbles of a graph.
+\subsection{Some definitions}
+
+The definition of a bubble provided in Sammeth's paper \cite{Sammeth:2010}
+is quite obfuscated. Here we try to give a simpler one.
+For that purpose, we start by introducing the notion of \textit{set of
+supporting transcripts of a splicing graph node $s$}: this is the set
+of transcripts in the gene that ``go thru'' $s$, or, said otherwise,
+that have $s$ in their path (see the \Rfunction{txpath} function in
+previous section for how to extract the transcript paths). It's denoted
+$transcripts(s)$.
+
+Now the definition of a bubble: there is a ``bubble'' between 2 nodes $s$
+and $t$ ($s < t$ ) of a splicing graph if (a) there are at least 2 distinct
+paths going from $s$ to $t$, and (b) there is no node $u$ between $s$ and $t$
+such that $transcripts(u)$ contains $transcripts(s) \cap transcripts(t)$.
+The bubble between $s$ and $t$ is then the subgraph made of all the paths
+going from $s$ to $t$. Nodes $s$ and $t$ are said to be the ``source''
+and``sink'' of the bubble. The number of distinct paths going from $s$
+to $t$ is the ``dimension'' of the bubble.
 
 \subsection{Computing the bubbles of a splicing graph}
+
+Like with the \Rfunction{sgedges} and \Rfunction{sgnodes} functions,
+the bubbles can only be computed for one gene/graph at a time.
+Let's compute all the bubbles for gene 107328 (Entrez ID):
 
 <<bubbles_sg_107328>>=
 bubbles(sg["107328"])
