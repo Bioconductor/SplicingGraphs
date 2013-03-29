@@ -241,6 +241,10 @@ stopifnot(identical(unlist(sg2), unlist(sg)))
 length(sg)
 names(sg)
 
+## ---------------------------------------------------------------------
+## 3. Basic manipulation of a SplicingGraphs object
+## ---------------------------------------------------------------------
+
 ## Basic accessors:
 seqnames(sg)
 strand(sg)
@@ -257,7 +261,7 @@ plotTranscripts(sg[["geneD"]])
 
 ## The transcripts of all the genes can be extracted with unlist(). The
 ## result is a *named* GRangesList object containing the exons grouped
-## by transcript. The names of the object are the gene ids:
+## by transcript. The names on the object are the gene ids:
 ex_by_tx <- unlist(sg)
 ex_by_tx
 plotTranscripts(ex_by_tx)

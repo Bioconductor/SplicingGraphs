@@ -327,6 +327,7 @@ strand of the genes:
 <<seqnames_sg>>=
 seqnames(sg)[1:20]
 strand(sg)[1:20]
+table(strand(sg))
 @
 
 The number of transcripts per gene can be obtained with
@@ -347,11 +348,12 @@ This is answered in the next subsection.
 
 \subsection{Basic manipulation of a \Rclass{SplicingGraphs} object}
 
-The list elements of a list-like object can be accessed \textbf{one at a
-time} with \Rfunction{[[}. On a \Rclass{SplicingGraphs} object, this will
-extract the transcripts of a given gene. More precisely it will return
-an \emph{unnamed} \Rclass{GRangesList} object containing the exons of the
-gene grouped by transcript:
+The list elements of a list-like object can be accessed \textbf{one
+at a time} by subsetting the object with \Rfunction{[[} (a.k.a.
+double-bracket subsetting). On a \Rclass{SplicingGraphs} object,
+this will extract the transcripts of a given gene. More precisely
+it will return an \textbf{unnamed} \Rclass{GRangesList} object
+containing the exons of the gene grouped by transcript:
 
 \begin{small}
 <<sg_double_bracket_107328>>=
@@ -462,35 +464,111 @@ dev.off()
 
 \Rclass{SplicingGraphs} objects, like most list-like objects, can be
 unlisted with \Rfunction{unlist}. This will extract the transcripts of
-all the genes and return them as a \emph{named} \Rclass{GRangesList} object:
+all the genes and return them as a \textbf{named} \Rclass{GRangesList}
+object. The names on the object are the gene ids:
 
 <<unlist_sg>>=
-unlist(sg)
+ex_by_tx <- unlist(sg)
+head(names(ex_by_tx))
 @
+
+Note that, because each element in the object represents a transcript
+(and not a gene), the names are not unique! This means that trying to
+subset the object by name (e.g. with \Rcode{ex\_by\_tx["107328"]}
+or \Rcode{ex\_by\_tx[["107328"]]}) is probably a bad idea because this
+will only select the first element with that name.
+When the names on a vector-like object \Rcode{x} are not unique, a safe
+way to select the elements with some given names is to do something like
+\Rcode{x[names(x) \%in\% c("name1", "name2")]}.
+For example, to select transcripts from genes 107328 and 104252:
+
+\begin{small}
+<<unlist_sg>>=
+ex_by_tx[names(ex_by_tx) %in% c("107328", "104252")]
+@
+\end{small}
 
 \subsection{Extracting and plotting graphs from a \Rclass{SplicingGraphs}
             object}
 
-The edges and nodes of the splicing graph of a given gene can be
-extracted with \Rfunction{sgedges} and \Rfunction{sgnodes} applied
-on the subsetted \Rclass{SplicingGraphs} object:
+The edges (resp. nodes) of the splicing graph of a given gene can be
+extracted with the \Rfunction{sgedges} (resp. \Rfunction{sgnodes})
+function. An important caveat is that this can only be done for one
+gene at a time, or, said otherwise, these functions only work on a
+\Rclass{SplicingGraphs} object of length 1. Here is where subsetting
+with \Rfunction{[} (a.k.a. single-bracket subsetting) comes into play.
 
-<<sgedges_sg>>=
+Using \Rfunction{[} on a \Rclass{SplicingGraphs} object returns a
+\Rclass{SplicingGraphs} object containing only the selected genes:
+
+<<single_bracket_subsetting>>=
+sg[strand(sg) == "-"]
+sg[1:20]
+tail(sg)  # equivalent to 'sg[tail(seq_along(sg))]'
+sg["107328"]
+@
+
+Let's extract the splicing graph edges for gene 107328 (Entrez ID):
+
+<<sgedges_sg_107328>>=
 sgedges(sg["107328"])
+@
+
+The \Rclass{DataFrame} object returned by \Rfunction{sgedges} has 1 row
+per edge. Its columns are explained below.
+
+Let's extract the splicing graph nodes for that gene:
+
+<<sgnodes_sg_107328>>=
 sgnodes(sg["107328"])
 @
 
-Alternatively the edges of all the genes can be extracted with
-\Rfunction{sgedgesByTranscript}. They are returned in a
-\Rclass{GRangesList} object where they are grouped by transcript.
-Note that the artificial edges (i.e. edges starting from the root
-node ($R$) or ending at the leaf node ($L$)) are omitted:
+The \Rclass{DataFrame} object returned by \Rfunction{sgedges} has the
+following columns:
+\begin{itemize}
+  \item \Rcode{from}, \Rcode{to}: The 2 nodes connected by the edge.
+  \item \Rcode{ex\_or\_in}: The type of the edge i.e. exon, intron, or
+        no type if it's an artificial edge.
+  \item \Rcode{tx\_id}: The ids of the transcripts that support the edge.
+\end{itemize}
+
+Alternatively the splicing graph edges of all the genes can be extracted
+with \Rfunction{sgedgesByTranscript}:
 
 <<sgedgesByTranscript_sg>>=
-sgedgesByTranscript(sg)
+edges_by_tx <- sgedgesByTranscript(sg)
 @
 
-To plot a given splicing graph:
+In that case they are returned in a named \Rclass{GRangesList} object
+where they are grouped by transcript. The names on the object are the
+gene ids. As we've seen previously with \Rfunction{unlist}, the
+names are not unique. Let's look at the elements in \Rcode{edges\_by\_tx}
+that correspond to gene 104252:
+
+\begin{small}
+<<edges_by_tx_subset>>=
+edges_by_tx[names(edges_by_tx) %in% "104252"]
+@
+\end{small}
+
+The edge-level metadata columns are the following:
+\begin{itemize}
+  \item \Rcode{sgedge\_id}: A global edge id of the form
+        \Rcode{gene\_id:from,to}.
+  \item \Rcode{from}, \Rcode{to}, \Rcode{ex\_or\_in}, \Rcode{tx\_id}:
+        See the columns of the \Rclass{DataFrame} object returned
+        by \Rfunction{sgedges}.
+  \item \Rcode{exon\_id}, \Rcode{exon\_name}, \Rcode{exon\_rank},
+        \Rcode{start\_SSid}, \Rcode{end\_SSid}: See the exon-level
+        metadata columns returned by \Rcode{sg[["some\_gene\_id"]]}
+        (or \Rcode{unlist(sg)}). Set to \Rcode{NA} for edges of type
+        intron.
+\end{itemize}
+
+Note that the artificial edges (i.e. edges starting from the root
+node ($R$) or ending at the leaf node ($L$)) are omitted!
+
+Finally, to plot a given splicing graph:
 
 <<plot_sg_107328,eval=FALSE>>=
 plot(sgraph(sg["107328"]))

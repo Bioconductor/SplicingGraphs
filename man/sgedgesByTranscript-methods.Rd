@@ -21,7 +21,7 @@
 
   Both functions return a named \link[GenomicRanges]{GRangesList} object
   where the items (i.e. introns for the former, splicing graph edges for
-  the latter) are grouped by transcript. The names of this object are the
+  the latter) are grouped by transcript. The names on the object are the
   gene ids.
 }
 
@@ -76,6 +76,10 @@ sg
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(sg)
 
+## The introns of all the genes can be extracted with
+## intronsByTranscript(). The result is a *named* GRangesList object
+## containing the introns grouped by transcript. The names on the
+## object are the gene ids:
 in_by_tx <- intronsByTranscript(sg)
 in_by_tx
 
@@ -85,7 +89,7 @@ stopifnot(identical(elementLengths(in_by_tx) + 1L,
                     elementLengths(ex_by_tx)))
 
 ## 'sgedgesByTranscript(sg)' combines 'ex_by_tx' and 'in_by_tx' in
-## a single GRangesList object.
+## a single GRangesList object:
 sgedges_by_tx <- sgedgesByTranscript(sg)
 
 ## A sanity check:
