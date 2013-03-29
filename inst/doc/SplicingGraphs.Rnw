@@ -611,28 +611,60 @@ dev.off()
 \subsection{Some definitions}
 
 The definition of a bubble provided in Sammeth's paper \cite{Sammeth:2010}
-is quite obfuscated. Here we try to give a simpler one.
-For that purpose, we start by introducing the notion of \textit{set of
-supporting transcripts of a splicing graph node $s$}: this is the set
-of transcripts in the gene that ``go thru'' $s$, or, said otherwise,
-that have $s$ in their path (see the \Rfunction{txpath} function in
-previous section for how to extract the transcript paths). It's denoted
-$transcripts(s)$.
+is quite obfuscated. Here we try to give a simpler one. For that purpose,
+we start by introducing the notion of valid path between 2 nodes of a
+splicing graph: a ``valid path'' between 2 nodes $s$ and $t$ ($s < t$ )
+of a splicing graph is a path followed by at least 1 transcript (see the
+\Rfunction{txpath} function in previous section for how to extract the
+transcript paths).
+
+Let's illustrate this by looking at the splicing graph for gene 329047
+(Entrez ID). The graph is shown on figure \ref{img:329047-sgraph}.
+
+<<plot_sg_329047_as_pdf,echo=FALSE,results=hide>>=
+pdf("329047-sgraph-labelled.pdf", width=5, height=5)
+plot(sgraph(sg["329047"], tx_id.as.edge.label=TRUE))
+dev.off()
+@
+\begin{figure}[!htbp]
+  \begin{center}
+  \includegraphics[width=5in,height=5in]{329047-sgraph-labelled.pdf}
+  \end{center}
+  \caption{Splicing graph representation of gene 329047 (Entrez ID).
+    Valid paths between nodes \Rcode{2} and \Rcode{9} are:
+    \Rcode{\{2,3,5,6,7,9\}} (followed by transcript \Rcode{uc012bjy.1});
+    \Rcode{\{2,3,5,6,8,9\}} (followed by transcript \Rcode{uc012bjz.1});
+    \Rcode{\{2,4,5,6,7,9\}} (followed by transcript \Rcode{uc008hbs.1}).
+    Path \Rcode{\{2,4,5,6,8,9\}} is not followed by any known transcript
+    and thus is not a valid path.
+  }
+  \label{img:329047-sgraph}
+\end{figure}
+
+Path \Rcode{\{2,3,5,6,7,9\}} in that graph is followed by transcript
+\Rcode{uc012bjy.1} and thus is valid. However path \Rcode{\{2,4,5,6,8,9\}}
+is not followed by any known transcript and thus is not valid.
 
 Now the definition of a bubble: there is a ``bubble'' between 2 nodes $s$
 and $t$ ($s < t$ ) of a splicing graph if (a) there are at least 2 distinct
-paths going from $s$ to $t$, and (b) there is no node $u$ between $s$ and $t$
-such that $transcripts(u)$ contains $transcripts(s) \cap transcripts(t)$.
-The bubble between $s$ and $t$ is then the subgraph made of all the paths
-going from $s$ to $t$. Nodes $s$ and $t$ are said to be the ``source''
-and``sink'' of the bubble. The number of distinct paths going from $s$
-to $t$ is the ``dimension'' of the bubble.
+valid paths between $s$ and $t$, and (b) no other nodes than $s$ and $t$
+are shared by all the valid paths between them.
+Nodes $s$ and $t$ are said to be the ``source'' and``sink'' of the bubble.
+The number of distinct valid paths between $s$ and $t$ is the ``dimension''
+of the bubble.
+
+For example, there is a bubble between nodes \Rcode{2} and \Rcode{5} of
+gene 329047 because the 2 valid paths between them don't share other nodes.
+The dimension of this bubble is 2.
+However, there is no bubble between nodes \Rcode{2} and \Rcode{9} because
+the 3 valid paths between them also share nodes \Rcode{5} and \Rcode{6}.
 
 \subsection{Computing the bubbles of a splicing graph}
 
 Like with the \Rfunction{sgedges} and \Rfunction{sgnodes} functions,
-the bubbles can only be computed for one gene/graph at a time.
-Let's compute all the bubbles for gene 107328 (Entrez ID):
+the bubbles can only be computed for one gene (or graph) at a time.
+Let's compute the bubbles for gene 107328 (Entrez ID) (represented on
+figure \ref{img:107328-sgraph}):
 
 <<bubbles_sg_107328>>=
 bubbles(sg["107328"])
