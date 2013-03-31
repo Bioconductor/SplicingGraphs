@@ -36,14 +36,14 @@ EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 }
 
 .get_index_of_mcols_to_remove <- function(colnames,
-                                          keep.exon.mcols, keep.hits.mcols)
+                                          with.exon.mcols, with.hits.mcols)
 {
     ans <- integer(0)
-    if (!keep.exon.mcols) {
+    if (!with.exon.mcols) {
         idx <- match(EXON_MCOLS, colnames)
         ans <- c(ans, idx)
     }
-    if (!keep.hits.mcols) {
+    if (!with.hits.mcols) {
         idx <- grep("hits$", colnames)
         ans <- c(ans, idx)
     }
@@ -69,17 +69,17 @@ setMethod("intronsByTranscript", "SplicingGraphs", function(x) x@in_by_tx)
 ###
 
 setGeneric("sgedgesByTranscript", signature="x",
-    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
         standardGeneric("sgedgesByTranscript")
 )
 
 setMethod("sgedgesByTranscript", "SplicingGraphs",
-    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
     {
-        if (!isTRUEorFALSE(keep.exon.mcols))
-            stop("'keep.exon.mcols' must be TRUE or FALSE")
-        if (!isTRUEorFALSE(keep.hits.mcols))
-            stop("'keep.hits.mcols' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(with.exon.mcols))
+            stop("'with.exon.mcols' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(with.hits.mcols))
+            stop("'with.hits.mcols' must be TRUE or FALSE")
 
         ex_by_tx <- unlist(x)
         ex_partitioning <- PartitioningByEnd(ex_by_tx)
@@ -195,7 +195,7 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         ## Drop unwanted columns.
         mcol_idx <- .get_index_of_mcols_to_remove(
                         colnames(ans_unlistData_mcols),
-                        keep.exon.mcols, keep.hits.mcols)
+                        with.exon.mcols, with.hits.mcols)
         if (length(mcol_idx) != 0L)
             ans_unlistData_mcols <- ans_unlistData_mcols[ , -mcol_idx,
                                                          drop=FALSE]
@@ -238,15 +238,15 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
 }
 
 setGeneric("sgedgesByGene", signature="x",
-    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
         standardGeneric("sgedgesByGene")
 )
 
 setMethod("sgedgesByGene", "SplicingGraphs",
-    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
     {
-        edges_by_tx <- sgedgesByTranscript(x, keep.exon.mcols=keep.exon.mcols,
-                                              keep.hits.mcols=keep.hits.mcols)
+        edges_by_tx <- sgedgesByTranscript(x, with.exon.mcols=with.exon.mcols,
+                                              with.hits.mcols=with.hits.mcols)
         edges0 <- unlist(edges_by_tx)
         edges0_mcols <- mcols(edges0)
         edges0_mcolnames <- colnames(edges0_mcols)

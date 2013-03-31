@@ -36,22 +36,22 @@
 \usage{
 \S4method{intronsByTranscript}{SplicingGraphs}(x)
 
-sgedgesByTranscript(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+sgedgesByTranscript(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
 
-sgedgesByGene(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+sgedgesByGene(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
 }
 
 \arguments{
   \item{x}{
     A \link{SplicingGraphs} object.
   }
-  \item{keep.exon.mcols}{
-    Whether to keep the \emph{exon metadata columns} in the returned
-    object or not. Those columns are named: \code{exon_id}, \code{exon_name},
-    \code{exon_rank}, \code{start_SSid}, and \code{end_SSid}. They are
-    set to \code{NA} for edges of type intron.
+  \item{with.exon.mcols}{
+    Whether to include or not the \emph{exon metadata columns} in the
+    returned object. Those columns are named: \code{exon_id},
+    \code{exon_name}, \code{exon_rank}, \code{start_SSid}, and
+    \code{end_SSid}. They are set to \code{NA} for edges of type intron.
   }
-  \item{keep.hits.mcols}{
+  \item{with.hits.mcols}{
     TODO
   }
 }
@@ -131,7 +131,7 @@ edges_by_tx[names(edges_by_tx) \%in\% "geneB"]
 ## belongs to transcripts B1 and B2.
 
 ## Keep the "exon metadata columns".
-sgedgesByTranscript(sg, keep.exon.mcols=TRUE)
+sgedgesByTranscript(sg, with.exon.mcols=TRUE)
 ## Note that those cols are set to NA for edges of type intron.
 
 ## ---------------------------------------------------------------------
@@ -143,5 +143,5 @@ edges_by_gene[["geneB"]]
 ## Note that the 2 inner elements in 'edges_by_tx' with global edge
 ## id "geneB:3,4" are now merged into a single inner element.
 
-sgedgesByGene(sg, keep.exon.mcols=TRUE)
+sgedgesByGene(sg, with.exon.mcols=TRUE)
 }
