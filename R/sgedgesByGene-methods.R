@@ -1,5 +1,5 @@
 ### =========================================================================
-### "sgedgesByTranscript" (and related) methods
+### "sgedgesByGene" (and related) methods
 ### -------------------------------------------------------------------------
 
 
@@ -35,8 +35,8 @@ EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
                         ALL_EDGE_MCOLS))
 }
 
-.get_index_of_mcols_to_remove <- function(colnames,
-                                          with.exon.mcols, with.hits.mcols)
+.get_index_of_group_of_mcols <- function(colnames,
+                                         with.exon.mcols, with.hits.mcols)
 {
     ans <- integer(0)
     if (!with.exon.mcols) {
@@ -193,7 +193,7 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         .check_all_edge_mcolnames(colnames(ans_unlistData_mcols))
 
         ## Drop unwanted columns.
-        mcol_idx <- .get_index_of_mcols_to_remove(
+        mcol_idx <- .get_index_of_group_of_mcols(
                         colnames(ans_unlistData_mcols),
                         with.exon.mcols, with.hits.mcols)
         if (length(mcol_idx) != 0L)
@@ -238,13 +238,17 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
 }
 
 setGeneric("sgedgesByGene", signature="x",
-    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE,
+                keep.dup.edges=FALSE)
         standardGeneric("sgedgesByGene")
 )
 
 setMethod("sgedgesByGene", "SplicingGraphs",
-    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
+    function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE,
+                keep.dup.edges=FALSE)
     {
+        if (!isTRUEorFALSE(keep.dup.edges))
+            stop("'keep.dup.edges' must be TRUE or FALSE")
         edges_by_tx <- sgedgesByTranscript(x, with.exon.mcols=with.exon.mcols,
                                               with.hits.mcols=with.hits.mcols)
         edges0 <- unlist(edges_by_tx)
@@ -256,15 +260,17 @@ setMethod("sgedgesByGene", "SplicingGraphs",
 
         ## Sanity checks.
         stopifnot(all(edges0 == edges0[sm]))
-        invariant_mcol_idx <- .get_index_of_invariant_edge_mcols(
-                                  edges0_mcolnames)
+        invar_mcol_idx <- .get_index_of_invariant_edge_mcols(edges0_mcolnames)
         stopifnot(identical(
-                    edges0_mcols[ , invariant_mcol_idx, drop=FALSE],
-                    edges0_mcols[sm , invariant_mcol_idx, drop=FALSE]))
+                    edges0_mcols[ , invar_mcol_idx, drop=FALSE],
+                    edges0_mcols[sm , invar_mcol_idx, drop=FALSE]))
 
         ## Compute 'ans_partitioning'.
-        keep_idx <- which(sm == seq_along(sm))
-        ans_unlistData <- edges0[keep_idx]
+        ans_unlistData <- edges0
+        if (!keep.dup.edges) {
+            keep_idx <- which(sm == seq_along(sm))
+            ans_unlistData <- ans_unlistData[keep_idx]
+        }
         ans_grouping <- Rle(names(ans_unlistData))
         ans_eltlens <- runLength(ans_grouping)
         ans_partitioning <- PartitioningByEnd(cumsum(ans_eltlens),
@@ -272,16 +278,17 @@ setMethod("sgedgesByGene", "SplicingGraphs",
 
         ## Compute 'ans_unlistData'.
         names(ans_unlistData) <- NULL
-        ans_unlistData_mcols <- mcols(ans_unlistData)
-
-        variant_mcol_idx <- seq_along(edges0_mcolnames)[-invariant_mcol_idx]
-        f <- factor(sgedge_id, levels=sgedge_id[keep_idx])
-        for (i in variant_mcol_idx) {
-            old_col <- edges0_mcols[ , i]
-            new_col <- unname(unique(.unlistAndSplit(old_col, f)))
-            ans_unlistData_mcols[ , i] <- new_col
+        if (!keep.dup.edges) {
+            ans_unlistData_mcols <- mcols(ans_unlistData)
+            var_mcol_idx <- seq_along(edges0_mcolnames)[- invar_mcol_idx]
+            f <- factor(sgedge_id, levels=sgedge_id[keep_idx])
+            for (i in var_mcol_idx) {
+                old_col <- edges0_mcols[ , i]
+                new_col <- unname(unique(.unlistAndSplit(old_col, f)))
+                ans_unlistData_mcols[ , i] <- new_col
+            }
+            mcols(ans_unlistData) <- ans_unlistData_mcols
         }
-        mcols(ans_unlistData) <- ans_unlistData_mcols
 
         ## Relist 'ans_unlistData' and return.
         ans <- relist(ans_unlistData, ans_partitioning)

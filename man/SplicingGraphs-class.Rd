@@ -182,8 +182,8 @@ plotTranscripts(x)
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
 
-    \item \code{\link{sgedgesByTranscript}} for extracting all the introns
-          or splicing graph edges from a SplicingGraphs object.
+    \item \code{\link{sgedgesByGene}} for extracting all the edges and
+          ranges from a SplicingGraphs object.
 
     \item \code{\link{txpath}} for extracting the transcript paths of a
           splicing graph.

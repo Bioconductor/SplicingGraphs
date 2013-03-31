@@ -540,22 +540,21 @@ following columns:
   \item \Rcode{tx\_id}: The ids of the transcripts that support the edge.
 \end{itemize}
 
-Alternatively the splicing graph edges of all the genes can be extracted
-with \Rfunction{sgedgesByTranscript}:
+Alternatively the edges and ranges of all the genes can be extracted
+with \Rfunction{sgedgesByGene}:
 
-<<sgedgesByTranscript_sg>>=
-edges_by_tx <- sgedgesByTranscript(sg)
+<<sgedgesByGene_sg>>=
+edges_by_gene <- sgedgesByGene(sg)
 @
 
-In that case they are returned in a named \Rclass{GRangesList} object
-where they are grouped by transcript. The names on the object are the
-gene ids. As we've seen previously with \Rfunction{unlist}, the
-names are not unique. Let's look at the elements in \Rcode{edges\_by\_tx}
-that correspond to gene 104252:
+In that case they are returned in a \Rclass{GRangesList} object where they
+are grouped by gene. \Rcode{edges\_by\_gene} has the length and names of
+\Rcode{sg}, that is, the names on it are the gene ids and are guaranteed
+to be unique. Let's look at the edges for gene 107328:
 
 \begin{small}
-<<edges_by_tx_subset>>=
-edges_by_tx[names(edges_by_tx) %in% "104252"]
+<<edges_by_gene_107328>>=
+edges_by_gene[["107328"]]
 @
 \end{small}
 
@@ -875,12 +874,8 @@ sg50 <- .loadPrecomputed("sg50")
 
 \subsection{Counting the number of reads per splicing graph edge}
 
-<<countReads_sg50,eval=FALSE>>=
-## Takes about 1 minute...
+<<countReads_sg50>>=
 sg50_counts <- countReads(sg50)
-@
-<<loadPrecomputed_sg50_counts,echo=FALSE>>=
-sg50_counts <- .loadPrecomputed("sg50_counts")
 @
 
 The returned object is a \Rclass{DataFrame} with one row per unique

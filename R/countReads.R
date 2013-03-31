@@ -110,26 +110,14 @@ countReads <- function(sg)
 {
     if (!is(sg, "SplicingGraphs"))
         stop("'sg' must be a SplicingGraphs object")
-    sgedges0 <- mcols(unlist(sgedgesByTranscript(sg), use.names=FALSE))
-    sgedge_id <- sgedges0[ , "sgedge_id"]
-    ex_or_in <- sgedges0[ , "ex_or_in"]
-    sm <- match(sgedge_id, sgedge_id)
-    stopifnot(all(ex_or_in == ex_or_in[sm]))  # sanity check
-    is_not_dup <- sm == seq_along(sm)
-    ans <- DataFrame(sgedge_id=sgedge_id[is_not_dup],
-                     ex_or_in=ex_or_in[is_not_dup])
-    hits_idx <- grep("\\.hits$", colnames(sgedges0))
-    for (j in hits_idx) {
-        hits <- sgedges0[[j]]
-        stopifnot(is(hits, "CharacterList"))  # sanity check
-        ## FIXME: Very inefficient. Improve it.
-        for (i in which(!is_not_dup))
-            hits[[sm[i]]] <- unique(hits[[sm[i]]], hits[[i]])
-        hits <- hits[is_not_dup]
-        cn <- colnames(sgedges0)[j]
-        cn <- sub("\\.hits$", "", cn)
-        ans[[cn]] <- elementLengths(hits)
-    }
-    ans
+    edges_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
+    edges0 <- unlist(edges_by_gene, use.names=FALSE)
+    edges0_mcols <- mcols(edges0)
+    edges0_mcolnames <- colnames(edges0_mcols)
+    hits_idx <- grep("\\.hits$", edges0_mcolnames)
+    ans <- endoapply(edges0_mcols[hits_idx], elementLengths)
+    colnames(ans) <- sub("\\.hits$", "", colnames(ans))
+    left_cols <- edges0_mcols[ , c("sgedge_id", "ex_or_in")]
+    cbind(left_cols, ans)
 }
 

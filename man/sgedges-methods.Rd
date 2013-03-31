@@ -77,8 +77,8 @@ uninformativeSSids(x)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
-    \item \code{\link{sgedgesByTranscript}} for extracting all the introns
-          or splicing graph edges from a \link{SplicingGraphs} object.
+    \item \code{\link{sgedgesByGene}} for extracting all the edges and
+          ranges from a \link{SplicingGraphs} object.
 
     \item \code{\link{txpath}} for extracting the transcript paths of a
           splicing graph.
@@ -116,18 +116,22 @@ check_way1_vs_way2 <- function(res1, res2)
 
 for (i in seq_along(sg)) {
     sgi <- sg[i]
+    ## After removal of the artificial edges, the edges returned
+    ## by 'sgedges()' should be the same as those returned
+    ## by 'sgedgesByGene()' on a SplicingGraphs object of length 1.
     check_way1_vs_way2(
-        ## After removal of the artificial edges, the edges returned
-        ## by 'sgedges( , keep.dup.edges=TRUE)' should be the same as
-        ## those returned by 'sgedgesByTranscript()' on a SplicingGraphs
-        ## object of length 1.
-        DataFrame(sgedges(sgi, keep.dup.edges=TRUE)),
-        sgedgesByTranscript(sgi))
-    check_way1_vs_way2(
-        ## After removal of the artificial edges, the edges returned
-        ## by 'sgedges()' should be the same as those returned
-        ## by 'sgedgesByGene()' on a SplicingGraphs object of length 1.
         sgedges(sgi),
         sgedgesByGene(sgi))
+    ## After removal of the artificial edges, the edges returned
+    ## by 'sgedges( , keep.dup.edges=TRUE)' should be the same as
+    ## those returned by 'sgedgesByGene( , keep.dup.edges=TRUE)' or by
+    ## 'sgedgesByTranscript()' on a SplicingGraphs object of length 1.
+    res1 <- DataFrame(sgedges(sgi, keep.dup.edges=TRUE))
+    check_way1_vs_way2(
+        res1,
+        sgedgesByGene(sgi, keep.dup.edges=TRUE))
+    check_way1_vs_way2(
+        res1,
+        sgedgesByTranscript(sgi))
 }
 }

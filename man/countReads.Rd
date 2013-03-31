@@ -55,8 +55,8 @@ countReads(sg)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
-    \item \code{\link{sgedgesByTranscript}} for extracting all the introns
-          or splicing graph edges from a \link{SplicingGraphs} object.
+    \item \code{\link{sgedgesByGene}} for extracting all the edges and
+          ranges from a \link{SplicingGraphs} object.
 
     \item \code{\link{txpath}} for extracting the transcript paths of a
           splicing graph.

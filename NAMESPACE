@@ -77,7 +77,7 @@ export(
     plotTranscripts,
     SplicingGraphs,
 
-    ## sgedgesByTranscript-methods.R:
+    ## sgedgesByGene-methods.R:
     sgedgesByTranscript,
     sgedgesByGene,
 
