@@ -76,8 +76,7 @@ countReads(sg)
 ## 1. Make SplicingGraphs object 'sg' from toy gene model (see
 ##    '?SplicingGraphs')
 ## ---------------------------------------------------------------------
-
-example(SplicingGraphs)  # create SplicingGraphs object 'sg'
+example(SplicingGraphs) 
 sg
 
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
@@ -86,7 +85,6 @@ names(sg)
 ## ---------------------------------------------------------------------
 ## 2. Load toy reads
 ## ---------------------------------------------------------------------
-
 ## Load toy reads (single-end) from a BAM file. We filter out secondary
 ## alignments, reads not passing quality controls, and PCR or optical
 ## duplicates (see ?scanBamFlag for more information):

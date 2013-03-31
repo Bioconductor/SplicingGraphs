@@ -79,6 +79,7 @@ export(
 
     ## sgedgesByTranscript-methods.R:
     sgedgesByTranscript,
+    sgedgesByGene,
 
     ## txpath-methods.R:
     txpath,
@@ -102,6 +103,7 @@ exportMethods(
     plotTranscripts,
     SplicingGraphs,
     sgedgesByTranscript,
+    sgedgesByGene,
     txpath,
     UATXHcount,
     sgedges,

@@ -87,7 +87,7 @@
         stop("invalid splicing graph")
     is_not_dup <- sm == seq_along(sm)
     sgedges <- DataFrame(sgedges0[is_not_dup, , drop=FALSE])
-    sgedges$tx_id <- splitAsList(tx_id, sm)
+    sgedges$tx_id <- unname(splitAsList(tx_id, sm))
     UATXHcount <- sgedges$UATXHcount
     if (!is.null(UATXHcount))
         sgedges$UATXHcount <- sum(splitAsList(sgedges0$UATXHcount, sm))

@@ -105,10 +105,29 @@ sgnodes(sg["geneD"])
 outdeg(sg["geneD"])
 indeg(sg["geneD"])
 
-## Sanity check:
-geneD_sgedges1 <- sgedges(sg["geneD"], keep.dup.edges=TRUE)
-geneD_sgedges1 <- geneD_sgedges1[geneD_sgedges1$ex_or_in != "", ]
-geneD_sgedges2 <- unlist(sgedgesByTranscript(sg["geneD"]), use.names=FALSE)
-geneD_sgedges2 <- mcols(geneD_sgedges2)[ , colnames(geneD_sgedges1)]
-stopifnot(identical(DataFrame(geneD_sgedges1), geneD_sgedges2))
+## Sanity checks:
+check_way1_vs_way2 <- function(res1, res2)
+{
+    edges1 <- res1[res1$ex_or_in != "", ]  # remove artificial edges
+    edges2 <- mcols(unlist(res2, use.names=FALSE))
+    edges2 <- edges2[ , -1]  # remove "sgedge_id" col (global edge id)
+    stopifnot(identical(edges1, edges2))
+}
+
+for (i in seq_along(sg)) {
+    sgi <- sg[i]
+    check_way1_vs_way2(
+        ## After removal of the artificial edges, the edges returned
+        ## by 'sgedges( , keep.dup.edges=TRUE)' should be the same as
+        ## those returned by 'sgedgesByTranscript()' on a SplicingGraphs
+        ## object of length 1.
+        DataFrame(sgedges(sgi, keep.dup.edges=TRUE)),
+        sgedgesByTranscript(sgi))
+    check_way1_vs_way2(
+        ## After removal of the artificial edges, the edges returned
+        ## by 'sgedges()' should be the same as those returned
+        ## by 'sgedgesByGene()' on a SplicingGraphs object of length 1.
+        sgedges(sgi),
+        sgedgesByGene(sgi))
+}
 }

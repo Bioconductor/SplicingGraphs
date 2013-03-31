@@ -3,18 +3,84 @@
 ### -------------------------------------------------------------------------
 
 
+### Edge metadata columns that are considered to be exon attributes (note
+### that we include the "start_SSid" and "end_SSid" cols). Those columns are
+### the 5 first inner metadata columns of the GRangesList object containing
+### the exons grouped by transcripts returned by unlist() when called on a
+### SplicingGraphs object.
+EXON_MCOLS <- c("exon_id", "exon_name", "exon_rank", "start_SSid", "end_SSid")
+
+### All edge metadata columns.
+ALL_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in", "tx_id", EXON_MCOLS)
+
+### Subset of 'ALL_EDGE_MCOLS' made of those columns that are considered
+### invariant i.e. the values in them associated with the same sgedge_id
+### (global edge id) should be the same. Note that we also include the
+### "sgedge_id" col itself.
+INVARIANT_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in",
+                          "start_SSid", "end_SSid")
+
 EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
 EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 
+.check_exon_mcolnames <- function(colnames)
+{
+    stopifnot(identical(head(colnames, n=length(EXON_MCOLS)),
+                        EXON_MCOLS))
+}
+
+.check_all_edge_mcolnames <- function(colnames)
+{
+    stopifnot(identical(head(colnames, n=length(ALL_EDGE_MCOLS)),
+                        ALL_EDGE_MCOLS))
+}
+
+.get_index_of_mcols_to_remove <- function(colnames,
+                                          keep.exon.mcols, keep.hits.mcols)
+{
+    ans <- integer(0)
+    if (!keep.exon.mcols) {
+        idx <- match(EXON_MCOLS, colnames)
+        ans <- c(ans, idx)
+    }
+    if (!keep.hits.mcols) {
+        idx <- grep("hits$", colnames)
+        ans <- c(ans, idx)
+    }
+    ans
+}
+
+.get_index_of_invariant_edge_mcols <- function(colnames)
+{
+    idx <- match(INVARIANT_EDGE_MCOLS, colnames)
+    idx[!is.na(idx)]
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### intronsByTranscript()
+###
+
 setMethod("intronsByTranscript", "SplicingGraphs", function(x) x@in_by_tx)
 
-setGeneric("sgedgesByTranscript",
-    function(x) standardGeneric("sgedgesByTranscript")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### sgedgesByTranscript()
+###
+
+setGeneric("sgedgesByTranscript", signature="x",
+    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+        standardGeneric("sgedgesByTranscript")
 )
 
 setMethod("sgedgesByTranscript", "SplicingGraphs",
-    function(x)
+    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
     {
+        if (!isTRUEorFALSE(keep.exon.mcols))
+            stop("'keep.exon.mcols' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(keep.hits.mcols))
+            stop("'keep.hits.mcols' must be TRUE or FALSE")
+
         ex_by_tx <- unlist(x)
         ex_partitioning <- PartitioningByEnd(ex_by_tx)
         gene_ids <- names(ex_partitioning)
@@ -34,6 +100,8 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         ex_unlistData <- ex_by_tx@unlistData
         ex_unlistData_len <- length(ex_unlistData)
         ex_unlistData_mcols <- mcols(ex_unlistData)
+        .check_exon_mcolnames(colnames(ex_unlistData_mcols))
+
         in_unlistData <- in_by_tx@unlistData
         in_unlistData_len <- length(in_unlistData)
         in_unlistData_mcols <- mcols(in_unlistData)
@@ -122,6 +190,97 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
                             from, ",", to)
         ans_unlistData_mcols <- cbind(DataFrame(sgedge_id=sgedge_id),
                                       ans_unlistData_mcols)
+        .check_all_edge_mcolnames(colnames(ans_unlistData_mcols))
+
+        ## Drop unwanted columns.
+        mcol_idx <- .get_index_of_mcols_to_remove(
+                        colnames(ans_unlistData_mcols),
+                        keep.exon.mcols, keep.hits.mcols)
+        if (length(mcol_idx) != 0L)
+            ans_unlistData_mcols <- ans_unlistData_mcols[ , -mcol_idx,
+                                                         drop=FALSE]
+        mcols(ans_unlistData) <- ans_unlistData_mcols
+
+        ## Relist 'ans_unlistData' and return.
+        ans <- relist(ans_unlistData, ans_partitioning)
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### sgedgesByGene()
+###
+
+### .unlistAndSplit() example:
+###
+###   > x <- SimpleList(A=4:5, B=letters[1:4], C=NULL, D=1:2, E=-2:0, F=TRUE)
+###   > f <- c("y", "x", "x", "x", "y", "x")
+###   > .unlistAndSplit(x, f)
+###   CharacterList of length 2
+###   [["x"]] a b c d 1 2 TRUE
+###   [["y"]] 4 5 -2 -1 0
+###   > .unlistAndSplit(x, f)[[1]]
+###        B      B      B      B      D      D      F 
+###      "a"    "b"    "c"    "d"    "1"    "2" "TRUE" 
+###
+### Should work on any vector-like object and act as an endomorphism on a
+### CompressedList object. On an atomic vector (on which 'unlist()' is a
+### no-op), should be equivalent to 'splitAsList(x, f)'.
+### TODO: Maybe move this to IRanges and expose to the user.
+.unlistAndSplit <- function(x, f, drop=FALSE)
+{
+    if (length(f) != length(x))
+        stop("'x' and 'f' must have the same length")
+    x2 <- unlist(x)
+    f2 <- rep.int(f, elementLengths(x))
+    splitAsList(x2, f2, drop=drop)
+}
+
+setGeneric("sgedgesByGene", signature="x",
+    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+        standardGeneric("sgedgesByGene")
+)
+
+setMethod("sgedgesByGene", "SplicingGraphs",
+    function(x, keep.exon.mcols=FALSE, keep.hits.mcols=FALSE)
+    {
+        edges_by_tx <- sgedgesByTranscript(x, keep.exon.mcols=keep.exon.mcols,
+                                              keep.hits.mcols=keep.hits.mcols)
+        edges0 <- unlist(edges_by_tx)
+        edges0_mcols <- mcols(edges0)
+        edges0_mcolnames <- colnames(edges0_mcols)
+
+        sgedge_id <- edges0_mcols[ , "sgedge_id"]
+        sm <- match(sgedge_id, sgedge_id)
+
+        ## Sanity checks.
+        stopifnot(all(edges0 == edges0[sm]))
+        invariant_mcol_idx <- .get_index_of_invariant_edge_mcols(
+                                  edges0_mcolnames)
+        stopifnot(identical(
+                    edges0_mcols[ , invariant_mcol_idx, drop=FALSE],
+                    edges0_mcols[sm , invariant_mcol_idx, drop=FALSE]))
+
+        ## Compute 'ans_partitioning'.
+        keep_idx <- which(sm == seq_along(sm))
+        ans_unlistData <- edges0[keep_idx]
+        ans_grouping <- Rle(names(ans_unlistData))
+        ans_eltlens <- runLength(ans_grouping)
+        ans_partitioning <- PartitioningByEnd(cumsum(ans_eltlens),
+                                              names=runValue(ans_grouping))
+
+        ## Compute 'ans_unlistData'.
+        names(ans_unlistData) <- NULL
+        ans_unlistData_mcols <- mcols(ans_unlistData)
+
+        variant_mcol_idx <- seq_along(edges0_mcolnames)[-invariant_mcol_idx]
+        f <- factor(sgedge_id, levels=sgedge_id[keep_idx])
+        for (i in variant_mcol_idx) {
+            old_col <- edges0_mcols[ , i]
+            new_col <- unname(unique(.unlistAndSplit(old_col, f)))
+            ans_unlistData_mcols[ , i] <- new_col
+        }
         mcols(ans_unlistData) <- ans_unlistData_mcols
 
         ## Relist 'ans_unlistData' and return.
