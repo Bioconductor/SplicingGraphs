@@ -73,16 +73,15 @@
 ### assignReads()
 ###
 
-### FIXME: It's questionable whether this does the right thing on paired-end
-### reads. I guess not...
 assignReads <- function(sg, reads, sample.name=NA)
 {
     if (!is(sg, "SplicingGraphs"))
         stop("'sg' must be a SplicingGraphs object")
-    if (is(reads, "GappedAlignments")) {
+    if (is(reads, "GappedAlignments") || is(reads, "GappedAlignmentPairs")) {
         reads <- grglist(reads, order.as.in.query=TRUE)
     } else if (!is(reads, "GRangesList")) {
-        stop("'reads' must be a GRangesList object")
+        stop("'reads' must be a GappedAlignments, GappedAlignmentPairs, ",
+             "or GRangesList object")
     }
     if (!isSingleStringOrNA(sample.name))
         stop("'sample.name' must be a single string or NA")
@@ -98,7 +97,19 @@ assignReads <- function(sg, reads, sample.name=NA)
                              flip.query.if.wrong.strand=TRUE)
     ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
     ov1 <- ov0[ov0_is_comp]
-    reads2 <- unlist(range(reads))
+
+    query.breaks <- mcols(reads)$query.break
+    ## 'reads2' is obtained by removing the gaps (i.e. Ns in the CIGAR) in
+    ## 'reads'.
+    if (is.null(query.breaks)) {
+        ## Single-end reads. We produce a GRanges object.
+        reads2 <- unlist(range(reads))
+    } else {
+        ## Paired-end reads. We produce a GRangesList object with 2 ranges
+        ## per top-level elements.
+        reads2 <- GenomicRanges:::fillGaps(reads)
+    }
+
     sg@genes@unlistData <- .assignSubfeatureHits(reads2, ex_by_tx, ov1,
                                                  ignore.strand=TRUE,
                                                  hits.colname=hits.colname)

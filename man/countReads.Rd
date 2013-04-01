@@ -24,8 +24,9 @@ countReads(sg)
     A \link{SplicingGraphs} object.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GappedAlignments} or
-    \link[GenomicRanges]{GRangesList} object containing the
+    A \link[GenomicRanges]{GappedAlignments},
+    \link[GenomicRanges]{GappedAlignmentPairs}, or
+    \link[GenomicRanges]{GRangesList} object, containing the
     reads to assign to the exons and introns in \code{sg}.
   }
   \item{sample.name}{
@@ -102,10 +103,10 @@ gal
 ## ---------------------------------------------------------------------
 ## The same read can be assigned to more than 1 exon or intron (e.g. a
 ## junction read with 1 gap can be assigned to 2 exons and 1 intron).
-sg <- assignReads(sg, gal)
+sg <- assignReads(sg, gal, sample.name="TOYREADS")
 
-sg[["geneA"]]
-sgedges(sg["geneA"])
+edge_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
+mcols(unlist(edge_by_gene))
 
 ## ---------------------------------------------------------------------
 ## 4. Count the number of reads per splicing graph edge
