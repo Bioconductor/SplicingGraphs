@@ -59,8 +59,8 @@ ASCODE2DESC
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
 
-    \item \code{\link{countReads}} for assigning reads to a
-          \link{SplicingGraphs} object and counting them.
+    \item \code{\link{countReads}} for assigning reads to the edges of a
+          \link{SplicingGraphs} object and summarizing them.
   }
 }
 

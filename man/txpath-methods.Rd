@@ -65,8 +65,8 @@ UATXHcount(x)
 
     \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
 
-    \item \code{\link{countReads}} for assigning reads to a
-          \link{SplicingGraphs} object and counting them.
+    \item \code{\link{countReads}} for assigning reads to the edges of a
+          \link{SplicingGraphs} object and summarizing them.
   }
 }
 

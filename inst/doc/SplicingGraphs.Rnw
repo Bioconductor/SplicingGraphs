@@ -80,15 +80,15 @@ The annotations need to be provided as a \Rclass{TranscriptDb} or
 \Rclass{GRangesList} object, which is how a gene model is typically
 represented in \Bioconductor.
 
-Additionally the package allows the user to assign RNA-Seq reads to
+Additionally the package allows the user to assign RNA-seq reads to
 a SplicingGraphs object, and to count them. This requires that the
 reads have been previously aligned to the exact same reference genome
-that the gene model is based on. RNA-Seq data from an already published
+that the gene model is based on. RNA-seq data from an already published
 study is used to illustrate this functionality. The study, performed on
 \textit{Mus musculus}, compares TBX20 (T-box protein 20) knock-out
 with wilde type heart tissue samples \cite{Sakabe:2012}.
 
-%Although there exist several software solutions for RNA-Seq 
+%Although there exist several software solutions for RNA-seq 
 %based transcriptome analysis, like RSEM \cite{RSEM2011},
 %Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq} 
 %\cite{Anders:2010}, the approach of analyzing splicing events as
@@ -819,37 +819,19 @@ exon model get also counted. As a starting point for counting the
 aligned reads are required. The aligned reads used in this example 
 are stored as BAM files. The BAM files used for counting reads are
 provided in the \Rpackage{TBX20BamSubset}.
-The \Rfunction{countSpliceGraphReads} function 
-requires a \Rclass{BamFileList} object which is created out of the
-the file paths to the six selected BAM files.
 
 <<bam_files>>=
 library(TBX20BamSubset)
 bam_files <- getBamFileList()
 @ 
 
-\subsection{Assigning reads to a \Rclass{SplicingGraphs} object}
+\subsection{Assigning reads to the edges of a \Rclass{SplicingGraphs} object}
 
 We can use the \Rcode{assignReads} function to assign reads to the
-exons and introns in \Rclass{SplicingGraphs} object \Rcode{sg}.
-Note that the same read can be assigned to more than one exon or
-intron (e.g. a junction read with 1 gap can be assigned to 2 exons
-and 1 intron).
-
-[TODO: Try to optimize assignReads() so we can do the full count below
- in reasonable time.]
-
-In order to keep things running in a reasonable time in this vignette,
-we reduce the size of \Rclass{SplicingGraphs} object \Rcode{sg} by
-keeping only 50 randomly chosen genes:
-
-<<sg50>>=
-set.seed(33)
-sg50 <- sample(sg, 50)
-@
-
-We're also going to use only 20\% (randomly sampled) of the reads
-from each BAM file.
+edges of a \Rclass{SplicingGraphs} object. Note that the same read
+can be assigned to more than one exonic or intronic edge. For example,
+a junction read with 1 gap can be assigned to an intron and its 2
+flanking exons in one or more transcripts.
 
 <<assignReads,eval=FALSE>>=
 library(Rsamtools)
@@ -857,25 +839,23 @@ flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-## The following loop takes about 10 minutes!
+## The following loop should take about 2-3 minutes...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
     cat("Processing sample ", names(bam_file), " ... ", sep="")
-    gal0 <- readGappedAlignments(bam_file, use.names=TRUE, param=param0)
-    gal <- sample(gal0, length(gal0) * 0.2)
-    grl <- grglist(gal, order.as.in.query=TRUE)
-    sg50 <- assignReads(sg50, grl, sample.name=names(bam_file))
+    gal <- readGappedAlignments(bam_file, use.names=TRUE, param=param0)
+    sg <- assignReads(sg, gal, sample.name=names(bam_file))
     cat("OK\n")
 }
 @
-<<loadPrecomputed_sg50,echo=FALSE>>=
-sg50 <- .loadPrecomputed("sg50")
+<<loadPrecomputed_sg_with_reads,echo=FALSE>>=
+sg <- .loadPrecomputed("sg_with_reads")
 @
 
-\subsection{Counting the number of reads per splicing graph edge}
+\subsection{Counting and summarizing the assigned reads}
 
-<<countReads_sg50>>=
-sg50_counts <- countReads(sg50)
+<<countReads_sg>>=
+sg_counts <- countReads(sg)
 @
 
 The returned object is a \Rclass{DataFrame} with one row per unique
@@ -884,11 +864,17 @@ columns contain the splicing graph edge ids and the type of edge (exon
 or intron):
 
 \begin{small}
-<<head_sg50_counts>>=
-dim(sg50_counts)
-head(sg50_counts)
+<<head_sg_counts>>=
+dim(sg_counts)
+head(sg_counts)
 @
 \end{small}
+
+Total number of hits per sample:
+
+<<sapply_sg_counts>>=
+sapply(sg_counts[-(1:2)], sum)
+@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

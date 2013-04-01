@@ -50,8 +50,8 @@ plotToyReads(gal, txdb, from=NULL, to=NULL)
     \item \code{\link{SplicingGraphs}}: Tools for creating and
           plotting splicing graphs from transcript annotations.
 
-    \item \link{countReads}: Tools for assigning read counts to splicing
-          graphs.
+    \item \code{\link{countReads}} for assigning reads to the edges of a
+          \link{SplicingGraphs} object and summarizing them.
   }
 }
 

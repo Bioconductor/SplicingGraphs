@@ -4,13 +4,14 @@
 \alias{countReads}
 
 \title{
-  Assign reads to splicing graphs and count them
+  Assign reads to the edges of a SplicingGraphs object and summarize them
 }
 
 \description{
-  \code{assignReads} assigns reads to the exons and introns of a
+  \code{assignReads} assigns reads to the exonic and intronic edges of a
   \link{SplicingGraphs} object.
-  \code{countReads} count the assigned reads.
+
+  \code{countReads} returns a summarized count of the assigned reads.
 }
 
 \usage{
@@ -23,8 +24,9 @@ countReads(sg)
     A \link{SplicingGraphs} object.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GRangesList} object containing the reads
-    to assign to the exons and introns in \code{sg}.
+    A \link[GenomicRanges]{GappedAlignments} or
+    \link[GenomicRanges]{GRangesList} object containing the
+    reads to assign to the exons and introns in \code{sg}.
   }
   \item{sample.name}{
     A single string containing the name of the sample where the reads
@@ -95,17 +97,12 @@ param0 <- ScanBamParam(flag=flag0)
 gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
 gal
 
-## Put the reads in a GRangesList object. Using 'order.as.in.query=TRUE'
-## is important to ensure that the ranges corresponding to each read are
-## in the correct order.
-grl <- grglist(gal, order.as.in.query=TRUE)
-
 ## ---------------------------------------------------------------------
 ## 3. Assign the reads to the exons and introns in 'sg'
 ## ---------------------------------------------------------------------
 ## The same read can be assigned to more than 1 exon or intron (e.g. a
 ## junction read with 1 gap can be assigned to 2 exons and 1 intron).
-sg <- assignReads(sg, grl)
+sg <- assignReads(sg, gal)
 
 sg[["geneA"]]
 sgedges(sg["geneA"])
