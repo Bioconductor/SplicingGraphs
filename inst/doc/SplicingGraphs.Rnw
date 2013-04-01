@@ -69,7 +69,7 @@
 The \Rpackage{SplicingGraphs} package allows the user to create and
 manipulate splicing graphs \cite{Sammeth:2010} based on annotations
 for a given organism. The annotations must describe a \textit{gene model},
-that is, they must contain the following information:
+that is, they need to contain the following information:
 \begin{itemize}
   \item The exact exon/intron structure (i.e. genomic coordinates)
         for the known transcripts.
@@ -80,13 +80,19 @@ The annotations need to be provided as a \Rclass{TranscriptDb} or
 \Rclass{GRangesList} object, which is how a gene model is typically
 represented in \Bioconductor.
 
+The package defines the \Rclass{SplicingGraphs} container for storing
+the splicing graphs together with the gene model that they are based on.
+Several methods are provided for conveniently access the information
+stored in a \Rclass{SplicingGraphs} object. Most of these methods are
+described in this document.
+
 Additionally the package allows the user to assign RNA-seq reads to
-a SplicingGraphs object, and to count them. This requires that the
-reads have been previously aligned to the exact same reference genome
-that the gene model is based on. RNA-seq data from an already published
-study is used to illustrate this functionality. The study, performed on
-\textit{Mus musculus}, compares TBX20 (T-box protein 20) knock-out
-with wilde type heart tissue samples \cite{Sakabe:2012}.
+the edges of a \Rclass{SplicingGraphs} object and to summarize them.
+This requires that the reads have been previously aligned to the exact
+same reference genome that the gene model is based on. RNA-seq data
+from an already published study is used to illustrate this functionality.
+The study, performed on \textit{Mus musculus}, compares TBX20 (T-box
+protein 20) knock-out with wilde type heart tissue samples \cite{Sakabe:2012}.
 
 %Although there exist several software solutions for RNA-seq 
 %based transcriptome analysis, like RSEM \cite{RSEM2011},
@@ -810,35 +816,72 @@ head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Counting reads}
 
-[TODO: Complete this section.]
+Finally, in this section, we illustrate how RNA-seq reads can be assigned
+to the exonic and intronic edges of a \Rclass{SplicingGraphs} object, and
+how these assignments can be summarized in a table of counts.
+The reads we're going to assign are stored as BAM files available in the
+\Rpackage{TBX20BamSubset} package. They've been aligned to the \textit{mm9}
+reference genome from UCSC, which is also the reference genome of the gene
+model in our \Rclass{SplicingGraphs} object \Rcode{sg}. As a general rule,
+the aligned reads and the annotations should always be based on the same
+reference genome.
 
-This section deals with counting the reads associated with the
-individual edges. To elucidate later in this vignette some
-advantages of the splicing graph approach the reads for the 
-exon model get also counted. As a starting point for counting the 
-aligned reads are required. The aligned reads used in this example 
-are stored as BAM files. The BAM files used for counting reads are
-provided in the \Rpackage{TBX20BamSubset}.
+Let's start by loading the \Rpackage{TBX20BamSubset} package:
 
 <<bam_files>>=
 library(TBX20BamSubset)
 bam_files <- getBamFileList()
-@ 
+names(bam_files)  # the names of the samples
+@
+
+Another important information about RNA-seq reads is whether they are
+single- or paired-end. This can be checked with the \Rfunction{quickCountBam}
+utility from the \Rpackage{Rsamtools} package:
+
+<<quickCountBam>>=
+library(Rsamtools)
+quickCountBam(bam_files[1], mainGroupsOnly=TRUE)
+@
+
+Doing this for the 6 BAM files would confirm that all the reads in the
+files are single-end. This means that they should be loaded with the
+\Rfunction{readGappedAlignments} function from the \Rpackage{GenomicRanges}
+package. As a quick example, we load the reads located on the first 3.2
+million bases of chromosome 19:
+
+<<readGappedAlignments>>=
+param <- ScanBamParam(which=GRanges("chr19", IRanges(1, 3200000)))
+gal <- readGappedAlignments(bam_files[1], param=param)
+length(gal)  # nb of BAM records
+head(gal)
+@
+
+The result is a \Rclass{GappedAlignments} object with 1 element per BAM
+record. Note that, although paired-end reads can also be loaded with
+this function, they should preferably be loaded with the
+\Rfunction{readGappedAlignmentPairs} function (also from the
+\Rpackage{GenomicRanges} package): this will actually pair
+the BAM records and return the pairs in a \Rclass{GappedAlignmentPairs}
+object. Otherwise they won't be paired and will be returned in a
+\Rclass{GappedAlignments} object.
 
 \subsection{Assigning reads to the edges of a \Rclass{SplicingGraphs} object}
 
 We can use the \Rcode{assignReads} function to assign reads to the
-edges of a \Rclass{SplicingGraphs} object. Note that the same read
+the exonic and intronic edges of \Rcode{sg}. Note that the same read
 can be assigned to more than one exonic or intronic edge. For example,
-a junction read with 1 gap can be assigned to an intron and its 2
-flanking exons in one or more transcripts.
+a junction read with 1 gap (i.e. 1 \Rcode{N} in its CIGAR) can be assigned
+to an intron and its 2 flanking exons, and this can happen for one or more
+transcripts, from the same gene or from different genes.
+
+We loop on the BAM files to assign the reads from 1 sample at a time:
 
 <<assignReads,eval=FALSE>>=
-library(Rsamtools)
 flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
+
 ## The following loop should take about 2-3 minutes...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
@@ -852,7 +895,31 @@ for (i in seq_along(bam_files)) {
 sg <- .loadPrecomputed("sg_with_reads")
 @
 
+All the assignments can be retrieved by calling either
+\Rfunction{sgedgesByGene} or \Rfunction{sgedgesByTranscript} on
+\Rcode{sg} and with \Rcode{with.hits.mcols=TRUE}. Here we only
+show how \Rfunction{sgedgesByGene} can be used for this:
+
+<<sgedgesByGene_sg_with_hits>>=
+edges_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
+sg_assignments <- mcols(unlist(edges_by_gene))[ , -(2:5)]
+@
+
+\Rcode{sg\_assignments} is a \Rclass{DataFrame} with 1 row per
+(non-artificial) edge in \Rcode{sg}, and the following columns:
+
+<<sg_assignments>>=
+colnames(sg_assignments)
+@
+
+There is 1 \textit{hits} column per sample. Each of them is a
+\Rclass{CharacterList} object that contains the reads from that
+sample that were assigned to the individual edges.
+
 \subsection{Counting and summarizing the assigned reads}
+
+Finally we use \Rfunction{countReads} to count the number of reads assigned
+to each (non-artificial) edge in \Rcode{sg} for each sample:
 
 <<countReads_sg>>=
 sg_counts <- countReads(sg)
@@ -863,12 +930,10 @@ splicing graph edge and one column of counts per sample. Two additional
 columns contain the splicing graph edge ids and the type of edge (exon
 or intron):
 
-\begin{small}
 <<head_sg_counts>>=
 dim(sg_counts)
-head(sg_counts)
+head(sg_counts[1:5])
 @
-\end{small}
 
 Total number of hits per sample:
 

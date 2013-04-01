@@ -37,8 +37,8 @@
 }
 
 \description{
-  The SplicingGraphs class is a container for splicing graphs created from
-  transcript annotations.
+  The SplicingGraphs class is a container for storing splicing graphs
+  together with the gene model that they are based on.
 }
 
 \usage{
