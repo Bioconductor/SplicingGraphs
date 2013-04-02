@@ -67,6 +67,9 @@ slideshow(x)
   \itemize{
     \item The \link{SplicingGraphs} class.
 
+    \item \code{\link{plotTranscripts}} for plotting a set of transcripts
+          along genomic coordinates.
+
     \item \code{\link{sgedgesByGene}} for extracting all the edges and
           ranges from a \link{SplicingGraphs} object.
 

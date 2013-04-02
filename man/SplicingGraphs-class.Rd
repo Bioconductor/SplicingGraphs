@@ -22,11 +22,6 @@
 
 \alias{show,SplicingGraphs-method}
 
-\alias{plotTranscripts}
-\alias{plotTranscripts,GRangesList-method}
-\alias{plotTranscripts,TranscriptDb-method}
-\alias{plotTranscripts,SplicingGraphs-method}
-
 \alias{SplicingGraphs}
 \alias{SplicingGraphs,GRangesList-method}
 \alias{SplicingGraphs,TranscriptDb-method}
@@ -63,14 +58,12 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 \S4method{unlist}{SplicingGraphs}(x, recursive=TRUE, use.names=TRUE)
 
 \S4method{seqinfo}{SplicingGraphs}(x)
-
-plotTranscripts(x)
 }
 
 \arguments{
   \item{x}{
     A \link[GenomicRanges]{GRangesList} object containing the exons of one
-    or more genes grouped by transcripts. Alternatively, \code{x} can be a
+    or more genes grouped by transcript. Alternatively, \code{x} can be a
     \link[GenomicFeatures]{TranscriptDb} object. See Details section below.
   }
   \item{grouping}{
@@ -182,6 +175,9 @@ plotTranscripts(x)
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
 
+    \item \code{\link{plotTranscripts}} for plotting a set of transcripts
+          along genomic coordinates.
+
     \item \code{\link{sgedgesByGene}} for extracting all the edges and
           ranges from a SplicingGraphs object.
 
@@ -257,12 +253,14 @@ elementLengths(sg)
 ## is an *unnamed* GRangesList object containing the exons grouped by
 ## transcript:
 sg[["geneD"]]
-plotTranscripts(sg[["geneD"]])
+
+## See '?plotTranscripts' for how to plot those transcripts.
 
 ## The transcripts of all the genes can be extracted with unlist(). The
 ## result is a *named* GRangesList object containing the exons grouped
 ## by transcript. The names on the object are the gene ids:
 ex_by_tx <- unlist(sg)
 ex_by_tx
-plotTranscripts(ex_by_tx)
+
+## See '?plotTranscripts' for how to plot those transcripts.
 }

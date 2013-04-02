@@ -74,8 +74,10 @@ export(
 
 export(
     ## SplicingGraphs-class.R:
-    plotTranscripts,
     SplicingGraphs,
+
+    ## plotTranscripts-methods.R:
+    plotTranscripts,
 
     ## sgedgesByGene-methods.R:
     sgedgesByTranscript,
@@ -100,8 +102,8 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
-    plotTranscripts,
     SplicingGraphs,
+    plotTranscripts,
     sgedgesByTranscript,
     sgedgesByGene,
     txpath,
