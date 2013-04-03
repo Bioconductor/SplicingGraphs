@@ -18,7 +18,7 @@
 }
 
 \usage{
-plotTranscripts(x)
+plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
 }
 
 \arguments{
@@ -27,6 +27,14 @@ plotTranscripts(x)
     of a set of exons grouped by transcript. Alternatively, \code{x} can be a
     \link[GenomicFeatures]{TranscriptDb} object, or a \link{SplicingGraphs}
     object of length 1.
+  }
+  \item{reads}{
+    A \link[GenomicRanges]{GappedAlignments} or
+    \link[GenomicRanges]{GappedAlignmentPairs} object containing single-end
+    or paired-end reads.
+  }
+  \item{from, to}{
+    TODO
   }
 }
 
@@ -39,8 +47,10 @@ plotTranscripts(x)
     \item The \code{\link[Gviz]{plotTracks}} function in the Gviz package
           that \code{plotTranscripts} is based on.
 
-    \item The \link[GenomicRanges]{GRangesList} class in the GenomicRanges
-          package.
+    \item The \link[GenomicRanges]{GRangesList},
+          \link[GenomicRanges]{GappedAlignments}, and
+          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          in the GenomicRanges package.
 
     \item The \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
           package.
@@ -49,10 +59,19 @@ plotTranscripts(x)
 
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
+
+    \item \code{\link{countReads}} for assigning reads to the edges of a
+          \link{SplicingGraphs} object and summarizing them.
+
+    \item \code{\link{toy_reads_bam}} for details about the toy data included
+          in the SplicingGraphs package.
   }
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## A. PLOT TRANSCRIPTS
+## ---------------------------------------------------------------------
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
 sg
 
@@ -71,4 +90,13 @@ plotTranscripts(sg[["geneD"]])  # requires the Gviz package
 ex_by_tx <- unlist(sg)
 ex_by_tx
 plotTranscripts(ex_by_tx)
+
+## ---------------------------------------------------------------------
+## B. PLOT TRANSCRIPTS AND READS
+## ---------------------------------------------------------------------
+gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE)
+plotTranscripts(sg[["geneA"]], reads=gal)
+plotTranscripts(ex_by_tx, reads=gal)
+plotTranscripts(ex_by_tx, reads=gal, from=1, to=320)
+plotTranscripts(ex_by_tx, reads=gal[21:26], from=1, to=320)
 }

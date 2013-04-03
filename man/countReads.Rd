@@ -56,6 +56,11 @@ countReads(sg)
 
 \seealso{
   \itemize{
+    \item The \link[GenomicRanges]{GRangesList},
+          \link[GenomicRanges]{GappedAlignments}, and
+          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          in the GenomicRanges package.
+
     \item The \link{SplicingGraphs} class.
 
     \item \code{\link{sgedgesByGene}} for extracting all the edges and

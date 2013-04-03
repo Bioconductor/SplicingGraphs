@@ -5,11 +5,10 @@
 \alias{toy_reads_sam}
 \alias{toy_reads_bam}
 \alias{toy_overlaps}
-\alias{plotToyReads}
 
 \title{
-  Little helpers for quick access to (and plotting of) the toy data
-  included in the SplicingGraphs package
+  Little helpers for quick access to the toy data included in the
+  SplicingGraphs package
 }
 
 \description{
@@ -21,22 +20,6 @@ toy_genes_gff()
 toy_reads_sam()
 toy_reads_bam()
 toy_overlaps()
-plotToyReads(gal, txdb, from=NULL, to=NULL)
-}
-
-\arguments{
-  \item{gal}{
-    TODO
-  }
-  \item{txdb}{
-    TODO
-  }
-  \item{from}{
-    TODO
-  }
-  \item{to}{
-    TODO
-  }
 }
 
 \author{
@@ -44,11 +27,20 @@ plotToyReads(gal, txdb, from=NULL, to=NULL)
 }
 
 \seealso{
-  The toy data described here is used in the examples of the following
-  man pages:
   \itemize{
-    \item \code{\link{SplicingGraphs}}: Tools for creating and
-          plotting splicing graphs from transcript annotations.
+    \item The \link[GenomicRanges]{GRangesList},
+          \link[GenomicRanges]{GappedAlignments}, and
+          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          in the GenomicRanges package.
+
+    \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
+          function and the \link[GenomicFeatures]{TranscriptDb} class
+          in the GenomicFeatures package.
+
+    \item The \link{SplicingGraphs} class.
+
+    \item \code{\link{plotTranscripts}} for plotting a set of transcripts
+          along genomic coordinates.
 
     \item \code{\link{countReads}} for assigning reads to the edges of a
           \link{SplicingGraphs} object and summarizing them.
@@ -70,9 +62,7 @@ suppressWarnings(
 )
 
 ## Plot all the transcripts in the gene model:
-if (interactive()) {
-  plotTranscripts(txdb)
-}
+plotTranscripts(txdb)
 
 ## ---------------------------------------------------------------------
 ## B. LOAD THE TOY READS AS A GappedAlignments OBJECT AND PLOT THEM
@@ -84,19 +74,8 @@ toy_reads_sam()
 toy_reads_bam()
 gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE)
 
-## Plot the reads:
-if (interactive()) {
-  ## All of them:
-  plotToyReads(gal, txdb)
-  ## The first 11 only:
-  plotToyReads(head(gal, n=11), txdb)
-  ## The rest of them:
-  plotToyReads(tail(gal, n=-11), txdb)
-  ## Reads 21 to 26:
-  plotToyReads(gal[21:26], txdb)
-  ## Read 26 only:
-  plotToyReads(gal[26], txdb)
-}
+plotTranscripts(txdb, reads=gal)
+plotTranscripts(txdb, reads=gal, from=1, to=320)
 
 ## ---------------------------------------------------------------------
 ## C. FIND THE OVERLAPS BETWEEN THE TOY READS AND THE TOY GENE MODEL

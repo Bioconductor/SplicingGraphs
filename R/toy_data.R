@@ -52,26 +52,3 @@ if (FALSE) {
              from=1, to=9)
 }
 
-### Uses the Gviz package.
-plotToyReads <- function(gal, txdb, from=NULL, to=NULL)
-{
-    ax_track <- Gviz::GenomeAxisTrack()
-    txdb_track <- Gviz::GeneRegionTrack(txdb, name="genes")
-    grl <- grglist(gal)
-    gr <- unlist(grl)
-    mcols(gr)$group <- names(gr)
-    grl <- relist(unname(gr), grl)
-    name <- if (length(grl) == 1L) names(grl)[1L] else "reads"
-    gal_track <- Gviz::AnnotationTrack(grl, name=name, fill="blue", shape="box")
-    if (is.null(from) || is.null(to)) {
-        gal_min_start <- min(start(gal))
-        gal_max_end <- max(end(gal))
-        margin <- 0.10 * (gal_max_end - gal_min_start)
-        if (is.null(from))
-            from <- gal_min_start - margin
-        if (is.null(to))
-            to <- gal_max_end + margin
-    }
-    Gviz::plotTracks(list(ax_track, gal_track, txdb_track), from=from, to=to)
-}
-

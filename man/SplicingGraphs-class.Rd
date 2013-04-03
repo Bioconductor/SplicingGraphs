@@ -164,8 +164,8 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 \seealso{
   \itemize{
-    \item \code{\link[GenomicFeatures]{exonsBy}},
-          \code{\link[GenomicFeatures]{transcriptsBy}}, and the
+    \item The \code{\link[GenomicFeatures]{exonsBy}} and
+          \code{\link[GenomicFeatures]{transcriptsBy}} functions, and the
           \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
           package.
 
@@ -194,6 +194,9 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
     \item \code{\link{countReads}} for assigning reads to the edges of a
           SplicingGraphs object and summarizing them.
+
+    \item \code{\link{toy_genes_gff}} for details about the toy data included
+          in the SplicingGraphs package.
   }
 }
 
@@ -261,6 +264,4 @@ sg[["geneD"]]
 ## by transcript. The names on the object are the gene ids:
 ex_by_tx <- unlist(sg)
 ex_by_tx
-
-## See '?plotTranscripts' for how to plot those transcripts.
 }
