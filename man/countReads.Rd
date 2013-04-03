@@ -95,7 +95,8 @@ names(sg)
 ## ---------------------------------------------------------------------
 ## Load toy reads (single-end) from a BAM file. We filter out secondary
 ## alignments, reads not passing quality controls, and PCR or optical
-## duplicates (see ?scanBamFlag for more information):
+## duplicates (see ?scanBamFlag in the Rsamtools package for more
+## information):
 flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
@@ -117,14 +118,4 @@ mcols(unlist(edge_by_gene))
 ## 4. Count the number of reads per splicing graph edge
 ## ---------------------------------------------------------------------
 countReads(sg)
-
-## ---------------------------------------------------------------------
-## 5. Count nb of unambiguous compatible hits per transcript
-## ---------------------------------------------------------------------
-
-#ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]
-#UATXHcount <- countSubjectHits(ov2)
-#mcols(sg@genes@unlistData)$UATXHcount <- UATXHcount
-
-#plot(sg["geneA"])
 }

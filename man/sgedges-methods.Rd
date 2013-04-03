@@ -38,7 +38,7 @@
 }
 
 \usage{
-sgedges(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+sgedges(x, txweight=NULL, keep.dup.edges=FALSE)
 sgnodes(x)
 outdeg(x)
 indeg(x)
@@ -53,7 +53,7 @@ uninformativeSSids(x)
   \item{x}{
     A \link{SplicingGraphs} object of length 1.
   }
-  \item{UATXHcount}{
+  \item{txweight}{
     TODO
   }
   \item{keep.dup.edges}{

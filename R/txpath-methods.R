@@ -70,20 +70,43 @@ setMethod("txpath", "SplicingGraphs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### UATXHcount() accessor
+### txweight() accessor
 ###
 
-setGeneric("UATXHcount", signature="x",
-    function(x) standardGeneric("UATXHcount")
+setGeneric("txweight",
+    function(x) standardGeneric("txweight")
 )
 
 ### Should return an integer vector or a NULL.
-setMethod("UATXHcount", "SplicingGraphs",
+setMethod("txweight", "SplicingGraphs",
     function(x)
     {
-        if (length(x) != 1L)
-            stop("'x' must be a SplicingGraphs object of length 1")
-        mcols(unlist(x, use.names=FALSE))[["UATXHcount"]]
+        ex_by_tx <- unlist(x, use.names=FALSE)
+        ans <- mcols(ex_by_tx)[["txweight"]]
+        if (!is.null(ans))
+            names(ans) <- mcols(ex_by_tx)[["tx_id"]]
+        ans
+    }
+)
+
+setGeneric("txweight<-", signature="x",
+    function(x, value) standardGeneric("txweight<-")
+)
+
+setReplaceMethod("txweight", "SplicingGraphs",
+    function(x, value)
+    {
+        ex_by_tx <- unlist(x, use.names=FALSE)
+        if (!is.null(value)) {
+            if (!is.numeric(value))
+                stop("the supplied 'txweight' must be a numeric vector ",
+                     "or NULL")
+            if (length(value) != 1 && length(value) != length(ex_by_tx))
+                stop("when not NULL, the supplied 'txweight' must have ",
+                     "length 1 or the length of 'unlist(x)'")
+        }
+        mcols(x@genes@unlistData)$txweight <- value
+        x
     }
 )
 

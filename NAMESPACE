@@ -84,7 +84,7 @@ export(
 
     ## txpath-methods.R:
     txpath,
-    UATXHcount,
+    txweight, "txweight<-",
 
     ## sgedges-methods.R:
     sgedges,
@@ -106,7 +106,7 @@ exportMethods(
     sgedgesByTranscript,
     sgedgesByGene,
     txpath,
-    UATXHcount,
+    txweight, "txweight<-",
     sgedges,
     sgnodes,
     outdeg, indeg,

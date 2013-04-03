@@ -83,29 +83,29 @@ plotTranscripts(txdb, reads=gal, from=1, to=320)
 grl <- grglist(gal, order.as.in.query=TRUE)
 ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
 
-## Most of the times the RNA-seq protocol was unstranded so the strand
+## Most of the times the RNA-seq protocol is unstranded so the strand
 ## reported in the BAM file for each alignment is meaningless. Thus we
-## call findOverlaps() with 'ignore.strand=TRUE':
-ov <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
+## should call findOverlaps() with 'ignore.strand=TRUE':
+ov0 <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
 
 ## Put the overlaps in a data.frame to make it easier to read:
-ov2 <- data.frame(QNAME=names(grl)[queryHits(ov)],
-                  tx_id=names(ex_by_tx)[subjectHits(ov)],
+df0 <- data.frame(QNAME=names(grl)[queryHits(ov0)],
+                  tx_id=names(ex_by_tx)[subjectHits(ov0)],
                   stringsAsFactors=FALSE)
-head(ov2)
+head(df0)
 
 ## These overlaps have been manually checked and included in the
 ## SplicingGraphs package. They can be loaded with the toy_overlaps()
 ## helper:
 toy_ov <- toy_overlaps()
 head(toy_ov)
-stopifnot(identical(ov2, toy_ov[ , 1:2]))
+stopifnot(identical(df0, toy_ov[ , 1:2]))
 
 ## ---------------------------------------------------------------------
 ## D. DETECT THE OVERLAPS THAT ARE COMPATIBLE WITH THE GENE MODEL
 ## ---------------------------------------------------------------------
 ## First we encode the overlaps:
-ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov,
+ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
                         flip.query.if.wrong.strand=TRUE)
 ovenc
 

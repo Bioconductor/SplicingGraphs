@@ -20,15 +20,15 @@
 
 ### 'txpath' must be an IntegerList containing all the splicing paths (1 per
 ### transcript) for a given gene. Should have been obtained thru the txpath()
-### accessor. Returns a 4-col (or 5-col if 'UATXHcount' is supplied) data.frame
+### accessor. Returns a 4-col (or 5-col if 'txweight' is supplied) data.frame
 ### representing the splicing graph.
-.make_sgedges0_from_txpath <- function(txpath, UATXHcount=NULL)
+.make_sgedges0_from_txpath <- function(txpath, txweight=NULL)
 {
-    if (!is.null(UATXHcount)) {
-        if (!is.integer(UATXHcount))
-            stop("'UATXHcount' must be an integer vector or NULL")
-        if (length(UATXHcount) != length(txpath))
-            stop("when not NULL, 'UATXHcount' must have ",
+    if (!is.null(txweight)) {
+        if (!is.numeric(txweight))
+            stop("'txweight' must be a numeric vector or NULL")
+        if (length(txweight) != length(txpath))
+            stop("when not NULL, 'txweight' must have ",
                  "the same length as 'txpath'")
     }
     sgedges0s <- lapply(seq_along(txpath),
@@ -65,8 +65,8 @@
         tx_id <- seq_along(txpath)
     tx_id <- rep.int(factor(tx_id, levels=tx_id), nedges_per_tx)
     sgedges0$tx_id <- tx_id
-    if (!is.null(UATXHcount))
-        sgedges0$UATXHcount <- rep.int(UATXHcount, nedges_per_tx)
+    if (!is.null(txweight))
+        sgedges0$txweight <- rep.int(txweight, nedges_per_tx)
     sgedges0
 }
 
@@ -88,9 +88,9 @@
     is_not_dup <- sm == seq_along(sm)
     sgedges <- DataFrame(sgedges0[is_not_dup, , drop=FALSE])
     sgedges$tx_id <- unname(splitAsList(tx_id, sm))
-    UATXHcount <- sgedges$UATXHcount
-    if (!is.null(UATXHcount))
-        sgedges$UATXHcount <- sum(splitAsList(sgedges0$UATXHcount, sm))
+    txweight <- sgedges$txweight
+    if (!is.null(txweight))
+        sgedges$txweight <- sum(splitAsList(sgedges0$txweight, sm))
     if (is.null(ex_hits) && is.null(in_hits))
         return(sgedges)
     hits <- relist(character(0), PartitioningByEnd(NG=length(sm)))
@@ -169,23 +169,23 @@
 }
 
 setGeneric("sgedges", signature="x",
-    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, txweight=NULL, keep.dup.edges=FALSE)
         standardGeneric("sgedges")
 )
 
 setMethod("sgedges", "SplicingGraphs",
-    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, txweight=NULL, keep.dup.edges=FALSE)
     {
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
         txpath <- txpath(x)
-        if (is.null(UATXHcount))
-            UATXHcount <- UATXHcount(x)
+        if (is.null(txweight))
+            txweight <- txweight(x)
         if (keep.dup.edges)
-            return(sgedges(txpath, UATXHcount=UATXHcount,
-                                    keep.dup.edges=keep.dup.edges))
-        sgedges0 <- sgedges(txpath, UATXHcount=UATXHcount,
-                                     keep.dup.edges=TRUE)
+            return(sgedges(txpath, txweight=txweight,
+                                   keep.dup.edges=keep.dup.edges))
+        sgedges0 <- sgedges(txpath, txweight=txweight,
+                                    keep.dup.edges=TRUE)
         exon_hits <- .extract_sgedges_exon_hits(x)
         intron_hits <- .extract_sgedges_intron_hits(x)
         ## FIXME: Once .extract_sgedges_intron_hits() is fixed, merge the
@@ -199,18 +199,18 @@ setMethod("sgedges", "SplicingGraphs",
 )
 
 setMethod("sgedges", "IntegerList",
-    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, txweight=NULL, keep.dup.edges=FALSE)
     {
-        sgedges0 <- .make_sgedges0_from_txpath(x, UATXHcount=UATXHcount)
+        sgedges0 <- .make_sgedges0_from_txpath(x, txweight=txweight)
         sgedges(sgedges0, keep.dup.edges=keep.dup.edges)
     }
 )
 
 setMethod("sgedges", "data.frame",
-    function(x, UATXHcount=NULL, keep.dup.edges=FALSE)
+    function(x, txweight=NULL, keep.dup.edges=FALSE)
     {
-        if (!is.null(UATXHcount))
-            stop("the 'UATXHcount' arg is not supported ",
+        if (!is.null(txweight))
+            stop("the 'txweight' arg is not supported ",
                  "when 'x' is a data.frame")
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")

@@ -17,12 +17,12 @@ setOldClass("igraph")
 ### or a DataFrame as returned by:
 ###     sgedges( , keep.dup.edges=FALSE)
 ### Valid extra cols are: "label", "label.color", "lty", "color", "width"
-### and "UATXHcount". They are used to set graphical parameters on the edges.
+### and "txweight". They are used to set graphical parameters on the edges.
 .precook_igraph_edges_from_sgedges <- function(sgedges)
 {
     required_colnames <- c("from", "to", "ex_or_in", "tx_id")
     extra_colnames <- c("label", "label.color", "lty", "color",
-                        "width", "UATXHcount")
+                        "width", "txweight")
     extract_colnames <- c(required_colnames,
                           intersect(extra_colnames, colnames(sgedges)))
     ans <- sgedges[ , extract_colnames, drop=FALSE]
@@ -38,18 +38,19 @@ setOldClass("igraph")
     if (!("color" %in% extract_colnames))
         ans$color <- c("orange", "darkgrey", "grey", "black")[ex_or_in]
     if (!("width" %in% extract_colnames)
-     && "UATXHcount" %in% extract_colnames) {
-        min_UATXHcount <- min(ans$UATXHcount)
-        if (min_UATXHcount < 0L) {
-            warning("'UATXHcount' column contains negative values. Cannot use ",
+     && "txweight" %in% extract_colnames) {
+        min_txweight <- min(ans$txweight)
+        if (min_txweight < 0L) {
+            warning("'txweight' column contains negative values. Cannot use ",
                     "it to set the widths of the edges.")
         } else {
-            max_UATXHcount <- max(ans$UATXHcount)
-            if (max_UATXHcount <= 0L) {
-                warning("'UATXHcount' column has no positive values. Cannot use ",
+            max_txweight <- max(ans$txweight)
+            if (max_txweight <= 0L) {
+                warning("'txweight' column has no positive values. Cannot use ",
                         "it to set the widths of the edges.")
             } else {
-                ans$width <- 20.0 * ans$UATXHcount / max(ans$UATXHcount)
+                #ans$width <- 25.0 * ans$txweight / max(ans$txweight)
+                ans$width <- ans$txweight
             }
         }
     }
