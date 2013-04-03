@@ -74,23 +74,9 @@ uninformativeSSids(x)
 }
 
 \seealso{
-  \itemize{
-    \item The \link{SplicingGraphs} class.
-
-    \item \code{\link{sgedgesByGene}} for extracting all the edges and
-          ranges from a \link{SplicingGraphs} object.
-
-    \item \code{\link{txpath}} for extracting the transcript paths of a
-          splicing graph.
-
-    \item \code{\link{sgraph}} for extracting a splicing graph as a
-          plottable graph-like object.
-
-    \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
-
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          \link{SplicingGraphs} object and summarizing them.
-  }
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
 }
 
 \examples{

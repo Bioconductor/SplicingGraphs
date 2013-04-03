@@ -43,6 +43,11 @@ plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
 }
 
 \seealso{
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
+
+  Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \code{\link[Gviz]{plotTracks}} function in the Gviz package
           that \code{plotTranscripts} is based on.
@@ -54,17 +59,6 @@ plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
 
     \item The \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
           package.
-
-    \item The \link{SplicingGraphs} class.
-
-    \item \code{\link{sgraph}} for extracting a splicing graph as a
-          plottable graph-like object.
-
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          \link{SplicingGraphs} object and summarizing them.
-
-    \item \code{\link{toy_reads_bam}} for details about the toy data included
-          in the SplicingGraphs package.
   }
 }
 

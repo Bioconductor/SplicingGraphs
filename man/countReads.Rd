@@ -55,27 +55,19 @@ countReads(sg)
 }
 
 \seealso{
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
+
+  Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \link[GenomicRanges]{GRangesList},
           \link[GenomicRanges]{GappedAlignments}, and
           \link[GenomicRanges]{GappedAlignmentPairs} classes
           in the GenomicRanges package.
 
-    \item The \link{SplicingGraphs} class.
-
-    \item \code{\link{sgedgesByGene}} for extracting all the edges and
-          ranges from a \link{SplicingGraphs} object.
-
-    \item \code{\link{txpath}} for extracting the transcript paths of a
-          splicing graph.
-
-    \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
-          splicing graph.
-
-    \item \code{\link{sgraph}} for extracting a splicing graph as a
-          plottable graph-like object.
-
-    \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
+    \item The \code{\link[Rsamtools]{ScanBamParam}} function in the
+          Rsamtools package.
   }
 }
 

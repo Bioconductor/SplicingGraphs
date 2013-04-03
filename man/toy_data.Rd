@@ -27,6 +27,11 @@ toy_overlaps()
 }
 
 \seealso{
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
+
+  Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \link[GenomicRanges]{GRangesList},
           \link[GenomicRanges]{GappedAlignments}, and
@@ -36,14 +41,6 @@ toy_overlaps()
     \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
           function and the \link[GenomicFeatures]{TranscriptDb} class
           in the GenomicFeatures package.
-
-    \item The \link{SplicingGraphs} class.
-
-    \item \code{\link{plotTranscripts}} for plotting a set of transcripts
-          along genomic coordinates.
-
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          \link{SplicingGraphs} object and summarizing them.
   }
 }
 

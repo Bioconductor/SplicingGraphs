@@ -60,22 +60,23 @@ txweight(x) <- value
 }
 
 \seealso{
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
+
+  Other topics related to this man page and documented in other packages:
   \itemize{
-    \item The \link{SplicingGraphs} class.
+    \item The \link[GenomicRanges]{GRangesList},
+          \link[GenomicRanges]{GappedAlignments}, and
+          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          in the GenomicRanges package.
 
-    \item \code{\link{sgedgesByGene}} for extracting all the edges and
-          ranges from a \link{SplicingGraphs} object.
+    \item \link[GenomicRanges]{findOverlaps-methods} and
+          \link[GenomicRanges]{encodeOverlaps-methods} in the
+          GenomicRanges package.
 
-    \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
-          splicing graph.
-
-    \item \code{\link{sgraph}} for extracting a splicing graph as a
-          plottable graph-like object.
-
-    \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
-
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          \link{SplicingGraphs} object and summarizing them.
+    \item The \code{\link[Rsamtools]{ScanBamParam}} function in the
+          Rsamtools package.
   }
 }
 

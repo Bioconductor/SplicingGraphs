@@ -163,6 +163,11 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 }
 
 \seealso{
+  This man page is part of the SplicingGraphs package.
+  Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
+  package and for an index of its man pages.
+
+  Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \code{\link[GenomicFeatures]{exonsBy}} and
           \code{\link[GenomicFeatures]{transcriptsBy}} functions, and the
@@ -174,29 +179,6 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
           and \link[IRanges]{DataFrame} classes in the IRanges package.
-
-    \item \code{\link{plotTranscripts}} for plotting a set of transcripts
-          along genomic coordinates.
-
-    \item \code{\link{sgedgesByGene}} for extracting all the edges and
-          ranges from a SplicingGraphs object.
-
-    \item \code{\link{txpath}} for extracting the transcript paths of a
-          splicing graph.
-
-    \item \code{\link{sgedges}} for extracting the edges (and nodes) of a
-          splicing graph.
-
-    \item \code{\link{sgraph}} for extracting a splicing graph as a
-          plottable graph-like object.
-
-    \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
-
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          SplicingGraphs object and summarizing them.
-
-    \item \code{\link{toy_genes_gff}} for details about the toy data included
-          in the SplicingGraphs package.
   }
 }
 
