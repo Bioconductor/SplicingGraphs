@@ -261,7 +261,7 @@ illustrated in Figure~\ref{img:CIB3-simplified}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computing splicing graphs from annotations}
-
+\label{sec:computing_splicing_graphs}
 
 \subsection{Choosing and loading a gene model}
 
@@ -876,14 +876,24 @@ a junction read with 1 gap (i.e., 1 \Rcode{N} in its CIGAR) can be assigned
 to an intron and its 2 flanking exons, and this can happen for one or more
 transcripts, from the same gene or from different genes.
 
-We loop on the BAM files to assign the reads from 1 sample at a time:
+We're going to loop on the BAM files to assign the reads from 1 sample
+at a time. When we load the files, we want to filter out secondary
+alignments, reads not passing quality controls, and PCR or optical
+duplicates. This is done by preparing a \Rclass{ScanBamParam} object
+that we'll pass to \Rfunction{readGappedAlignments} (see
+\Rfunction{ScanBamParam} in the Rsamtools package for more information
+about this):
 
-<<assignReads,eval=FALSE>>=
+<<ScanBamParam>>=
 flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
+@
 
+Loop:
+
+<<assignReads,eval=FALSE>>=
 ## The following loop should take about 2-3 minutes...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
@@ -897,26 +907,73 @@ for (i in seq_along(bam_files)) {
 sg <- .loadPrecomputed("sg_with_reads")
 @
 
-All the assignments can be retrieved by calling either
-\Rfunction{sgedgesByGene} or \Rfunction{sgedgesByTranscript} on
-\Rcode{sg} and with \Rcode{with.hits.mcols=TRUE}. Here we only
-show how \Rfunction{sgedgesByGene} can be used for this:
+The assignments to the exonic and intronic edges of a given gene
+can be retrieved by extracting the edges grouped by transcript for
+that gene. This is achieved by calling \Rfunction{sgedgesByTranscript}
+on the subsetted \Rclass{SplicingGraphs} object.
+\Rfunction{sgedgesByTranscript} is similar to \Rfunction{sgedgesByGene}
+(introduced in Section \ref{sec:computing_splicing_graphs}), except that
+it groups the edges by transcript instead of by gene.
+By default the edge-level metadata columns are the same as with
+\Rfunction{sgedgesByGene} so we use \Rcode{with.hits.mcols=TRUE} to
+get the additional metadata columns containing the assignments:
 
-<<sgedgesByGene_sg_with_hits>>=
-edges_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
-sg_assignments <- mcols(unlist(edges_by_gene))[ , -(2:5)]
+<<sg_107328_assignments>>=
+edges_by_tx <- sgedgesByTranscript(sg["107328"], with.hits.mcols=TRUE)
+edge_data <- mcols(unlist(edges_by_tx))
+colnames(edge_data)
 @
 
-\Rcode{sg\_assignments} is a \Rclass{DataFrame} with 1 row per
-(non-artificial) edge in \Rcode{sg}, and the following columns:
+There is 1 \textit{hits} column per sample. They appear in the
+order they were created. Each of them is a \Rclass{CharacterList}
+object that contains the reads from that sample that were assigned
+to the individual edges. Let's look at the \textit{hits} column for
+the first sample (\Rcode{SRR316184}):
 
-<<sg_assignments>>=
-colnames(sg_assignments)
+<<head_edge_data_sgedge_id_SRR316184.hits>>=
+head(edge_data[ , c("sgedge_id", "SRR316184.hits")])
 @
 
-There is 1 \textit{hits} column per sample. Each hits column is a
-\Rclass{CharacterList} object that contains the reads from that
-sample that were assigned to the individual edges.
+\subsection{How does read assignment work?}
+
+[TODO: Complete this subsection.]
+
+For the purpose of explaining how reads from sample \Rcode{SRR316184}
+were assigned to the edges of gene 107328, we load the reads that are
+in the region of that gene:
+
+<<load_reads_in_107328_region>>=
+SRR316184gal <- readGappedAlignments(bam_files[1], use.names=TRUE, param=param0)
+reads <- subsetByOverlaps(SRR316184gal, range(sg[["107328"]]),
+                          ignore.strand=TRUE)
+@
+
+and we plot them:
+
+<<plotTranscripts_sg_107328_and_reads,eval=FALSE>>=
+plotTranscripts(sg[["107328"]], reads=reads)
+@
+
+The resulting plot is shown on figure \ref{img:107328-transcripts-and-reads}.
+
+<<plotTranscripts_sg_107328_and_reads_as_pdf,echo=FALSE,results=hide>>=
+pdf("107328-transcripts-and-reads.pdf", width=6, height=3)
+plotTranscripts(sg[["107328"]], reads=reads)
+dev.off()
+@
+\begin{figure}[!htbp]
+  \begin{center}
+  \includegraphics[width=6in,height=6in]{107328-transcripts-and-reads.pdf}
+  \end{center}
+  \caption{The 3 transcripts of gene 107328 (Entrez ID) and the reads
+           in that region.}
+  \label{img:107328-transcripts-and-reads}
+\end{figure}
+
+[TODO: To be continued. But first we would need to use different RNA-seq
+ data. This one is boring: it contains no junction reads (no N's in the
+ CIGARs) so is useless for detecting splicing sites and/or assigning reads
+ to intronic edges (aka junctions).]
 
 \subsection{Counting and summarizing the assigned reads}
 
@@ -993,4 +1050,3 @@ sessionInfo()
 \end{thebibliography}
 
 \end{document}
-
