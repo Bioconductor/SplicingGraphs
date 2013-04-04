@@ -103,8 +103,8 @@ gal
 ## junction read with 1 gap can be assigned to 2 exons and 1 intron).
 sg <- assignReads(sg, gal, sample.name="TOYREADS")
 
-edge_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
-mcols(unlist(edge_by_gene))
+edge_by_tx <- sgedgesByTranscript(sg, with.hits.mcols=TRUE)
+mcols(unlist(edge_by_tx))
 
 ## ---------------------------------------------------------------------
 ## 4. Count the number of reads per splicing graph edge

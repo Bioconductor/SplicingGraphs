@@ -4,38 +4,61 @@
 ### -------------------------------------------------------------------------
 
 
+.check_reads_names <- function(reads)
+{
+    reads_names <- names(reads)
+    if (is.null(reads_names))
+        stop("'reads' must have names")
+    errmsg <- c("'reads' has duplicated names. This probably means that",
+                "some of them are secondary alignments. Note that you can",
+                "filter them out by passing 'isNotPrimaryRead=FALSE' to",
+                "scanBamFlag() when preparing the ScanBamParam object used",
+                "to load the reads from the BAM file. For example:",
+                "",
+                "    flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,",
+                "                         isNotPassingQualityControls=FALSE,",
+                "                         isDuplicate=FALSE)",
+                "    param0 <- ScanBamParam(flag=flag0)",
+                "    gal <- readGappedAlignments(bam_file, use.names=TRUE,",
+                "                                param=param0)",
+                "",
+                "This will filter out records that have flag 0x100 set to 1.",
+                "See '?scanBamFlag' in Rsamtools for more information.",
+                "See SAM Specs at http://samtools.sourceforge.net/ for a ",
+                "description of the flags.")
+    if (anyDuplicated(reads_names))
+        stop(paste0(errmsg, collapse="\n  "))
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .assignSubfeatureHits()
 ###
 ### This is the workhorse behind assignReads().
 ###
 
-### 'query': a named GRangesList object containing gapped reads.
+### 'reads': a named GRangesList object containing gapped reads.
 ###     Alternatively it can be the GRanges object obtained by extracting
 ###     a single range per read e.g. the spanning ranges obtained with
-###     'unlist(range(query))'. In any case, it must have the length and
+###     'unlist(range(reads))'. In any case, it must have the length and
 ###     names of the original GRangesList object.
 ### 'subject': a GRangesList object containing the ranges of some subfeature
 ###     (e.g. exonic or intronic ranges) grouped by their parent feature
 ###     (e.g. transcripts).
-### 'hits': a Hits object compatible with 'query' and 'subject'.
-.check_assignSubfeatureHits_args <- function(query, subject, hits,
+### 'hits': a Hits object compatible with 'reads' and 'subject'.
+.check_assignSubfeatureHits_args <- function(reads, subject, hits,
                                              ignore.strand, hits.colname)
 {
-    if (!(is(query, "GRangesList") || is(query, "GRanges")))
-        stop("'query' must be a GRangesList or GRanges object")
-    query_names <- names(query)
-    if (is.null(query_names))
-        stop("'query' must have names")
-    if (anyDuplicated(query_names))
-        stop("'query' has duplicated names")
+    if (!(is(reads, "GRangesList") || is(reads, "GRanges")))
+        stop("'reads' must be a GRangesList or GRanges object")
+    .check_reads_names(reads)
     if (!is(subject, "GRangesList"))
         stop("'subject' must be a GRangesList object")
     if (!is(hits, "Hits"))
         stop("'hits' must be a Hits object")
-    if (queryLength(hits) != length(query)
+    if (queryLength(hits) != length(reads)
      || subjectLength(hits) !=  length(subject))
-        stop("'hits' is not compatible with 'query' and 'subject'")
+        stop("'hits' is not compatible with 'reads' and 'subject'")
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     if (!isSingleString(hits.colname))
@@ -44,21 +67,21 @@
 
 ### Returns 'subject' with 1 additional inner metadata col "hits" containing
 ### the hits assigned to each subrange.
-.assignSubfeatureHits <- function(query, subject, hits, ignore.strand=FALSE,
+.assignSubfeatureHits <- function(reads, subject, hits, ignore.strand=FALSE,
                                   hits.colname="hits")
 {
-    .check_assignSubfeatureHits_args(query, subject, hits,
+    .check_assignSubfeatureHits_args(reads, subject, hits,
                                      ignore.strand, hits.colname)
-    query_names <- names(query)
+    reads_names <- names(reads)
     subject_unlistData <- subject@unlistData
-    subhits <- findOverlaps(query, subject_unlistData,
+    subhits <- findOverlaps(reads, subject_unlistData,
                             ignore.strand=ignore.strand)
     subhits_q <- queryHits(subhits)
     subhits_s <- togroup(subject@partitioning, subjectHits(subhits))
     m <- IRanges:::matchIntegerPairs(subhits_q, subhits_s,
                                      queryHits(hits), subjectHits(hits))
     subhits <- subhits[!is.na(m)]
-    hit_per_subfeature <- splitAsList(query_names[queryHits(subhits)],
+    hit_per_subfeature <- splitAsList(reads_names[queryHits(subhits)],
                                       subjectHits(subhits))
     mcols(subject_unlistData)[[hits.colname]] <- CharacterList(character(0))
     idx <- as.integer(names(hit_per_subfeature))

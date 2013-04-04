@@ -121,6 +121,9 @@ plot(sgraph(sg["geneD"], tx_id.as.edge.label=TRUE, as.igraph=TRUE))
 ## ---------------------------------------------------------------------
 ## 4. An advanced example
 ## ---------------------------------------------------------------------
+## [TODO: Counting "unambiguous compatible hits" per transcript should be
+##  supported by countReads(). Simplify the code below when countReads()
+##  supports this.]
 ## Here we show how to find "unambiguous compatible hits" between a set
 ## of RNA-seq reads and a set of transcripts, that is, hits that are
 ## compatible with the splicing of exactly 1 transcript. Then we set the

@@ -8,10 +8,18 @@ o Complete man pages (get rid of all TODO from them).
 
 o Add other counting modes to countReads(), controlled via an additional
   argument. For example:
+
     - Nb of unique reads per edge (the current mode, should remain the
       default).
+
     - Nb of unique reads per edge in the simplified graph (i.e. graph
       obtained after removing uninformative nodes).
+
     - Nb of unique reads per transcript.
+
+    - Nb of "unambiguous compatible hits" per transcript. Currently done
+      by hand in man page for txweight(). Could be done in a simpler way
+      by looking at the reads already assigned to the SplicingGraphs.
+
     - Nb of unique reads per gene.
 
