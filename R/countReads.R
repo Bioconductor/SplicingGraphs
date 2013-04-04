@@ -10,22 +10,11 @@
     if (is.null(reads_names))
         stop("'reads' must have names")
     errmsg <- c("'reads' has duplicated names. This probably means that",
-                "some of them are secondary alignments. Note that you can",
-                "filter them out by passing 'isNotPrimaryRead=FALSE' to",
-                "scanBamFlag() when preparing the ScanBamParam object used",
-                "to load the reads from the BAM file. For example:",
-                "",
-                "    flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,",
-                "                         isNotPassingQualityControls=FALSE,",
-                "                         isDuplicate=FALSE)",
-                "    param0 <- ScanBamParam(flag=flag0)",
-                "    gal <- readGappedAlignments(bam_file, use.names=TRUE,",
-                "                                param=param0)",
-                "",
-                "This will filter out records that have flag 0x100 set to 1.",
-                "See '?scanBamFlag' in Rsamtools for more information.",
-                "See SAM Specs at http://samtools.sourceforge.net/ for a ",
-                "description of the flags.")
+                "either: (a) it contains paired-end reads that have not",
+                "been paired, or (b) some of the reads are secondary",
+                "alignments. See 'About the read names' section in the man",
+                "page for assignReads() (accessible with '?assignReads')",
+                "for more information.")
     if (anyDuplicated(reads_names))
         stop(paste0(errmsg, collapse="\n  "))
 }

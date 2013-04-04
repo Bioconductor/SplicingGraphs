@@ -28,6 +28,9 @@ countReads(sg)
     \link[GenomicRanges]{GappedAlignmentPairs}, or
     \link[GenomicRanges]{GRangesList} object, containing the
     reads to assign to the exons and introns in \code{sg}.
+    It must have unique names on it, typically the QNAME ("query name")
+    field coming from the BAM file. More on this in the 'About the read
+    names' section below.
   }
   \item{sample.name}{
     A single string containing the name of the sample where the reads
@@ -37,6 +40,52 @@ countReads(sg)
 
 \details{
   TODO
+}
+
+\section{About read names}{
+  The read names are typically imported from the BAM file by calling
+  \code{\link[Rsamtools]{readGappedAlignments}} (or
+  \code{\link[Rsamtools]{readGappedAlignmentPairs}}) with
+  \code{use.names=TRUE}. This extracts the "query names" from the
+  file (stored in the QNAME field), and makes them the names of the
+  returned object.
+
+  The \code{reads} object must have unique names on it. The presence of
+  duplicated names generally indicates one (or both) of the following
+  situations:
+
+  \itemize{
+    \item (a) \code{reads} contains paired-end reads that have not been
+              paired;
+    \item (b) some of the reads are \emph{secondary alignments}.
+  }
+
+  If (a): you can find out whether reads in a BAM file are single- or
+  paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
+  from the Rsamtools package. If they're paired-end, load them with
+  \code{\link[Rsamtools]{readGappedAlignmentPairs}}
+  instead of \code{\link[Rsamtools]{readGappedAlignments}}, and that will
+  pair them.
+
+  If (b): you can filter out secondary alignments by passing
+  \code{'isNotPrimaryRead=FALSE'} to \code{\link[Rsamtools]{scanBamFlag}}
+  when preparing the \link[Rsamtools]{ScanBamParam} object used to load
+  the reads. For example:
+  \preformatted{
+    library(Rsamtools)
+    flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+                         isNotPassingQualityControls=FALSE,
+                         isDuplicate=FALSE)
+    param0 <- ScanBamParam(flag=flag0)
+    reads <- readGappedAlignments("path/to/BAM/file", use.names=TRUE,
+                                  param=param0)
+  }
+  This will filter out records that have flag 0x100 (secondary alignment)
+  set to 1. See \code{?\link[Rsamtools]{scanBamFlag}} in the Rsamtools
+  package for more information.
+  See the SAM Specs on the SAMtools project page at
+  \url{http://samtools.sourceforge.net/} for a description of the
+  SAM/BAM flags.
 }
 
 \value{
@@ -66,7 +115,8 @@ countReads(sg)
           \link[GenomicRanges]{GappedAlignmentPairs} classes
           in the GenomicRanges package.
 
-    \item The \code{\link[Rsamtools]{ScanBamParam}} function in the
+    \item The \code{\link[Rsamtools]{quickCountBam}} and
+          \code{\link[Rsamtools]{ScanBamParam}} functions in the
           Rsamtools package.
   }
 }
