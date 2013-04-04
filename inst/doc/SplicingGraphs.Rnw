@@ -1000,6 +1000,9 @@ Total number of hits per sample:
 sapply(sg_counts[-(1:2)], sum)
 @
 
+[TODO: Suggest some possible downstream statistical analysis that take
+ the output of countReads() as a starting point.]
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Session Information}

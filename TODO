@@ -1,0 +1,17 @@
+o Replace the RNA-seq data used in the vignette by data that actually
+  contains junction reads. The BAM files in TBX20BamSubset don't contain
+  any!
+
+o Complete vignette (get rid of all TODO from it).
+
+o Complete man pages (get rid of all TODO from them).
+
+o Add other counting modes to countReads(), controlled via an additional
+  argument. For example:
+    - Nb of unique reads per edge (the current mode, should remain the
+      default).
+    - Nb of unique reads per edge in the simplified graph (i.e. graph
+      obtained after removing uninformative nodes).
+    - Nb of unique reads per transcript.
+    - Nb of unique reads per gene.
+
