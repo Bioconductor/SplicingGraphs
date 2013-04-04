@@ -2,6 +2,24 @@
 ### "plotTranscripts" methods
 ### -------------------------------------------------------------------------
 
+### Slighly faster and less memory consuming than subsetByOverlaps()
+### when 'subject' contains 1 range only. Ignores the strand.
+.subsetByOverlapWithRange <- function(query, subject)
+{
+    if (!(is(query, "GappedAlignments") || is(query, "GappedAlignmentPairs")))
+        stop("'query' must be a GappedAlignments or GappedAlignmentPairs ",
+             "object")
+    if (!is(subject, "GenomicRanges"))
+        stop("'subject' must be a GenomicRanges object")
+    if (length(subject) != 1L)
+        stop("'subject' must contain 1 range only")
+    query_ranges <- granges(query)
+    strand(query_ranges) <- "*"
+    cmp <- compare(query_ranges, subject)
+    ## Keep reads that overlap with or are adjacent to 'subject'.
+    query[-5L <= cmp & cmp <= 5L]
+}
+
 .plotTranscripts.GRangesList <- function(x, reads=NULL, from=NULL, to=NULL)
 {
     ## Compute the genomic range of the transcripts.
@@ -28,10 +46,15 @@
 
     if (!is.null(reads)) {
         ## Reads track.
+        reads <- .subsetByOverlapWithRange(reads, tx_range)
         reads <- grglist(reads, order.as.in.query=TRUE)
-        gr <- unlist(reads)
-        mcols(gr)$group <- names(gr)
-        reads <- relist(unname(gr), reads)
+
+        ## Set strand to *.
+        strand(reads@unlistData) <- "*"
+
+        ## Set group id (required by the Gviz package, why?)
+        mcols(reads@unlistData)$group <- rep.int(seq_along(reads), 
+                                                 elementLengths(reads))
         name <- if (length(reads) == 1L) names(reads)[1L] else "reads"
         reads_track <- Gviz::AnnotationTrack(reads, name=name,
                                              fill="blue", shape="box")
