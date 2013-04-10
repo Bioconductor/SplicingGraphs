@@ -29,8 +29,8 @@ plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
     object of length 1.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GappedAlignments} or
-    \link[GenomicRanges]{GappedAlignmentPairs} object containing single-end
+    A \link[GenomicRanges]{GAlignments} or
+    \link[GenomicRanges]{GAlignmentPairs} object containing single-end
     or paired-end reads.
   }
   \item{from, to}{
@@ -53,8 +53,8 @@ plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
           that \code{plotTranscripts} is based on.
 
     \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GappedAlignments}, and
-          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          \link[GenomicRanges]{GAlignments}, and
+          \link[GenomicRanges]{GAlignmentPairs} classes
           in the GenomicRanges package.
 
     \item The \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
@@ -88,7 +88,7 @@ plotTranscripts(ex_by_tx)
 ## ---------------------------------------------------------------------
 ## B. PLOT TRANSCRIPTS AND READS
 ## ---------------------------------------------------------------------
-gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE)
+gal <- readGAlignments(toy_reads_bam(), use.names=TRUE)
 plotTranscripts(sg[["geneA"]], reads=gal)
 plotTranscripts(ex_by_tx, reads=gal)
 plotTranscripts(ex_by_tx, reads=gal, from=1, to=320)

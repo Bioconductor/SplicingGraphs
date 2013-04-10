@@ -6,9 +6,8 @@
 ### when 'subject' contains 1 range only. Ignores the strand.
 .subsetByOverlapWithRange <- function(query, subject)
 {
-    if (!(is(query, "GappedAlignments") || is(query, "GappedAlignmentPairs")))
-        stop("'query' must be a GappedAlignments or GappedAlignmentPairs ",
-             "object")
+    if (!(is(query, "GAlignments") || is(query, "GAlignmentPairs")))
+        stop("'query' must be a GAlignments or GAlignmentPairs object")
     if (!is(subject, "GenomicRanges"))
         stop("'subject' must be a GenomicRanges object")
     if (length(subject) != 1L)

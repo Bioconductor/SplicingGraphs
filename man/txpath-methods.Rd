@@ -67,8 +67,8 @@ txweight(x) <- value
   Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GappedAlignments}, and
-          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          \link[GenomicRanges]{GAlignments}, and
+          \link[GenomicRanges]{GAlignmentPairs} classes
           in the GenomicRanges package.
 
     \item \link[GenomicRanges]{findOverlaps-methods} and
@@ -133,9 +133,9 @@ plot(sgraph(sg["geneD"], tx_id.as.edge.label=TRUE, as.igraph=TRUE))
 ## Note that the code we use to find the unambiguous compatible hits
 ## uses findOverlaps() and encodeOverlaps() defined in the IRanges and
 ## GenomicRanges packages. It only requires that the transcripts are
-## represented as a GRangesList object and the reads as a
-## GappedAlignments (single-end) or GappedAlignmentPairs (paired-end)
-## object, and therefore is not specific to SplicingGraphs.
+## represented as a GRangesList object and the reads as a GAlignments
+## (single-end) or GAlignmentPairs (paired-end) object, and therefore is
+## not specific to SplicingGraphs.
 
 ## First we load toy reads (single-end) from a BAM file. We filter out
 ## secondary alignments, reads not passing quality controls, and PCR or
@@ -145,7 +145,7 @@ flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
+gal <- readGAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
 gal
 
 ## Put the reads in a GRangesList object:

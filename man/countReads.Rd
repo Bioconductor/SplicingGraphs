@@ -24,8 +24,8 @@ countReads(sg)
     A \link{SplicingGraphs} object.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GappedAlignments},
-    \link[GenomicRanges]{GappedAlignmentPairs}, or
+    A \link[GenomicRanges]{GAlignments},
+    \link[GenomicRanges]{GAlignmentPairs}, or
     \link[GenomicRanges]{GRangesList} object, containing the
     reads to assign to the exons and introns in \code{sg}.
     It must have unique names on it, typically the QNAME ("query name")
@@ -44,8 +44,8 @@ countReads(sg)
 
 \section{About read names}{
   The read names are typically imported from the BAM file by calling
-  \code{\link[Rsamtools]{readGappedAlignments}} (or
-  \code{\link[Rsamtools]{readGappedAlignmentPairs}}) with
+  \code{\link[Rsamtools]{readGAlignments}} (or
+  \code{\link[Rsamtools]{readGAlignmentPairs}}) with
   \code{use.names=TRUE}. This extracts the "query names" from the
   file (stored in the QNAME field), and makes them the names of the
   returned object.
@@ -63,8 +63,8 @@ countReads(sg)
   If (a): you can find out whether reads in a BAM file are single- or
   paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
   from the Rsamtools package. If they're paired-end, load them with
-  \code{\link[Rsamtools]{readGappedAlignmentPairs}}
-  instead of \code{\link[Rsamtools]{readGappedAlignments}}, and that will
+  \code{\link[Rsamtools]{readGAlignmentPairs}}
+  instead of \code{\link[Rsamtools]{readGAlignments}}, and that will
   pair them.
 
   If (b): you can filter out secondary alignments by passing
@@ -77,7 +77,7 @@ countReads(sg)
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0)
-    reads <- readGappedAlignments("path/to/BAM/file", use.names=TRUE,
+    reads <- readGAlignments("path/to/BAM/file", use.names=TRUE,
                                   param=param0)
   }
   This will filter out records that have flag 0x100 (secondary alignment)
@@ -111,8 +111,8 @@ countReads(sg)
   Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GappedAlignments}, and
-          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          \link[GenomicRanges]{GAlignments}, and
+          \link[GenomicRanges]{GAlignmentPairs} classes
           in the GenomicRanges package.
 
     \item The \code{\link[Rsamtools]{quickCountBam}} and
@@ -143,7 +143,7 @@ flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
+gal <- readGAlignments(toy_reads_bam(), use.names=TRUE, param=param0)
 gal
 
 ## ---------------------------------------------------------------------

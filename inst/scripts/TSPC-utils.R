@@ -68,8 +68,7 @@ makeTSPCsgedges <- function(subdir_path)
         message("Processing BAM file ", i, "/", nbam,
                 " (sample ", sample_name, ") ... ", appendLF=FALSE)
         bam_filepath <- file.path(subdir_path, bam_filename)
-        gal <- readGappedAlignments(bam_filepath, use.names=TRUE,
-                                    param=param0)
+        gal <- readGAlignments(bam_filepath, use.names=TRUE, param=param0)
         is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
         if (!any(is_paired)) {
             ## The aligner reported 2 *primary* alignments for single-end read
@@ -82,8 +81,8 @@ makeTSPCsgedges <- function(subdir_path)
             grl <- grglist(gal, order.as.in.query=TRUE)
         } else {
             stopifnot(all(is_paired))
-            galp <- readGappedAlignmentPairs(bam_filepath, use.names=TRUE,
-                                             param=param0)
+            galp <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
+                                        param=param0)
             grl <- grglist(galp, order.as.in.query=TRUE)
         }
         sg <- assignReads(sg, grl)

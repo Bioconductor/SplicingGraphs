@@ -847,25 +847,25 @@ quickCountBam(bam_files[1], mainGroupsOnly=TRUE)
 
 Doing this for the 6 BAM files confirms that all the reads in the
 files are single-end. This means that they should be loaded with the
-\Rfunction{readGappedAlignments} function from the \Rpackage{GenomicRanges}
+\Rfunction{readGAlignments} function from the \Rpackage{GenomicRanges}
 package. As a quick example, we load the reads located on the first 3.2
 million bases of chromosome 19:
 
-<<readGappedAlignments>>=
+<<readGAlignments>>=
 param <- ScanBamParam(which=GRanges("chr19", IRanges(1, 3200000)))
-gal <- readGappedAlignments(bam_files[1], param=param)
+gal <- readGAlignments(bam_files[1], param=param)
 length(gal)  # nb of BAM records
 head(gal)
 @
 
-The result is a \Rclass{GappedAlignments} object with 1 element per BAM
+The result is a \Rclass{GAlignments} object with 1 element per BAM
 record. Although paired-end reads can also be loaded with
 this function, they should preferably be loaded with the
-\Rfunction{readGappedAlignmentPairs} function (also from the
+\Rfunction{readGAlignmentPairs} function (also from the
 \Rpackage{GenomicRanges} package): this will actually pair
-the BAM records and return the pairs in a \Rclass{GappedAlignmentPairs}
+the BAM records and return the pairs in a \Rclass{GAlignmentPairs}
 object. Otherwise they won't be paired and will be returned in a
-\Rclass{GappedAlignments} object.
+\Rclass{GAlignments} object.
 
 \subsection{Assigning reads to the edges of a \Rclass{SplicingGraphs} object}
 
@@ -880,7 +880,7 @@ We're going to loop on the BAM files to assign the reads from 1 sample
 at a time. When we load the files, we want to filter out secondary
 alignments, reads not passing quality controls, and PCR or optical
 duplicates. This is done by preparing a \Rclass{ScanBamParam} object
-that we'll pass to \Rfunction{readGappedAlignments} (see
+that we'll pass to \Rfunction{readGAlignments} (see
 \Rfunction{ScanBamParam} in the Rsamtools package for more information
 about this):
 
@@ -898,7 +898,7 @@ Loop:
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
     cat("Processing sample ", names(bam_file), " ... ", sep="")
-    gal <- readGappedAlignments(bam_file, use.names=TRUE, param=param0)
+    gal <- readGAlignments(bam_file, use.names=TRUE, param=param0)
     sg <- assignReads(sg, gal, sample.name=names(bam_file))
     cat("OK\n")
 }
@@ -943,7 +943,7 @@ were assigned to the edges of gene 107328, we load the reads that are
 in the region of that gene:
 
 <<load_reads_in_107328_region>>=
-SRR316184gal <- readGappedAlignments(bam_files[1], use.names=TRUE, param=param0)
+SRR316184gal <- readGAlignments(bam_files[1], use.names=TRUE, param=param0)
 reads <- subsetByOverlaps(SRR316184gal, range(sg[["107328"]]),
                           ignore.strand=TRUE)
 @

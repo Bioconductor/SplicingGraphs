@@ -89,10 +89,10 @@ assignReads <- function(sg, reads, sample.name=NA)
 {
     if (!is(sg, "SplicingGraphs"))
         stop("'sg' must be a SplicingGraphs object")
-    if (is(reads, "GappedAlignments") || is(reads, "GappedAlignmentPairs")) {
+    if (is(reads, "GAlignments") || is(reads, "GAlignmentPairs")) {
         reads <- grglist(reads, order.as.in.query=TRUE)
     } else if (!is(reads, "GRangesList")) {
-        stop("'reads' must be a GappedAlignments, GappedAlignmentPairs, ",
+        stop("'reads' must be a GAlignments, GAlignmentPairs, ",
              "or GRangesList object")
     }
     if (!isSingleStringOrNA(sample.name))

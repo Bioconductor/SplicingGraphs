@@ -34,8 +34,8 @@ toy_overlaps()
   Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GappedAlignments}, and
-          \link[GenomicRanges]{GappedAlignmentPairs} classes
+          \link[GenomicRanges]{GAlignments}, and
+          \link[GenomicRanges]{GAlignmentPairs} classes
           in the GenomicRanges package.
 
     \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
@@ -62,14 +62,14 @@ suppressWarnings(
 plotTranscripts(txdb)
 
 ## ---------------------------------------------------------------------
-## B. LOAD THE TOY READS AS A GappedAlignments OBJECT AND PLOT THEM
+## B. LOAD THE TOY READS AS A GAlignments OBJECT AND PLOT THEM
 ## ---------------------------------------------------------------------
 ## The reads are single-end reads. They are assumed to come from an
 ## RNA-seq experiment and to have been aligned to the exact same
 ## reference genome that the above toy gene model is based on.
 toy_reads_sam()
 toy_reads_bam()
-gal <- readGappedAlignments(toy_reads_bam(), use.names=TRUE)
+gal <- readGAlignments(toy_reads_bam(), use.names=TRUE)
 
 plotTranscripts(txdb, reads=gal)
 plotTranscripts(txdb, reads=gal, from=1, to=320)
