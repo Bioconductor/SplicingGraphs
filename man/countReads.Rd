@@ -2,6 +2,8 @@
 
 \alias{assignReads}
 \alias{countReads}
+\alias{countReads,SplicingGraphs-method}
+
 
 \title{
   Assign reads to the edges of a SplicingGraphs object and summarize them
