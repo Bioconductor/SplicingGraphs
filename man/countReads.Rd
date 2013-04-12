@@ -16,11 +16,11 @@
 
 \usage{
 assignReads(sg, reads, sample.name=NA)
-countReads(sg, by=c("sgedge", "rsgedge"))
+countReads(x, by=c("sgedge", "rsgedge"))
 }
 
 \arguments{
-  \item{sg}{
+  \item{sg, x}{
     A \link{SplicingGraphs} object.
   }
   \item{reads}{
