@@ -48,8 +48,8 @@ countReads(x, by=c("sgedge", "rsgedge"))
 
 \section{About read names}{
   The read names are typically imported from the BAM file by calling
-  \code{\link[Rsamtools]{readGAlignments}} (or
-  \code{\link[Rsamtools]{readGAlignmentPairs}}) with
+  \code{\link[GenomicRanges]{readGAlignments}} (or
+  \code{\link[GenomicRanges]{readGAlignmentPairs}}) with
   \code{use.names=TRUE}. This extracts the "query names" from the
   file (stored in the QNAME field), and makes them the names of the
   returned object.
@@ -67,9 +67,9 @@ countReads(x, by=c("sgedge", "rsgedge"))
   If (a): you can find out whether reads in a BAM file are single- or
   paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
   from the Rsamtools package. If they're paired-end, load them with
-  \code{\link[Rsamtools]{readGAlignmentPairs}}
-  instead of \code{\link[Rsamtools]{readGAlignments}}, and that will
-  pair them.
+  \code{\link[GenomicRanges]{readGAlignmentPairs}}
+  instead of \code{\link[GenomicRanges]{readGAlignments}}, and that
+  will pair them.
 
   If (b): you can filter out secondary alignments by passing
   \code{'isNotPrimaryRead=FALSE'} to \code{\link[Rsamtools]{scanBamFlag}}
