@@ -27,6 +27,7 @@ Collate: utils.R
 	 sgedges-methods.R
 	 sgraph-methods.R
 	 bubbles-methods.R
+	 rsgedgesByGene-methods.R
 	 countReads.R
 	 toy_data.R
 	 zzz.R

@@ -332,9 +332,7 @@ setMethod("uninformativeSSids", "DataFrame",
     {
         from <- x[ , "from"]
         to <- x[ , "to"]
-        from1_SSids <- setdiff(from, from[duplicated(from)])
-        to1_SSids <- setdiff(to, to[duplicated(to)])
-        intersect(from1_SSids, to1_SSids)
+        uninformative_sgnodes(from, to)
     }
 )
 

@@ -963,7 +963,7 @@ dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=6in,height=6in]{107328-transcripts-and-reads.pdf}
+  \includegraphics[width=6in,height=3in]{107328-transcripts-and-reads.pdf}
   \end{center}
   \caption{The 3 transcripts of gene 107328 (Entrez ID) and the reads
            in that region.}

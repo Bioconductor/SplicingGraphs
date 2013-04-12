@@ -3,60 +3,6 @@
 ### -------------------------------------------------------------------------
 
 
-### Edge metadata columns that are considered to be exon attributes (note
-### that we include the "start_SSid" and "end_SSid" cols). Those columns are
-### the 5 first inner metadata columns of the GRangesList object containing
-### the exons grouped by transcripts returned by unlist() when called on a
-### SplicingGraphs object.
-EXON_MCOLS <- c("exon_id", "exon_name", "exon_rank", "start_SSid", "end_SSid")
-
-### All edge metadata columns.
-ALL_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in", "tx_id", EXON_MCOLS)
-
-### Subset of 'ALL_EDGE_MCOLS' made of those columns that are considered
-### invariant i.e. the values in them associated with the same sgedge_id
-### (global edge id) should be the same. Note that we also include the
-### "sgedge_id" col itself.
-INVARIANT_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in",
-                          "start_SSid", "end_SSid")
-
-EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
-EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
-
-.check_exon_mcolnames <- function(colnames)
-{
-    stopifnot(identical(head(colnames, n=length(EXON_MCOLS)),
-                        EXON_MCOLS))
-}
-
-.check_all_edge_mcolnames <- function(colnames)
-{
-    stopifnot(identical(head(colnames, n=length(ALL_EDGE_MCOLS)),
-                        ALL_EDGE_MCOLS))
-}
-
-.get_index_of_group_of_mcols <- function(colnames,
-                                         with.exon.mcols, with.hits.mcols)
-{
-    ans <- integer(0)
-    if (!with.exon.mcols) {
-        idx <- match(EXON_MCOLS, colnames)
-        ans <- c(ans, idx)
-    }
-    if (!with.hits.mcols) {
-        idx <- grep("hits$", colnames)
-        ans <- c(ans, idx)
-    }
-    ans
-}
-
-.get_index_of_invariant_edge_mcols <- function(colnames)
-{
-    idx <- match(INVARIANT_EDGE_MCOLS, colnames)
-    idx[!is.na(idx)]
-}
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### intronsByTranscript()
 ###
@@ -100,7 +46,7 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         ex_unlistData <- ex_by_tx@unlistData
         ex_unlistData_len <- length(ex_unlistData)
         ex_unlistData_mcols <- mcols(ex_unlistData)
-        .check_exon_mcolnames(colnames(ex_unlistData_mcols))
+        check_exon_mcolnames(colnames(ex_unlistData_mcols))
 
         in_unlistData <- in_by_tx@unlistData
         in_unlistData_len <- length(in_unlistData)
@@ -190,10 +136,10 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
                             from, ",", to)
         ans_unlistData_mcols <- cbind(DataFrame(sgedge_id=sgedge_id),
                                       ans_unlistData_mcols)
-        .check_all_edge_mcolnames(colnames(ans_unlistData_mcols))
+        check_all_edge_mcolnames(colnames(ans_unlistData_mcols))
 
         ## Drop unwanted columns.
-        mcol_idx <- .get_index_of_group_of_mcols(
+        mcol_idx <- get_index_of_group_of_mcols(
                         colnames(ans_unlistData_mcols),
                         with.exon.mcols, with.hits.mcols)
         if (length(mcol_idx) != 0L)
@@ -211,31 +157,6 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### sgedgesByGene()
 ###
-
-### .unlistAndSplit() example:
-###
-###   > x <- SimpleList(A=4:5, B=letters[1:4], C=NULL, D=1:2, E=-2:0, F=TRUE)
-###   > f <- c("y", "x", "x", "x", "y", "x")
-###   > .unlistAndSplit(x, f)
-###   CharacterList of length 2
-###   [["x"]] a b c d 1 2 TRUE
-###   [["y"]] 4 5 -2 -1 0
-###   > .unlistAndSplit(x, f)[[1]]
-###        B      B      B      B      D      D      F 
-###      "a"    "b"    "c"    "d"    "1"    "2" "TRUE" 
-###
-### Should work on any vector-like object and act as an endomorphism on a
-### CompressedList object. On an atomic vector (on which 'unlist()' is a
-### no-op), should be equivalent to 'splitAsList(x, f)'.
-### TODO: Maybe move this to IRanges and expose to the user.
-.unlistAndSplit <- function(x, f, drop=FALSE)
-{
-    if (length(f) != length(x))
-        stop("'x' and 'f' must have the same length")
-    x2 <- unlist(x)
-    f2 <- rep.int(f, elementLengths(x))
-    splitAsList(x2, f2, drop=drop)
-}
 
 setGeneric("sgedgesByGene", signature="x",
     function(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE,
@@ -260,7 +181,7 @@ setMethod("sgedgesByGene", "SplicingGraphs",
 
         ## Sanity checks.
         stopifnot(all(edges0 == edges0[sm]))
-        invar_mcol_idx <- .get_index_of_invariant_edge_mcols(edges0_mcolnames)
+        invar_mcol_idx <- get_index_of_invariant_edge_mcols(edges0_mcolnames)
         stopifnot(identical(
                     edges0_mcols[ , invar_mcol_idx, drop=FALSE],
                     edges0_mcols[sm , invar_mcol_idx, drop=FALSE]))
@@ -284,7 +205,7 @@ setMethod("sgedgesByGene", "SplicingGraphs",
             f <- factor(sgedge_id, levels=sgedge_id[keep_idx])
             for (i in var_mcol_idx) {
                 old_col <- edges0_mcols[ , i]
-                new_col <- unname(unique(.unlistAndSplit(old_col, f)))
+                new_col <- unname(unique(unlistAndSplit(old_col, f)))
                 ans_unlistData_mcols[ , i] <- new_col
             }
             mcols(ans_unlistData) <- ans_unlistData_mcols

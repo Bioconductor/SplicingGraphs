@@ -96,7 +96,11 @@ export(
     sgraph,
 
     ## bubbles-methods.R:
-    bubbles
+    bubbles,
+
+    ## rsgedgesByGene-methods.R:
+    rsgedgesByTranscript,
+    rsgedgesByGene
 )
 
 ### Exactly the same list as above.
@@ -112,6 +116,8 @@ exportMethods(
     outdeg, indeg,
     uninformativeSSids,
     sgraph,
-    bubbles
+    bubbles,
+    rsgedgesByTranscript,
+    rsgedgesByGene
 )
 
