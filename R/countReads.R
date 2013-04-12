@@ -136,20 +136,34 @@ assignReads <- function(sg, reads, sample.name=NA)
 ### countReads()
 ###
 
-### Return a DataFrame with 1 row per unique splicing graph edge and 1 column
-### per sample.
-countReads <- function(sg)
-{
-    if (!is(sg, "SplicingGraphs"))
-        stop("'sg' must be a SplicingGraphs object")
-    edges_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
-    edges0 <- unlist(edges_by_gene, use.names=FALSE)
-    edges0_mcols <- mcols(edges0)
-    edges0_mcolnames <- colnames(edges0_mcols)
-    hits_idx <- grep("\\.hits$", edges0_mcolnames)
-    ans <- endoapply(edges0_mcols[hits_idx], elementLengths)
-    colnames(ans) <- sub("\\.hits$", "", colnames(ans))
-    left_cols <- edges0_mcols[ , c("sgedge_id", "ex_or_in")]
-    cbind(left_cols, ans)
-}
+setGeneric("countReads", signature="x",
+    function(x, by=c("sgedge", "rsgedge")) standardGeneric("countReads")
+)
+
+### Return a DataFrame with 1 row per splicing graph edge (or reduced
+### splicing graph edge), and 1 column per sample.
+setMethod("countReads", "SplicingGraphs",
+    function(x, by=c("sgedge", "rsgedge"))
+    {
+        by <- match.arg(by)
+        if (by == "sgedge") {
+            edges_by_gene <- sgedgesByGene(x, with.hits.mcols=TRUE)
+        } else {
+            edges_by_gene <- rsgedgesByGene(x, with.hits.mcols=TRUE)
+        }
+        edges0 <- unlist(edges_by_gene, use.names=FALSE)
+        edges0_mcols <- mcols(edges0)
+        edges0_mcolnames <- colnames(edges0_mcols)
+        hits_mcol_idx <- grep("\\.hits$", edges0_mcolnames)
+        ans <- endoapply(edges0_mcols[hits_mcol_idx], elementLengths)
+        colnames(ans) <- sub("\\.hits$", "", colnames(ans))
+        if (by == "sgedge") {
+            left_mcolnames <- c("sgedge_id", "ex_or_in")
+        } else {
+            left_mcolnames <- c("rsgedge_id", "ex_or_in")
+        }
+        left_cols <- edges0_mcols[left_mcolnames]
+        cbind(left_cols, ans)
+    }
+)
 

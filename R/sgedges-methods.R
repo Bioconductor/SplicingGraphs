@@ -133,11 +133,11 @@
         from_to_colnames <- c("end_SSid", "start_SSid")
     }
     ex_mcols <- mcols(exons)
-    ex_colnames <- colnames(ex_mcols)
-    hits_idx <- grep("hits$", ex_colnames)
-    hits_colnames <- ex_colnames[hits_idx]
-    hits_colnames <- c(from_to_colnames, hits_colnames)
-    exon_hits <- ex_mcols[ , hits_colnames, drop=FALSE]
+    ex_mcolnames <- colnames(ex_mcols)
+    hits_mcol_idx <- grep("hits$", ex_mcolnames)
+    hits_mcolnames <- ex_mcolnames[hits_mcol_idx]
+    hits_mcolnames <- c(from_to_colnames, hits_mcolnames)
+    exon_hits <- ex_mcols[ , hits_mcolnames, drop=FALSE]
     colnames(exon_hits)[1:2] <- c("from", "to")
     exon_hits
 }
@@ -160,10 +160,10 @@
     #}
     in_mcols <- mcols(introns)
     in_colnames <- colnames(in_mcols)
-    hits_idx <- grep("hits$", in_colnames)
-    hits_colnames <- in_colnames[hits_idx]
-    #hits_colnames <- c(from_to_colnames, hits_colnames)
-    intron_hits <- in_mcols[ , hits_colnames, drop=FALSE]
+    hits_mcol_idx <- grep("hits$", in_colnames)
+    hits_mcolnames <- in_colnames[hits_mcol_idx]
+    #hits_mcolnames <- c(from_to_colnames, hits_mcolnames)
+    intron_hits <- in_mcols[hits_mcolnames]
     #colnames(intron_hits)[1:2] <- c("from", "to")
     intron_hits
 }

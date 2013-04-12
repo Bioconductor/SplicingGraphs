@@ -21,7 +21,6 @@
     names(txpath3) <- names(txpath)
 
     gene_id <- rep.int(names(txpath3), elementLengths(txpath3))
-    #tmp <- paste(gene_id, txpath3@unlistData, sep=":")
     tmp <- txpath3@unlistData
     gene_id <- gene_id[c(TRUE, FALSE)]
     from <- tmp[c(TRUE, FALSE)]
@@ -146,9 +145,19 @@
     ## Reduce hits metadata cols.
     hits_mcol_idx <- grep("hits$", colnames(edges_mcols))
     if (length(hits_mcol_idx) != 0L) {
+        ## FIXME: endoapply() on a DataFrame object is broken when applying
+        ## a function 'FUN' that modifies the nb of rows. Furthermore, the
+        ## returned object passes validitation despite being broken! Fix it
+        ## in IRanges.
         hits_mcols <- endoapply(edges_mcols[hits_mcol_idx],
                                 function(hits)
                                   unname(unique(unlistAndSplit(hits, f))))
+
+        ## Fix the broken DataFrame returned by endoapply().
+        hits_mcols@nrows <- nlevels(f)
+        hits_mcols@rownames <- NULL
+
+        ## Combine with 'ans_mcols'.
         ans_mcols <- cbind(ans_mcols, hits_mcols)
     }
 
@@ -192,16 +201,16 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
         if (keep.dup.edges)
             stop("'keep.dup.edges=TRUE' is not supported yet, sorry")
         edges_by_gene <- sgedgesByGene(x, with.hits.mcols=with.hits.mcols)
-        all_edges <- unlist(edges_by_gene)
-        all_edges_mcols <- mcols(all_edges)
-        gene_id <- names(all_edges)
-        from <- all_edges_mcols[ , "from"]
-        to <- all_edges_mcols[ , "to"]
+        edges0 <- unlist(edges_by_gene)
+        edges0_mcols <- mcols(edges0)
+        gene_id <- names(edges0)
+        from <- edges0_mcols[ , "from"]
+        to <- edges0_mcols[ , "to"]
         ui_fqnodes <- .uninformative_fqnodes(x)
         sgedge2rsgedge_map <- .build_sgedge2rsgedge_map(gene_id, from, to,
                                                         ui_fqnodes)
         f <- factor(sgedge2rsgedge_map, levels=unique(sgedge2rsgedge_map))
-        ans_flesh <- .reduce_edges(all_edges, f)
+        ans_flesh <- .reduce_edges(edges0, f)
         ans_flesh_names <- Rle(names(ans_flesh))
         breakpoints <- cumsum(runLength(ans_flesh_names))
         ans_names <- runValue(ans_flesh_names)

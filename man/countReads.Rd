@@ -16,7 +16,7 @@
 
 \usage{
 assignReads(sg, reads, sample.name=NA)
-countReads(sg)
+countReads(sg, by=c("sgedge", "rsgedge"))
 }
 
 \arguments{
@@ -35,6 +35,10 @@ countReads(sg)
   \item{sample.name}{
     A single string containing the name of the sample where the reads
     are coming from.
+  }
+  \item{by}{
+    Summarize by splicing graph edge (\code{"sgedge"}) or by \emph{reduced}
+    splicing graph edge (\code{"rsgedge"}).
   }
 }
 
@@ -153,11 +157,27 @@ gal
 ## junction read with 1 gap can be assigned to 2 exons and 1 intron).
 sg <- assignReads(sg, gal, sample.name="TOYREADS")
 
+## See the assignments to the splicing graph edges.
 edge_by_tx <- sgedgesByTranscript(sg, with.hits.mcols=TRUE)
-mcols(unlist(edge_by_tx))
+edge_data <- mcols(unlist(edge_by_tx))
+colnames(edge_data)
+head(edge_data)
+edge_data[ , c("sgedge_id", "TOYREADS.hits")]
+
+edge_by_gene <- sgedgesByGene(sg, with.hits.mcols=TRUE)
+mcols(unlist(edge_by_gene))
+
+## See the assignments to the reduced splicing graph edges.
+redge_by_gene <- rsgedgesByGene(sg, with.hits.mcols=TRUE)
+mcols(unlist(redge_by_gene))
 
 ## ---------------------------------------------------------------------
 ## 4. Count the number of reads per splicing graph edge
 ## ---------------------------------------------------------------------
 countReads(sg)
+
+## ---------------------------------------------------------------------
+## 5. Count the number of reads per reduced splicing graph edge
+## ---------------------------------------------------------------------
+countReads(sg, by="rsgedge")
 }

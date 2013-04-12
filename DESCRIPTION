@@ -1,6 +1,6 @@
 Package: SplicingGraphs
 Title: Creation, manipulation, visualization of splicing graphs
-Version: 1.1.1
+Version: 1.1.2
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package allows the user to create, manipulate, and visualize

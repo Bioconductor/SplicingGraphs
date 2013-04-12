@@ -56,7 +56,6 @@ export(
 
     ## countReads.R:
     assignReads,
-    countReads,
 
     ## toy_data.R:
     toy_genes_gff,
@@ -100,7 +99,10 @@ export(
 
     ## rsgedgesByGene-methods.R:
     rsgedgesByTranscript,
-    rsgedgesByGene
+    rsgedgesByGene,
+
+    ## countReads.R:
+    countReads
 )
 
 ### Exactly the same list as above.
@@ -118,6 +120,7 @@ exportMethods(
     sgraph,
     bubbles,
     rsgedgesByTranscript,
-    rsgedgesByGene
+    rsgedgesByGene,
+    countReads
 )
 
