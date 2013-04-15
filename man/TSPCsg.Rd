@@ -12,20 +12,25 @@
 }
 
 \examples{
+## Load SplicingGraphs object 'TSPCsg':
 filepath <- system.file("extdata", "TSPCsg.rda", package="SplicingGraphs")
 load(filepath)
 TSPCsg
+
+## 'TSPCsg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(TSPCsg)
-## 1 splicing graph per gene, except for gene MUC16.
-## Transcripts T-4 and T-5 in gene MUC16 both have their 2nd exon
-## included in their 3rd exon ==> splicing graph theory doesn't apply.
+
+## 1 splicing graph per gene. (Note that gene MUC16 was dropped
+## because transcripts T-4 and T-5 in this gene both have their
+## 2nd exon *inside* their 3rd exon. Splicing graph theory doesn't
+## apply in that case.)
 
 ## Extract the edges of a given graph:
 TSPCsgedges <- sgedges(TSPCsg["LGSN"])
 TSPCsgedges
 
 ## Plot the graph for a given gene:
-plot(TSPCsg["LGSN"])
+plot(TSPCsg["LGSN"])  # or 'plot(sgraph(TSPCsgedges))'
 
 ## The reads from all samples have been assigned to 'TSPCsg'.
 ## Use countReads() to summarize by splicing graph edge:

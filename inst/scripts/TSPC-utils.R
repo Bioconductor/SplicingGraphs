@@ -30,17 +30,26 @@ load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
     ans
 }
 
+get_TSPC_models_path <- function(subdir_path)
+{
+    if (!isSingleString(subdir_path))
+        stop("'subdir_path' must be a single string")
+    SUFFIX <- "_models.txt"
+    filenames <- list.files(subdir_path)
+    stop <- nchar(filenames)
+    start <- stop - nchar(SUFFIX) + 1L
+    suffixes <- substr(filenames, start, stop)
+    models_filename <- filenames[suffixes == SUFFIX]
+    if (length(models_filename) != 1L)
+        stop("found more than one models file in ", subdir_path)
+    file.path(subdir_path, models_filename)
+}
+
 make_TSPC_SplicinGraphs <- function(subdir_paths)
 {
-    SUFFIX <- "_models.txt"
     gene_list <- lapply(subdir_paths,
         function(subdir_path) {
-            filenames <- list.files(subdir_path)
-            stop <- nchar(filenames)
-            start <- stop - nchar(SUFFIX) + 1L
-            suffixes <- substr(filenames, start, stop)
-            models_filename <- filenames[suffixes == SUFFIX]
-            models_path <- file.path(subdir_path, models_filename)
+            models_path <- get_TSPC_models_path(subdir_path)
             message("Reading ", models_path, " ... ", appendLF=FALSE)
             gene <- load_TSPC_gene_model(models_path)
             message("OK")
@@ -73,6 +82,49 @@ get_TSPC_sample_names <- function(subdir_paths)
     unique(unlist(sample_names, use.names=FALSE))
 }
 
+get_TSPC_bam_path <- function(subdir_path, sample_name)
+{
+    if (!isSingleString(subdir_path))
+        stop("'subdir_path' must be a single string")
+    if (!isSingleString(sample_name))
+        stop("'sample_name' must be a single string")
+    SUFFIX <- ".bam"
+    prefix <- paste0(basename(subdir_path), "-")
+    bam_filename <- paste0(prefix, sample_name, SUFFIX)
+    file.path(subdir_path, bam_filename)
+}
+
+### 7 genes with samples: BAI1, CYB561, DAPL1, ITGB8, LGSN, MKRN3, ST14.
+### 54 samples:
+###   - 34 samples are single-end for all genes.
+###   - 12 samples are paired-end for all genes.
+###   - 8 samples are single-end for some genes and paired-end for the others.
+###     Those samples are: SOC_11199_480891, SOC_2774_227362, SOC_5973_278042,
+###     SOC_7244_348592, SOC_7637_361542, SOC_7777_371281, SOC_8904_437502,
+###     and SOC_9547_467919.
+is_paired_end_TSPC_sample <- function(sample_names, subdir_path)
+{
+    if (!isSingleString(subdir_path))
+        stop("'subdir_path' must be a single string")
+    library(Rsamtools)
+    flag0 <- scanBamFlag(#isProperPair=TRUE,
+                         isNotPrimaryRead=FALSE,
+                         isNotPassingQualityControls=FALSE,
+                         isDuplicate=FALSE)
+    param0 <- ScanBamParam(flag=flag0, what="flag")
+    sapply(sample_names,
+        function(sample_name) {
+            bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
+            res <- scanBam(bam_filepath, use.names=TRUE, param=param0)
+            flag <- bamFlagTest(res[[1L]]$flag, "isPaired")
+            if (all(flag))
+                return(TRUE)
+            if (any(flag))
+                return(NA)
+            FALSE
+        })
+}
+
 ### Returns the reads as a GRangesList object.
 load_TSPC_sample_reads <- function(sample_name, subdir_paths)
 {
@@ -82,12 +134,9 @@ load_TSPC_sample_reads <- function(sample_name, subdir_paths)
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
-    SUFFIX <- ".bam"
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
-            prefix <- paste0(basename(subdir_path), "-")
-            bam_filename <- paste0(prefix, sample_name, SUFFIX)
-            bam_filepath <- file.path(subdir_path, bam_filename)
+            bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
             if (!file.exists(bam_filepath)) {
                 return(GRangesList())
             }
