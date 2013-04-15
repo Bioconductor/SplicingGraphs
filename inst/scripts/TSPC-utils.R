@@ -1,6 +1,6 @@
 ###
 
-loadModels <- function(models_path, check.transcripts=TRUE)
+load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
 {
     models <- read.table(models_path, stringsAsFactors=FALSE)
     stopifnot(ncol(models) == 3L)  # sanity check
@@ -15,9 +15,14 @@ loadModels <- function(models_path, check.transcripts=TRUE)
     stopifnot(!any(is.na(tmp2)))  # sanity check
     exons_start <- tmp2[c(TRUE, FALSE)]
     exons_end <- tmp2[c(FALSE, TRUE)]
+    exons_ranges <- IRanges(exons_start, exons_end)
+    exon_id <- seq_along(exons_ranges)
+    exon_rank <- IRanges:::fancy_mseq(runLength(Rle(models[[2L]])))
     unlisted_ans <- GRanges(seqnames=exons_seqnames,
-                            ranges=IRanges(exons_start, exons_end),
-                            exon_name=models[[3L]])
+                            ranges=exons_ranges,
+                            exon_id=exon_id,
+                            exon_name=models[[3L]],
+                            exon_rank=exon_rank)
     ans <- split(unlisted_ans, models[[2L]])
     if (check.transcripts)
         stopifnot(all(isNormal(ranges(ans))))
@@ -25,71 +30,105 @@ loadModels <- function(models_path, check.transcripts=TRUE)
     ans
 }
 
-makeTSPCsgedges <- function(subdir_path)
+make_TSPC_SplicinGraphs <- function(subdir_paths)
 {
-    subdir_basename <- basename(subdir_path)
-    filenames <- list.files(subdir_path)
-    filenames_nchar <- nchar(filenames)
+    SUFFIX <- "_models.txt"
+    gene_list <- lapply(subdir_paths,
+        function(subdir_path) {
+            filenames <- list.files(subdir_path)
+            stop <- nchar(filenames)
+            start <- stop - nchar(SUFFIX) + 1L
+            suffixes <- substr(filenames, start, stop)
+            models_filename <- filenames[suffixes == SUFFIX]
+            models_path <- file.path(subdir_path, models_filename)
+            message("Reading ", models_path, " ... ", appendLF=FALSE)
+            gene <- load_TSPC_gene_model(models_path)
+            message("OK")
+            gene
+        })
+    suppressWarnings(genes <- do.call(c, unname(gene_list)))
+    genes_seqlevels <- seqlevels(genes)
+    seqlevels(genes) <- genes_seqlevels[order(makeSeqnameIds(genes_seqlevels))]
+    grouping <- rep.int(basename(subdir_paths), elementLengths(gene_list))
+    SplicingGraphs(genes, grouping=grouping, min.ntx=1L)
+}
 
-    ## Load the gene model.
-    suffixes <- substr(filenames, filenames_nchar-10L, filenames_nchar)
-    models_filename <- filenames[suffixes == "_models.txt"]
-    models_path <- file.path(subdir_path, models_filename)
-    message("Reading ", models_path, " ... ", appendLF=FALSE)
-    ex_by_tx <- loadModels(models_path)
-    message("OK")
+get_TSPC_sample_names <- function(subdir_paths)
+{
+    SUFFIX <- ".bam"
+    sample_names <- lapply(subdir_paths,
+        function(subdir_path) {
+            filenames <- list.files(subdir_path)
+            stop <- nchar(filenames)
+            start <- stop - nchar(SUFFIX) + 1L
+            suffixes <- substr(filenames, start, stop)
+            bam_filenames <- filenames[suffixes == SUFFIX]
+            prefix <- paste0(basename(subdir_path), "-")
+            start <- nchar(prefix) + 1L
+            stop <- nchar(bam_filenames) - nchar(SUFFIX)
+            ans <- substr(bam_filenames, start, stop)
+            stopifnot(!anyDuplicated(ans))
+            ans
+        })
+    unique(unlist(sample_names, use.names=FALSE))
+}
 
-    ## Compute the splicing graph.
-    sg <- SplicingGraphs(ex_by_tx)
-    ans <- sgedges(sg)
-
-    ## Find the BAM files.
-    suffixes <- substr(filenames, filenames_nchar-3L, filenames_nchar)
-    bam_filenames <- filenames[suffixes == ".bam"]
-    nbam <- length(bam_filenames)
-    if (nbam == 0L)
-        return(ans)
-
-    ## Load and process the BAM files.
-    prefixes <- substr(bam_filenames, 1L, nchar(subdir_basename)+1L)
-    stopifnot(all(prefixes == paste0(subdir_basename, "-")))
-    sample_names <- substr(bam_filenames, nchar(prefixes)+1L,
-                                          nchar(bam_filenames)-4L)
+### Returns the reads as a GRangesList object.
+load_TSPC_sample_reads <- function(sample_name, subdir_paths)
+{
+    library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
                          isNotPrimaryRead=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
-    X <- seq_len(nbam)
-    names(X) <- sample_names
-    nhits <- sapply(X, function(i) {
-        bam_filename <- bam_filenames[i]
-        sample_name <- sample_names[i]
-        message("Processing BAM file ", i, "/", nbam,
-                " (sample ", sample_name, ") ... ", appendLF=FALSE)
-        bam_filepath <- file.path(subdir_path, bam_filename)
-        gal <- readGAlignments(bam_filepath, use.names=TRUE, param=param0)
-        is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
-        if (!any(is_paired)) {
-            ## The aligner reported 2 *primary* alignments for single-end read
-            ## s100208_3_83_5646_14773 in file BAI1-SOC_5991_294171.bam, which
-            ## doesn't make sense. However, the reported mapping quality for
-            ## those 2 alignments is 3 which is very low. So let's get rid of
-            ## alignments that have a quality <= 3.
-            mapq <- mcols(gal)$mapq
-            gal <- gal[is.na(mapq) | mapq > 3]
-            grl <- grglist(gal, order.as.in.query=TRUE)
-        } else {
-            stopifnot(all(is_paired))
-            galp <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
+    SUFFIX <- ".bam"
+    reads_list <- lapply(subdir_paths,
+        function(subdir_path) {
+            prefix <- paste0(basename(subdir_path), "-")
+            bam_filename <- paste0(prefix, sample_name, SUFFIX)
+            bam_filepath <- file.path(subdir_path, bam_filename)
+            if (!file.exists(bam_filepath)) {
+                return(GRangesList())
+            }
+            gal <- readGappedAlignments(bam_filepath, use.names=TRUE,
                                         param=param0)
-            grl <- grglist(galp, order.as.in.query=TRUE)
-        }
-        sg <- assignReads(sg, grl)
-        sgedges <- sgedges(sg)
+            is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
+            if (!any(is_paired)) {
+                ## The aligner reported 2 *primary* alignments for single-end
+                ## read s100208_3_83_5646_14773 in file
+                ## BAI1-SOC_5991_294171.bam, which doesn't make sense. However,
+                ## the reported mapping quality for those 2 alignments is 3
+                ## which is very low. So let's get rid of alignments that have
+                ## a quality <= 3.
+                mapq <- mcols(gal)$mapq
+                gal <- gal[is.na(mapq) | mapq > 3]
+                ans <- grglist(gal, order.as.in.query=TRUE)
+            } else {
+                stopifnot(all(is_paired))
+                galp <- readGappedAlignmentPairs(bam_filepath, use.names=TRUE,
+                                                 param=param0)
+                ans <- grglist(galp, order.as.in.query=TRUE)
+           }
+           ans
+        })
+    ans <- do.call(c, unname(reads_list))
+    stopifnot(!anyDuplicated(names(ans)))
+    ans
+}
+
+assign_TSPC_reads <- function(sg, subdir_paths)
+{
+    sample_names <- get_TSPC_sample_names(subdir_paths)
+    nsample <- length(sample_names)
+    for (i in seq_len(nsample)) {
+        sample_name <- sample_names[[i]]
+        message("Assign reads from sample ", sample_name,
+                " (", i, "/", nsample, ") ... ", appendLF=FALSE)
+        reads <- load_TSPC_sample_reads(sample_name, subdir_paths)
+        sg <- assignReads(sg, reads, sample.name=sample_name)
         message("OK")
-        sgedges[ , "nhits"]
-    })
-    cbind(ans, DataFrame(nhits))
+    }
+    sg
 }
 

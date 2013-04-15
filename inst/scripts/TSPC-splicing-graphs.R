@@ -18,26 +18,7 @@ TSPC_utils_path <- system.file("scripts", "TSPC-utils.R",
                                package="SplicingGraphs", mustWork=TRUE)
 source(TSPC_utils_path)
 
-### Make a TSPC splicing graph data frame and save it in the current working
-### directory.
-makeAndSaveTSPCsgedges <- function(subdir_path)
-{
-    subdir_basename <- basename(subdir_path)
-    objname <- paste0(subdir_basename, "sgedges")
-    filename <- paste0(objname, ".rda")
-    sgedges <- makeTSPCsgedges(subdir_path)
-    message("Saving ", objname, " to ", filename, " ... ", appendLF=FALSE)
-    assign(objname, sgedges, envir=.GlobalEnv)
-    save(list=objname, file=filename, envir=.GlobalEnv)
-    message("OK")
-}
-
-makeAndSaveAllTSPCsgedges <- function(subdir_paths)
-{
-    for (subdir_path in subdir_paths)
-        makeAndSaveTSPCsgedges(subdir_path)
-}
-
-### Run this to make and save all the TSPC splicing graph data frames:
-#makeAndSaveAllTSPCsgedges(subdir_paths)
+TSPCsg <- make_TSPC_SplicinGraphs(subdir_paths)
+TSPCsg <- assign_TSPC_reads(TSPCsg, subdir_paths)
+save(TSPCsg, file="TSPCsg.rda", compress="xz")
 
