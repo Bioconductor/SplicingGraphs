@@ -41,7 +41,7 @@ plot(sgraph(sg["117286"]))
 dev.off()
 
 pdf("CIB3-sg2.pdf", width=2.5, height=6)
-plot(sgraph2(sg["117286"])
+plot(rsgraph(sg["117286"])
 dev.off()
 
 grl <- sg[["117286"]]
@@ -63,7 +63,7 @@ plot(sgraph(sg["126017"]))
 dev.off()
 
 pdf("ZNF813-sg2.pdf", width=5, height=6)
-plot(sgraph2(sg["126017"]))
+plot(rsgraph(sg["126017"]))
 dev.off()
 
 grl <- sg[["126017"]]

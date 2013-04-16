@@ -168,6 +168,44 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### uninformativeSSids() extractor
+###
+### Uninformative splicing sites are nodes in the splicing graph for which 
+### outdeg and indeg are 1. A straightforward implementation of
+### uninformativeSSids() would be:
+###
+###   uninformativeSSids <- function(x)
+###   {
+###       is_uninfo <- outdeg(sg) == 1L & indeg(sg) == 1L
+###       names(is_uninfo)[is_uninfo]
+###   }
+###
+### but the implementation below is about 2x faster.
+###
+
+setGeneric("uninformativeSSids", signature="x",
+    function(x) standardGeneric("uninformativeSSids")
+)
+
+setMethod("uninformativeSSids", "ANY",
+    function(x)
+    {
+        sgedges <- sgedges(x)
+        uninformativeSSids(sgedges)
+    }
+)
+
+setMethod("uninformativeSSids", "DataFrame",
+    function(x)
+    {
+        from <- x[ , "from"]
+        to <- x[ , "to"]
+        uninformative_sgnodes(from, to)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### rsgedgesByTranscript()
 ###
 
@@ -218,4 +256,83 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
         relist(unname(ans_flesh), ans_skeleton)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### rsgedges() extractor
+###
+### Same as sgedges() except that uninformative nodes (i.e. SSids) are removed.
+###
+
+### 'sgedges' must be a DataFrame as returned by:
+###     sgedges( , keep.dup.edges=FALSE)
+.remove_uninformative_SSids <- function(sgedges)
+{
+    ex_or_in <- sgedges[ , "ex_or_in"]
+    ex_or_in_levels <- levels(ex_or_in)
+    if (!identical(ex_or_in_levels, EX_OR_IN_LEVELS))
+        stop("Malformed input.\n",
+             "  In the input data.frame (or DataFrame) representing the ",
+             "original splicing graph, the \"ex_or_in\" column has invalid ",
+             "levels. Could it be that it was obtained by a previous call ",
+             "to rsgedges()?")
+    levels(ex_or_in) <- EX_OR_IN_LEVELS2
+    uninformative_SSids <- uninformativeSSids(sgedges)
+    if (length(uninformative_SSids) == 0L)
+        return(sgedges)
+    from <- sgedges[ , "from"]
+    to <- sgedges[ , "to"]
+    tx_id <- sgedges[ , "tx_id"]
+    idx1 <- match(uninformative_SSids, from)
+    idx2 <- match(uninformative_SSids, to)
+    ## 2 sanity checks.
+    if (!identical(unname(tx_id[idx1]), unname(tx_id[idx2])))
+        stop("Malformed input.\n",
+             "  In the input data.frame (or DataFrame) representing the ",
+             "original splicing graph, the 2 rows containing a given ",
+             "uninformative splicing site id must contain the same tx_id.",
+             "Could it be that the \"tx_id\" column was manually altered ",
+             "before the data.frame (or DataFrame) was passed to ",
+             "rsgedges()?")
+    if (!all(idx1 == idx2 + 1L))
+        stop("Malformed input.\n",
+             "  In the input data.frame (or DataFrame) representing the ",
+             "original splicing graph, each uninformative splicing site ",
+             "id must appear in 2 consecutive rows (first in the \"to\" ",
+             "column, then in the \"from\" column. Could it be that the ",
+             "rows were subsetted before the data.frame (or DataFrame) ",
+             "was passed to rsgedges()?")
+    from <- from[-idx1]
+    to <- to[-idx2]
+    ex_or_in[idx1] <- EX_OR_IN_LEVELS2[4L]
+    ex_or_in <- ex_or_in[-idx2]
+    tx_id <- tx_id[-idx1]
+    DataFrame(from=from, to=to, ex_or_in=ex_or_in, tx_id=tx_id)
+}
+
+rsgedges <- function(x)
+{
+    if (!is(x, "DataFrame"))
+        x <- sgedges(x)
+    .remove_uninformative_SSids(x)
+}
+
+### Alias for backward compatibility.
+sgedges2 <- rsgedges
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### rsgraph() extractor
+###
+### Same as sgraph() except that uninformative nodes (i.e. SSids) are removed.
+###
+
+rsgraph <- function(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
+{
+    sgraph(rsgedges(x),
+           tx_id.as.edge.label=tx_id.as.edge.label, as.igraph=as.igraph)
+}
+
+### Alias for backward compatibility.
+sgraph2 <- rsgraph
 

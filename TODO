@@ -2,12 +2,6 @@ o Move vignette to vignettes/
 
 o Fix issue with sgedgesByGene(SplicingGraphs:::emptySplicingGraphs()).
 
-o Move sgedges2(), uninformativeSSids(), and sgraph2() to
-  R/rsgedgesByGene-methods.R
-
-o Rename sgedges2() -> rgedges() and sgraph2() -> rsgraph(). Keep old
-  names as aliases to new names.
-
 o Add man page for rsgedgesByGene-methods.R
 
 o Implement rsgedgesByTranscript().

@@ -97,7 +97,7 @@ setOldClass("igraph")
 ### 'sgedges' must be a DataFrame as returned by:
 ###     sgedges( , keep.dup.edges=FALSE)
 ### or by:
-###     sgedges2( )
+###     rsgedges( )
 .make_igraph_from_sgedges <- function(sgedges, tx_id.as.edge.label=FALSE)
 {
     if (!is(sgedges, "DataFrame"))
@@ -188,23 +188,12 @@ setMethod("sgraph", "igraph",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### sgraph2() extractor
-###
-### Same as sgraph() except that uninformative nodes (i.e. SSids) are removed.
-###
-
-sgraph2 <- function(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
-{
-    sgraph(sgedges2(x), 
-           tx_id.as.edge.label=tx_id.as.edge.label, as.igraph=as.igraph)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "plot" method.
 ###
 
-setMethod("plot", c("SplicingGraphs", "ANY"), function(x, y, ...) plot(sgraph(x), ...))
+setMethod("plot", c("SplicingGraphs", "ANY"),
+    function(x, y, ...) plot(sgraph(x), ...)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,7 +212,7 @@ slideshow <- function(x)
             "(", ntx, " transcript(s)). ", sep="")
         plot(x[i])
         cat("Press <Enter> for next...")
-        readLines(n=1)
+        readLines(n=1L)
     }
 }
 
