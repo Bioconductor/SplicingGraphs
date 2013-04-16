@@ -110,10 +110,21 @@ INVARIANT_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in",
 EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
 EX_OR_IN_LEVELS <- EX_OR_IN_LEVELS2[-4L]
 
+valid_exon_mcolnames <- function(colnames)
+{
+    nb_exon_mcols <- length(EXON_MCOLS)
+    if (identical(head(colnames, n=nb_exon_mcols), EXON_MCOLS))
+        return(NULL)
+    msg <- c("the first ", nb_exon_mcols, " exon-level metadata columns ",
+             "must be: ", paste0(EXON_MCOLS, collapse=", "))
+    paste0(msg, collapse="")
+}
+
 check_exon_mcolnames <- function(colnames)
 {
-    stopifnot(identical(head(colnames, n=length(EXON_MCOLS)),
-                        EXON_MCOLS))
+    msg <- valid_exon_mcolnames(colnames)
+    if (!is.null(msg))
+        stop(msg)
 }
 
 check_all_edge_mcolnames <- function(colnames)

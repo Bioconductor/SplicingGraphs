@@ -53,18 +53,19 @@ setClass("SplicingGraphs",
     NULL
 }
 
-.valid.SplicingGraphGenes.unlistData <- function(x)
+.valid.SplicingGraphGenes.ex_by_tx <- function(x)
 {
-    x_unlistData <- x@unlistData
-    if (!is.null(names(x_unlistData)))
+    ex_by_tx <- x@unlistData
+    if (!is.null(names(ex_by_tx)))
         return("'x@unlistData' must be unnamed")
-    NULL
+    ex_mcols <- mcols(ex_by_tx@unlistData)
+    valid_exon_mcolnames(colnames(ex_mcols))
 }
 
 .valid.SplicingGraphGenes <- function(x)
 {
     c(.valid.SplicingGraphGenes.names(x),
-      .valid.SplicingGraphGenes.unlistData(x))
+      .valid.SplicingGraphGenes.ex_by_tx(x))
 }
 
 setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
@@ -590,7 +591,12 @@ setMethod("SplicingGraphs", "TranscriptDb",
 ### the prototypes of the .SplicingGraphGenes and SplicingGraphs classes.
 emptySplicingGraphs <- function()
 {
-    ans <- SplicingGraphs(GRangesList(), IntegerList())
+    ex_by_tx <- GRangesList()
+    names(ex_by_tx) <- character(0)
+    mcols(ex_by_tx@unlistData) <- DataFrame(exon_id=integer(0),
+                                            exon_name=character(0),
+                                            exon_rank=integer(0))
+    ans <- SplicingGraphs(ex_by_tx, IntegerList())
     ## We want to make sure 'ans' is *completely* valid.
     validObject(ans, complete=TRUE)
     ans
