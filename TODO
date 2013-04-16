@@ -1,3 +1,17 @@
+o Move vignette to vignettes/
+
+o Fix issue with sgedgesByGene(SplicingGraphs:::emptySplicingGraphs()).
+
+o Move sgedges2(), uninformativeSSids(), and sgraph2() to
+  R/rsgedgesByGene-methods.R
+
+o Rename sgedges2() -> rgedges() and sgraph2() -> rsgraph(). Keep old
+  names as aliases to new names.
+
+o Add man page for rsgedgesByGene-methods.R
+
+o Implement rsgedgesByTranscript().
+
 o Replace the RNA-seq data used in the vignette by data that actually
   contains junction reads. The BAM files in TBX20BamSubset don't contain
   any!
@@ -6,14 +20,8 @@ o Complete vignette (get rid of all TODO from it).
 
 o Complete man pages (get rid of all TODO from them).
 
-o Add other counting modes to countReads(), controlled via an additional
+o Add other counting modes to countReads(), controlled via the 'by'
   argument. For example:
-
-    - Nb of unique reads per edge (the current mode, should remain the
-      default).
-
-    - Nb of unique reads per edge in the simplified graph (i.e. graph
-      obtained after removing uninformative nodes).
 
     - Nb of unique reads per transcript.
 
