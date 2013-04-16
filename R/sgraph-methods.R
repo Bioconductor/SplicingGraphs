@@ -204,7 +204,7 @@ sgraph2 <- function(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 ### "plot" method.
 ###
 
-setMethod("plot", c("SplicingGraphs", "ANY"), function(x, y) plot(sgraph(x)))
+setMethod("plot", c("SplicingGraphs", "ANY"), function(x, y, ...) plot(sgraph(x), ...))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

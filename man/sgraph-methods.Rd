@@ -29,7 +29,7 @@ sgraph2(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 
 ## PLotting:
 
-\S4method{plot}{SplicingGraphs,ANY}(x, y)
+\S4method{plot}{SplicingGraphs,ANY}(x, y, ...)
 slideshow(x)
 }
 
@@ -48,6 +48,10 @@ slideshow(x)
   }
   \item{y}{
     TODO
+  }
+  \item{...}{Additional arguments. \code{plot} passes these to
+    \code{plot,Ragraph,ANY-method} for use in, e.g., adding a
+    \code{main} title to the plot.
   }
 }
 
