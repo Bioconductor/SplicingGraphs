@@ -1,3 +1,5 @@
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Load the gene models
 ###
 
 load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
@@ -61,6 +63,11 @@ make_TSPC_SplicinGraphs <- function(subdir_paths)
     grouping <- rep.int(basename(subdir_paths), elementLengths(gene_list))
     SplicingGraphs(genes, grouping=grouping, min.ntx=1L)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Load the sample reads
+###
 
 get_TSPC_sample_names <- function(subdir_paths)
 {
@@ -136,14 +143,16 @@ load_TSPC_sample_reads <- function(sample_name, subdir_paths)
     param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
+            message(basename(subdir_path), ":", appendLF=FALSE)
             bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
             if (!file.exists(bam_filepath)) {
                 return(GRangesList())
             }
-            gal <- readGappedAlignments(bam_filepath, use.names=TRUE,
-                                        param=param0)
+            gal <- readGAlignments(bam_filepath, use.names=TRUE,
+                                   param=param0)
             is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
             if (!any(is_paired)) {
+                message("s ", appendLF=FALSE)
                 ## The aligner reported 2 *primary* alignments for single-end
                 ## read s100208_3_83_5646_14773 in file
                 ## BAI1-SOC_5991_294171.bam, which doesn't make sense. However,
@@ -155,8 +164,9 @@ load_TSPC_sample_reads <- function(sample_name, subdir_paths)
                 ans <- grglist(gal, order.as.in.query=TRUE)
             } else {
                 stopifnot(all(is_paired))
-                galp <- readGappedAlignmentPairs(bam_filepath, use.names=TRUE,
-                                                 param=param0)
+                message("p ", appendLF=FALSE)
+                galp <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
+                                            param=param0)
                 ans <- grglist(galp, order.as.in.query=TRUE)
            }
            ans
