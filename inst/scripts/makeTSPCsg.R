@@ -38,6 +38,9 @@ bam_status_matrix[ , 1:8]
 ###     MKRN3, and ST14. No BAM files for KIAA0319L and TREM2.
 ###   - 54 TSPC samples: 42 have single-end reads, 12 have paired-end reads.
 
+### Make the "BAM gap rate" matrix.
+bam_gaprate_matrix <- make_TSPC_bam_gaprate_matrix(subdir_paths, sample_names)m_gaprate_matrix[ , 1:8]
+
 ### Assign the reads to the SplicingGraphs object (this takes about 4 min on
 ### rhino02).
 TSPCsg <- assign_TSPC_reads(TSPCsg, subdir_paths)

@@ -143,6 +143,39 @@ make_TSPC_bam_status_matrix <- function(subdir_paths, sample_names)
     ans
 }
 
+get_TSPC_bam_gaprate <- function(subdir_path, sample_name)
+{
+    bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
+    if (!file.exists(bam_filepath))
+        return(NA_real_)
+        library(Rsamtools)
+    flag0 <- scanBamFlag(#isProperPair=TRUE,
+                         isNotPrimaryRead=FALSE,
+                         isNotPassingQualityControls=FALSE,
+                         isDuplicate=FALSE)
+    param0 <- ScanBamParam(flag=flag0, what="cigar")
+    res <- scanBam(bam_filepath, use.names=TRUE, param=param0)
+    stopifnot(length(res) == 1L)
+    cigar <- res[[1L]]$cigar
+    nb_rec <- length(cigar)
+    length(grep("N", cigar, fixed=TRUE)) / nb_rec
+}
+
+### Returns a matrix with 1 row per path in 'subdir_paths', and 1 col per
+### sample in 'sample_names'.
+make_TSPC_bam_gaprate_matrix <- function(subdir_paths, sample_names)
+{
+    if (!is.character(subdir_paths))
+        stop("'subdir_paths' must be a character vector")
+    if (!is.character(sample_names))
+        stop("'sample_names' must be a character vector")
+    ans <- sapply(sample_names,
+        function(sample_name)
+            sapply(subdir_paths, get_TSPC_bam_gaprate, sample_name))
+    rownames(ans) <- basename(subdir_paths)
+    ans
+}
+
 ### Returns NULL if the file doesn't exist.
 read_TSPC_bam <- function(subdir_path, sample_name)
 {
