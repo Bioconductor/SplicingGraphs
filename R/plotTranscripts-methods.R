@@ -12,6 +12,17 @@
         stop("'subject' must be a GenomicRanges object")
     if (length(subject) != 1L)
         stop("'subject' must contain 1 range only")
+
+    ## merge() will check that 'query' and 'subject' are based on compatible
+    ## reference genomes.
+    merge(seqinfo(query), seqinfo(subject))
+    ## Drop all sequence levels but the one level that is used by the single
+    ## range in 'subject'.
+    seqlevels(subject) <- as.character(seqnames(subject))
+    ## Set the same one sequence level on 'query'. Use 'force=TRUE' to remove
+    ## the elements in 'query' that are not on that sequence level.
+    seqlevels(query, force=TRUE) <- seqlevels(subject)
+
     query_ranges <- granges(query)
     strand(query_ranges) <- "*"
     cmp <- compare(query_ranges, subject)
@@ -43,8 +54,8 @@
                         })
     tracks <- c(tracks, tx_tracks)
 
+    ## Reads track.
     if (!is.null(reads)) {
-        ## Reads track.
         reads <- .subsetByOverlapWithRange(reads, tx_range)
         reads <- grglist(reads, order.as.in.query=TRUE)
 
