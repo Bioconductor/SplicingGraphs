@@ -57,11 +57,12 @@ make_TSPC_SplicinGraphs <- function(subdir_paths)
             message("OK")
             gene
         })
-    suppressWarnings(genes <- do.call(c, unname(gene_list)))
-    genes_seqlevels <- seqlevels(genes)
-    seqlevels(genes) <- genes_seqlevels[order(makeSeqnameIds(genes_seqlevels))]
+    suppressWarnings(ex_by_tx <- do.call(c, unname(gene_list)))
+    ex_by_tx_seqlevels <- seqlevels(ex_by_tx)
+    seq_rank <- makeSeqnameIds(ex_by_tx_seqlevels)
+    seqlevels(ex_by_tx) <- ex_by_tx_seqlevels[order(seq_rank)]
     grouping <- rep.int(basename(subdir_paths), elementLengths(gene_list))
-    SplicingGraphs(genes, grouping=grouping, min.ntx=1L)
+    SplicingGraphs(ex_by_tx, grouping=grouping, min.ntx=1L)
 }
 
 
@@ -176,12 +177,12 @@ make_TSPC_bam_gaprate_matrix <- function(subdir_paths, sample_names)
     ans
 }
 
-### Returns NULL if the file doesn't exist.
+### Returns a GAlignments or GAlignmentPairs object, or NULL if the file
+### doesn't exist.
 read_TSPC_bam <- function(subdir_path, sample_name)
 {
-    message("<", basename(subdir_path), "|", appendLF=FALSE)
     bam_status <- get_TSPC_bam_status(subdir_path, sample_name)
-    message(bam_status, "> ", appendLF=FALSE)
+    message(bam_status, appendLF=FALSE)
     if (bam_status == ".")
         return(NULL)
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
@@ -195,39 +196,41 @@ read_TSPC_bam <- function(subdir_path, sample_name)
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what="mapq")
     if (bam_status == "p") {
-        FUN <- readGAlignmentPairs
-    } else {
-        FUN <- readGAlignments
+        reads <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
+                                     param=param0)
+        return(reads)
     }
-    FUN(bam_filepath, use.names=TRUE, param=param0)
+    reads <- readGAlignments(bam_filepath, use.names=TRUE, param=param0)
+    ## The aligner reported 2 *primary* alignments for single-end
+    ## read s100208_3_83_5646_14773 in file BAI1-SOC_5991_294171.bam, which
+    ## doesn't make sense. However, the reported mapping quality for those
+    ## 2 alignments is 3 which is very low. So let's get rid of alignments
+    ## that have a quality <= 3.
+    mapq <- mcols(reads)$mapq
+    lowmapq_idx <- which(!is.na(mapq) & mapq <= 3)
+    if (length(lowmapq_idx) != 0L) {
+        message("|lowmapq:", length(lowmapq_idx), appendLF=FALSE)
+        reads <- reads[-lowmapq_idx]
+    }
+    reads
 }
 
-### Returns the reads as a GRangesList object.
+### Returns a GAlignments or GAlignmentPairs object.
 load_TSPC_sample_reads <- function(subdir_paths, sample_name)
 {
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
+            message("<", basename(subdir_path), "|", appendLF=FALSE)
             reads <- read_TSPC_bam(subdir_path, sample_name)
-            if (is.null(reads))
-                return(NULL)
-            if (is(reads, "GAlignments")) {
-                ## The aligner reported 2 *primary* alignments for single-end
-                ## read s100208_3_83_5646_14773 in file
-                ## BAI1-SOC_5991_294171.bam, which doesn't make sense. However,
-                ## the reported mapping quality for those 2 alignments is 3
-                ## which is very low. So let's get rid of alignments that have
-                ## a quality <= 3.
-                mapq <- mcols(reads)$mapq
-                reads <- reads[is.na(mapq) | mapq > 3]
-            }
-            grglist(reads, order.as.in.query=TRUE)
+            message("> ", appendLF=FALSE)
+            reads
         })
     empty_idx <- which(elementLengths(reads_list) == 0L)
     if (length(empty_idx) != 0L)
         reads_list <- reads_list[-empty_idx]
-    ans <- do.call(c, unname(reads_list))
-    stopifnot(!anyDuplicated(names(ans)))
-    ans
+    reads <- do.call(c, unname(reads_list))
+    stopifnot(!anyDuplicated(names(reads)))
+    reads
 }
 
 assign_TSPC_reads <- function(sg, subdir_paths)
