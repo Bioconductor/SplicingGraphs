@@ -27,8 +27,12 @@ source(TSPC_utils_path)
 TSPCsg <- make_TSPC_SplicinGraphs(subdir_paths)
 
 ### Make the BAM status matrix.
-### Status: ".": BAM file doesn't exist; "0": file is empty; "s": single-end;
-###         "p": paired-end; "m": mixed single-/paired-end.
+### BAM status:
+###   ".": BAM file doesn't exist;
+###   "0": file is empty (no alignments);
+###   "s": single-end;
+###   "p": paired-end;
+###   "m": mixed single-/paired-end.
 sample_names <- get_TSPC_sample_names(subdir_paths)
 bam_status_matrix <- make_TSPC_bam_status_matrix(subdir_paths, sample_names)
 dim(bam_status_matrix)

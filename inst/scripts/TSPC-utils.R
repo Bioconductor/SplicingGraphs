@@ -102,8 +102,12 @@ get_TSPC_bam_path <- function(subdir_path, sample_name)
     file.path(subdir_path, bam_filename)
 }
 
-### Status: ".": BAM file doesn't exist; "0": file is empty; "s": single-end;
-###         "p": paired-end; "m": mixed single-/paired-end.
+### BAM status:
+###   ".": BAM file doesn't exist;
+###   "0": file is empty (no alignments);
+###   "s": single-end;
+###   "p": paired-end;
+###   "m": mixed single-/paired-end.
 get_TSPC_bam_status <- function(subdir_path, sample_name)
 {
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
@@ -178,12 +182,12 @@ make_TSPC_bam_gaprate_matrix <- function(subdir_paths, sample_names)
 }
 
 ### Returns a GAlignments or GAlignmentPairs object, or NULL if the file
-### doesn't exist.
+### doesn't exist or is empty (no alignments).
 read_TSPC_bam <- function(subdir_path, sample_name)
 {
     bam_status <- get_TSPC_bam_status(subdir_path, sample_name)
     message(bam_status, appendLF=FALSE)
-    if (bam_status == ".")
+    if (bam_status %in% c(".", "0"))
         return(NULL)
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
     if (bam_status == "m")
@@ -222,6 +226,8 @@ load_TSPC_sample_reads <- function(subdir_paths, sample_name)
         function(subdir_path) {
             message("<", basename(subdir_path), "|", appendLF=FALSE)
             reads <- read_TSPC_bam(subdir_path, sample_name)
+            if (!is.null(reads))
+                message("|", length(reads), appendLF=FALSE)
             message("> ", appendLF=FALSE)
             reads
         })
