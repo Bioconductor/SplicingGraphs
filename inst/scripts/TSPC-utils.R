@@ -102,7 +102,7 @@ get_TSPC_bam_path <- function(subdir_path, sample_name)
 }
 
 ### Status: ".": BAM file doesn't exist; "0": file is empty; "s": single-end;
-### "p": paired-end; "m": mixed single-/paired-end.
+###         "p": paired-end; "m": mixed single-/paired-end.
 get_TSPC_bam_status <- function(subdir_path, sample_name)
 {
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
@@ -130,26 +130,25 @@ get_TSPC_bam_status <- function(subdir_path, sample_name)
 
 ### Returns a matrix with 1 row per path in 'subdir_paths', and 1 col per
 ### sample in 'sample_names'.
-### 9 TSPC genes, only 7 with samples: BAI1, CYB561, DAPL1, ITGB8, LGSN,
-### MKRN3, and ST14.
-### 54 TSPC samples: 42 have single-end reads, 12 have paired-end reads.
-get_TSPC_bam_status_matrix <- function(subdir_paths, sample_names)
+make_TSPC_bam_status_matrix <- function(subdir_paths, sample_names)
 {
     if (!is.character(subdir_paths))
         stop("'subdir_paths' must be a character vector")
     if (!is.character(sample_names))
         stop("'sample_names' must be a character vector")
-    sapply(sample_names,
+    ans <- sapply(sample_names,
         function(sample_name)
             sapply(subdir_paths, get_TSPC_bam_status, sample_name))
+    rownames(ans) <- basename(subdir_paths)
+    ans
 }
 
 ### Returns NULL if the file doesn't exist.
 read_TSPC_bam <- function(subdir_path, sample_name)
 {
-    message(basename(subdir_path), ":", appendLF=FALSE)
+    message("<", basename(subdir_path), "|", appendLF=FALSE)
     bam_status <- get_TSPC_bam_status(subdir_path, sample_name)
-    message(bam_status, appendLF=FALSE)
+    message(bam_status, "> ", appendLF=FALSE)
     if (bam_status == ".")
         return(NULL)
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
@@ -176,7 +175,6 @@ load_TSPC_sample_reads <- function(subdir_paths, sample_name)
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
             reads <- read_TSPC_bam(subdir_path, sample_name)
-            message(" ", appendLF=FALSE)
             if (is.null(reads))
                 return(NULL)
             if (is(reads, "GAlignments")) {
