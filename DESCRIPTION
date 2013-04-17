@@ -1,6 +1,6 @@
 Package: SplicingGraphs
 Title: Creation, manipulation, visualization of splicing graphs
-Version: 1.1.3
+Version: 1.1.4
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package allows the user to create, manipulate, and visualize
@@ -8,7 +8,7 @@ Description: This package allows the user to create, manipulate, and visualize
 	organism. Additionally it allows the user to assign RNA-seq reads to
 	the edges of a set of splicing graphs, and to summarize them.
 Maintainer: H. Pages <hpages@fhcrc.org>
-Depends: BiocGenerics, IRanges (>= 1.17.43), GenomicRanges (>= 1.13.3),
+Depends: BiocGenerics, IRanges (>= 1.17.43), GenomicRanges (>= 1.13.5),
 	 Rgraphviz (>= 2.3.7), GenomicFeatures (>= 1.11.8),
 	 Rsamtools (>= 1.13.1)
 Imports: methods, utils, igraph,
