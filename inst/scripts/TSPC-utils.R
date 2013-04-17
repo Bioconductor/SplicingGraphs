@@ -101,77 +101,99 @@ get_TSPC_bam_path <- function(subdir_path, sample_name)
     file.path(subdir_path, bam_filename)
 }
 
-### 7 genes with samples: BAI1, CYB561, DAPL1, ITGB8, LGSN, MKRN3, ST14.
-### 54 samples:
-###   - 34 samples are single-end for all genes.
-###   - 12 samples are paired-end for all genes.
-###   - 8 samples are single-end for some genes and paired-end for the others.
-###     Those samples are: SOC_11199_480891, SOC_2774_227362, SOC_5973_278042,
-###     SOC_7244_348592, SOC_7637_361542, SOC_7777_371281, SOC_8904_437502,
-###     and SOC_9547_467919.
-is_paired_end_TSPC_sample <- function(sample_names, subdir_path)
+### Status: ".": BAM file doesn't exist; "0": file is empty; "s": single-end;
+### "p": paired-end; "m": mixed single-/paired-end.
+get_TSPC_bam_status <- function(subdir_path, sample_name)
 {
-    if (!isSingleString(subdir_path))
-        stop("'subdir_path' must be a single string")
+    bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
+    if (!file.exists(bam_filepath))
+        return(".")
     library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
                          isNotPrimaryRead=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what="flag")
-    sapply(sample_names,
-        function(sample_name) {
-            bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
-            res <- scanBam(bam_filepath, use.names=TRUE, param=param0)
-            flag <- bamFlagTest(res[[1L]]$flag, "isPaired")
-            if (all(flag))
-                return(TRUE)
-            if (any(flag))
-                return(NA)
-            FALSE
-        })
+    res <- scanBam(bam_filepath, use.names=TRUE, param=param0)
+    stopifnot(length(res) == 1L)
+    flag <- res[[1L]]$flag
+    nb_rec <- length(flag)
+    if (nb_rec == 0L)
+        return("0")
+    nb_paired <- sum(bamFlagTest(flag, "isPaired"))
+    if (nb_paired == 0L)
+        return("s")
+    if (nb_paired == nb_rec)
+        return("p")
+    "m"
 }
 
-### Returns the reads as a GRangesList object.
-load_TSPC_sample_reads <- function(sample_name, subdir_paths)
+### Returns a matrix with 1 row per path in 'subdir_paths', and 1 col per
+### sample in 'sample_names'.
+### 9 TSPC genes, only 7 with samples: BAI1, CYB561, DAPL1, ITGB8, LGSN,
+### MKRN3, and ST14.
+### 54 TSPC samples: 42 have single-end reads, 12 have paired-end reads.
+get_TSPC_bam_status_matrix <- function(subdir_paths, sample_names)
 {
+    if (!is.character(subdir_paths))
+        stop("'subdir_paths' must be a character vector")
+    if (!is.character(sample_names))
+        stop("'sample_names' must be a character vector")
+    sapply(sample_names,
+        function(sample_name)
+            sapply(subdir_paths, get_TSPC_bam_status, sample_name))
+}
+
+### Returns NULL if the file doesn't exist.
+read_TSPC_bam <- function(subdir_path, sample_name)
+{
+    message(basename(subdir_path), ":", appendLF=FALSE)
+    bam_status <- get_TSPC_bam_status(subdir_path, sample_name)
+    message(bam_status, appendLF=FALSE)
+    if (bam_status == ".")
+        return(NULL)
+    bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
+    if (bam_status == "m")
+        stop("file ", bam_filepath, " contains a mix of single- ",
+             "and paired-end reads")
     library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
                          isNotPrimaryRead=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
-    param0 <- ScanBamParam(flag=flag0, what=c("flag", "mapq"))
+    param0 <- ScanBamParam(flag=flag0, what="mapq")
+    if (bam_status == "p") {
+        FUN <- readGAlignmentPairs
+    } else {
+        FUN <- readGAlignments
+    }
+    FUN(bam_filepath, use.names=TRUE, param=param0)
+}
+
+### Returns the reads as a GRangesList object.
+load_TSPC_sample_reads <- function(subdir_paths, sample_name)
+{
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
-            message(basename(subdir_path), ":", appendLF=FALSE)
-            bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
-            if (!file.exists(bam_filepath)) {
-                message("0 ", appendLF=FALSE)
-                return(GRangesList())
-            }
-            gal <- readGAlignments(bam_filepath, use.names=TRUE,
-                                   param=param0)
-            is_paired <- bamFlagTest(mcols(gal)$flag, "isPaired")
-            if (!any(is_paired)) {
-                message("s ", appendLF=FALSE)
+            reads <- read_TSPC_bam(subdir_path, sample_name)
+            message(" ", appendLF=FALSE)
+            if (is.null(reads))
+                return(NULL)
+            if (is(reads, "GAlignments")) {
                 ## The aligner reported 2 *primary* alignments for single-end
                 ## read s100208_3_83_5646_14773 in file
                 ## BAI1-SOC_5991_294171.bam, which doesn't make sense. However,
                 ## the reported mapping quality for those 2 alignments is 3
                 ## which is very low. So let's get rid of alignments that have
                 ## a quality <= 3.
-                mapq <- mcols(gal)$mapq
-                gal <- gal[is.na(mapq) | mapq > 3]
-                ans <- grglist(gal, order.as.in.query=TRUE)
-            } else {
-                stopifnot(all(is_paired))
-                message("p ", appendLF=FALSE)
-                galp <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
-                                            param=param0)
-                ans <- grglist(galp, order.as.in.query=TRUE)
-           }
-           ans
+                mapq <- mcols(reads)$mapq
+                reads <- reads[is.na(mapq) | mapq > 3]
+            }
+            grglist(reads, order.as.in.query=TRUE)
         })
+    empty_idx <- which(elementLengths(reads_list) == 0L)
+    if (length(empty_idx) != 0L)
+        reads_list <- reads_list[-empty_idx]
     ans <- do.call(c, unname(reads_list))
     stopifnot(!anyDuplicated(names(ans)))
     ans
@@ -185,7 +207,7 @@ assign_TSPC_reads <- function(sg, subdir_paths)
         sample_name <- sample_names[[i]]
         message("Assign reads from sample ", sample_name,
                 " (", i, "/", nsample, ") ... ", appendLF=FALSE)
-        reads <- load_TSPC_sample_reads(sample_name, subdir_paths)
+        reads <- load_TSPC_sample_reads(subdir_paths, sample_name)
         sg <- assignReads(sg, reads, sample.name=sample_name)
         message("OK")
     }
