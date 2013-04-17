@@ -183,8 +183,10 @@ make_TSPC_bam_gaprate_matrix <- function(subdir_paths, sample_names)
 
 ### Returns a GAlignments or GAlignmentPairs object, or NULL if the file
 ### doesn't exist or is empty (no alignments).
-read_TSPC_bam <- function(subdir_path, sample_name)
+load_TSPC_bam <- function(subdir_path, sample_name, gapped.reads.only=FALSE)
 {
+    if (!isTRUEorFALSE(gapped.reads.only))
+        stop("'gapped.reads.only' must be TRUE or FALSE")
     bam_status <- get_TSPC_bam_status(subdir_path, sample_name)
     message(bam_status, appendLF=FALSE)
     if (bam_status %in% c(".", "0"))
@@ -202,7 +204,11 @@ read_TSPC_bam <- function(subdir_path, sample_name)
     if (bam_status == "p") {
         reads <- readGAlignmentPairs(bam_filepath, use.names=TRUE,
                                      param=param0)
-        return(reads)
+        if (!gapped.reads.only)
+            return(reads)
+        keep_idx <- which(grepl("N", cigar(first(reads)), fixed=TRUE) |
+                          grepl("N", cigar(last(reads)), fixed=TRUE))
+        return(reads[keep_idx])
     }
     reads <- readGAlignments(bam_filepath, use.names=TRUE, param=param0)
     ## The aligner reported 2 *primary* alignments for single-end
@@ -216,16 +222,21 @@ read_TSPC_bam <- function(subdir_path, sample_name)
         message("|lowmapq:", length(lowmapq_idx), appendLF=FALSE)
         reads <- reads[-lowmapq_idx]
     }
-    reads
+    if (!gapped.reads.only)
+        return(reads)
+    keep_idx <- which(grepl("N", cigar(reads), fixed=TRUE))
+    reads[keep_idx]
 }
 
 ### Returns a GAlignments or GAlignmentPairs object.
-load_TSPC_sample_reads <- function(subdir_paths, sample_name)
+load_TSPC_sample_reads <- function(subdir_paths, sample_name,
+                                   gapped.reads.only=FALSE)
 {
     reads_list <- lapply(subdir_paths,
         function(subdir_path) {
             message("<", basename(subdir_path), "|", appendLF=FALSE)
-            reads <- read_TSPC_bam(subdir_path, sample_name)
+            reads <- load_TSPC_bam(subdir_path, sample_name,
+                                   gapped.reads.only=gapped.reads.only)
             if (!is.null(reads))
                 message("|", length(reads), appendLF=FALSE)
             message("> ", appendLF=FALSE)
@@ -239,7 +250,7 @@ load_TSPC_sample_reads <- function(subdir_paths, sample_name)
     reads
 }
 
-assign_TSPC_reads <- function(sg, subdir_paths)
+assign_TSPC_reads <- function(sg, subdir_paths, gapped.reads.only=FALSE)
 {
     sample_names <- get_TSPC_sample_names(subdir_paths)
     nsample <- length(sample_names)
@@ -247,7 +258,8 @@ assign_TSPC_reads <- function(sg, subdir_paths)
         sample_name <- sample_names[[i]]
         message("Assign reads from sample ", sample_name,
                 " (", i, "/", nsample, ") ... ", appendLF=FALSE)
-        reads <- load_TSPC_sample_reads(subdir_paths, sample_name)
+        reads <- load_TSPC_sample_reads(subdir_paths, sample_name,
+                                        gapped.reads.only=gapped.reads.only)
         sg <- assignReads(sg, reads, sample.name=sample_name)
         message("OK")
     }
