@@ -146,6 +146,7 @@ load_TSPC_sample_reads <- function(sample_name, subdir_paths)
             message(basename(subdir_path), ":", appendLF=FALSE)
             bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
             if (!file.exists(bam_filepath)) {
+                message("0 ", appendLF=FALSE)
                 return(GRangesList())
             }
             gal <- readGAlignments(bam_filepath, use.names=TRUE,
