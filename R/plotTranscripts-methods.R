@@ -74,7 +74,7 @@
                         })
     tracks <- c(tracks, tx_tracks)
 
-    ## Reads track.
+    ## Tracks of compatible and incompatible reads.
     if (!is.null(reads)) {
         if (length(reads) != 0L && !(is.null(from) && is.null(to))) {
             if (is.null(from)) {
@@ -89,18 +89,37 @@
             }
             reads <- .subsetByOverlapWithSingleRange(reads, plot_range)
         }
-        reads <- grglist(reads, order.as.in.query=TRUE)
+        grl <- grglist(reads, order.as.in.query=TRUE)
+        ov0 <- findOverlaps(grl, x, ignore.strand=TRUE)
+        ovenc0 <- encodeOverlaps(grl, x, hits=ov0,
+                                 flip.query.if.wrong.strand=TRUE)
+        ov0_is_compat <- isCompatibleWithSplicing(ovenc0)
+        ov <- ov0[ov0_is_compat]
+        is_compat_read <- countQueryHits(ov) != 0L
 
         ## Set strand to *.
-        strand(reads@unlistData) <- "*"
+        strand(grl@unlistData) <- "*"
 
         ## Set group id (required by the Gviz package, why?)
-        mcols(reads@unlistData)$group <- rep.int(seq_along(reads), 
-                                                 elementLengths(reads))
-        name <- if (length(reads) == 1L) names(reads)[1L] else "reads"
-        reads_track <- Gviz::AnnotationTrack(reads, name=name,
-                                             fill="blue", shape="box")
-        tracks <- c(tracks, list(reads_track))
+        mcols(grl@unlistData)$group <- rep.int(seq_along(grl), 
+                                               elementLengths(grl))
+
+        ## Track of compatible reads.
+        compat_grl <- grl[is_compat_read]
+        name <- ifelse(length(compat_grl) == 1L,
+                       names(compat_grl)[1L], "compatible reads")
+        compat_reads_track <- Gviz::AnnotationTrack(compat_grl, name=name,
+                                                    fill="blue", shape="box")
+        tracks <- c(tracks, list(compat_reads_track))
+
+        ## Track of incompatible reads.
+        incompat_grl <- grl[!is_compat_read]
+        name <- ifelse(length(incompat_grl) == 1L,
+                       names(incompat_grl)[1L], "incompatible reads")
+        incompat_reads_track <- Gviz::AnnotationTrack(incompat_grl, name=name,
+                                                      fill="lightblue",
+                                                      shape="box")
+        tracks <- c(tracks, list(incompat_reads_track))
     }
 
     Gviz::plotTracks(tracks, from=from, to=to)

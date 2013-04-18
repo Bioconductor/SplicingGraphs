@@ -269,7 +269,7 @@ get_TSPC_grcr <- function(sg, subdir_path, sample_name)
         return(NA_real_)
     ex_by_tx <- sg[[basename(subdir_path)]]
     ov <- findCompatibleOverlaps(reads, ex_by_tx)
-    sum(countQueryHits(ov) != 0L) / length(reads)
+    sum(countQueryHits(ov) != 0L) / queryLength(ov)
 }
 
 make_TSPC_grcr_matrix <- function(sg, subdir_paths, sample_names)
