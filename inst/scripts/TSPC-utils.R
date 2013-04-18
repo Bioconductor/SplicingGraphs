@@ -15,7 +15,8 @@ load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
     stopifnot(all(elementLengths(tmp2) == 2L))  # sanity check
     tmp2 <- as.integer(unlist(tmp2, use.name=FALSE))
     stopifnot(!any(is.na(tmp2)))  # sanity check
-    exons_start <- tmp2[c(TRUE, FALSE)]
+    ## The '_models.txt' files use 0-based starts!
+    exons_start <- tmp2[c(TRUE, FALSE)] + 1L
     exons_end <- tmp2[c(FALSE, TRUE)]
     exons_ranges <- IRanges(exons_start, exons_end)
     exon_id <- rep.int(NA_integer_, length(exons_ranges))
