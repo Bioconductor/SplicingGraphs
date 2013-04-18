@@ -21,12 +21,6 @@
 \alias{indeg,ANY-method}
 \alias{indeg,DataFrame-method}
 
-\alias{uninformativeSSids}
-\alias{uninformativeSSids,ANY-method}
-\alias{uninformativeSSids,DataFrame-method}
-
-\alias{sgedges2}
-
 
 \title{
   Extract the edges (and nodes) of a splicing graph
@@ -42,11 +36,6 @@ sgedges(x, txweight=NULL, keep.dup.edges=FALSE)
 sgnodes(x)
 outdeg(x)
 indeg(x)
-
-sgedges2(x)
-
-## Related utility:
-uninformativeSSids(x)
 }
 
 \arguments{
@@ -80,18 +69,27 @@ uninformativeSSids(x)
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## 1. Make SplicingGraphs object 'sg' from toy gene model (see
+##    '?SplicingGraphs')
+## ---------------------------------------------------------------------
 example(SplicingGraphs)  # create SplicingGraphs object 'sg'
 sg
 
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids.
 names(sg)
 
+## ---------------------------------------------------------------------
+## 2. Basic usage
+## ---------------------------------------------------------------------
 sgedges(sg["geneD"])
 sgnodes(sg["geneD"])
 outdeg(sg["geneD"])
 indeg(sg["geneD"])
 
-## Sanity checks:
+## ---------------------------------------------------------------------
+## 3. Sanity checks
+## ---------------------------------------------------------------------
 check_way1_vs_way2 <- function(res1, res2)
 {
     edges1 <- res1[res1$ex_or_in != "", ]  # remove artificial edges

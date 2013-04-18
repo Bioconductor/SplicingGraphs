@@ -8,8 +8,6 @@
 \alias{sgraph,DataFrame-method}
 \alias{sgraph,igraph-method}
 
-\alias{sgraph2}
-
 \alias{plot,SplicingGraphs,ANY-method}
 \alias{slideshow}
 
@@ -25,7 +23,6 @@
 
 \usage{
 sgraph(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
-sgraph2(x, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 
 ## PLotting:
 
@@ -49,7 +46,8 @@ slideshow(x)
   \item{y}{
     TODO
   }
-  \item{...}{Additional arguments. \code{plot} passes these to
+  \item{...}{
+    Additional arguments. \code{plot} passes these to
     \code{plot,Ragraph,ANY-method} for use in, e.g., adding a
     \code{main} title to the plot.
   }

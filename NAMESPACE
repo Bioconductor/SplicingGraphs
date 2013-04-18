@@ -47,6 +47,10 @@ export(
     ## sgraph-methods.R:
     slideshow,
 
+    ## rsgedgesByGene-methods.R:
+    rsgedges, sgedges2,
+    rsgraph, sgraph2,
+
     ## bubbles-methods.R:
     ASCODE2DESC,
 
@@ -89,15 +93,13 @@ export(
     ## sgraph-methods.R:
     sgraph,
 
-    ## bubbles-methods.R:
-    bubbles,
-
     ## rsgedgesByGene-methods.R:
     uninformativeSSids,
     rsgedgesByTranscript,
     rsgedgesByGene,
-    rsgedges, sgedges2,
-    rsgraph, sgraph2,
+
+    ## bubbles-methods.R:
+    bubbles,
 
     ## countReads.R:
     countReads
@@ -114,11 +116,11 @@ exportMethods(
     sgedges,
     sgnodes,
     outdeg, indeg,
-    uninformativeSSids,
     sgraph,
-    bubbles,
+    uninformativeSSids,
     rsgedgesByTranscript,
     rsgedgesByGene,
+    bubbles,
     countReads
 )
 

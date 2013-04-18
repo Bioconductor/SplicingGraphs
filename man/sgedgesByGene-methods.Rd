@@ -12,18 +12,18 @@
 
 
 \title{
-  Extract all the edges and ranges from a SplicingGraphs object
+  Extract the edges and their ranges from a SplicingGraphs object
 }
 
 \description{
   \code{sgedgesByGene} and \code{sgedgesByTranscript} both extract the
-  edges and ranges of all the genes from a \link{SplicingGraphs} object.
+  edges and their ranges of all the genes from a \link{SplicingGraphs} object.
   They return them in a \link[GenomicRanges]{GRangesList} object named
   with the gene ids, and where the items are grouped by gene (for
   \code{sgedgesByGene}) or by transcript (for \code{sgedgesByTranscript}).
 
   Alternatively, \code{intronsByTranscript} extracts the intronic edges
-  and ranges of all the genes from a \link{SplicingGraphs} object.
+  and their ranges of all the genes from a \link{SplicingGraphs} object.
   It returns them in a \link[GenomicRanges]{GRangesList} object named
   with the gene ids, and where the items are grouped by transcript.
 }
@@ -95,7 +95,7 @@ edges_by_gene
 ## 'edges_by_gene' has the length and names of 'sg', that is, the names
 ## on it are the gene ids and are guaranteed to be unique.
 
-## Extract the edges and ranges for a given gene:
+## Extract the edges and their ranges for a given gene:
 edges_by_gene[["geneB"]]
 ## Note that edge with global edge id "geneB:3,4" is an intron that
 ## belongs to transcripts B1 and B2.

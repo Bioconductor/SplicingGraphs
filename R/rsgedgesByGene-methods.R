@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 ###
 ### Analog to "sgedgesByGene" (and related) methods, but operate on the
-### *reduced* splicing graph.
+### *reduced* splicing graphs.
 ###
 
 ### Return the uninformative fully qualified nodes.

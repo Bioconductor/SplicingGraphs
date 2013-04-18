@@ -53,7 +53,7 @@
     \item \code{\link{plotTranscripts}} for plotting a set of transcripts
           along genomic coordinates.
 
-    \item \code{\link{sgedgesByGene}} for extracting all the edges and
+    \item \code{\link{sgedgesByGene}} for extracting the edges and their
           ranges from a SplicingGraphs object.
 
     \item \code{\link{txpath}} for extracting the transcript paths of a
@@ -64,6 +64,9 @@
 
     \item \code{\link{sgraph}} for extracting a splicing graph as a
           plottable graph-like object.
+
+    \item \code{\link{rsgedgesByGene}} for extracting the reduced edges
+          and their ranges from a SplicingGraphs object.
 
     \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
 
