@@ -48,6 +48,11 @@ get_TSPC_models_path <- function(subdir_path)
     file.path(subdir_path, models_filename)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Make the TSPC SplicinGraphs object
+###
+
 make_TSPC_SplicinGraphs <- function(subdir_paths)
 {
     gene_list <- lapply(subdir_paths,
@@ -154,7 +159,7 @@ get_TSPC_bam_gaprate <- function(subdir_path, sample_name)
     bam_filepath <- get_TSPC_bam_path(subdir_path, sample_name)
     if (!file.exists(bam_filepath))
         return(NA_real_)
-        library(Rsamtools)
+    library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
                          isNotPrimaryRead=FALSE,
                          isNotPassingQualityControls=FALSE,
@@ -251,9 +256,51 @@ load_TSPC_sample_reads <- function(subdir_paths, sample_name,
     reads
 }
 
-assign_TSPC_reads <- function(sg, subdir_paths, gapped.reads.only=FALSE)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Compute matrix of "Gapped Read Compatibility Ratio"
+###
+
+get_TSPC_grcr <- function(sg, subdir_path, sample_name)
 {
-    sample_names <- get_TSPC_sample_names(subdir_paths)
+    suppressMessages(reads <- load_TSPC_bam(subdir_path, sample_name,
+                                            gapped.reads.only=TRUE))
+    if (is.null(reads))
+        return(NA_real_)
+    ex_by_tx <- sg[[basename(subdir_path)]]
+    ov <- findCompatibleOverlaps(reads, ex_by_tx)
+    sum(countQueryHits(ov) != 0L) / length(reads)
+}
+
+make_TSPC_grcr_matrix <- function(sg, subdir_paths, sample_names)
+{
+    if (!is(sg, "SplicingGraphs"))
+        stop("'sg' must be a SplicingGraphs object")
+    if (!is.character(subdir_paths))
+        stop("'subdir_paths' must be a character vector")
+    if (!is.character(sample_names))
+        stop("'sample_names' must be a character vector")
+    ans <- sapply(sample_names,
+        function(sample_name)
+            sapply(subdir_paths, get_TSPC_grcr, sg=sg, sample_name=sample_name))
+    rownames(ans) <- basename(subdir_paths)
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Assign the TSPC reads to the SplicingGraphs object
+###
+
+assign_TSPC_reads <- function(sg, subdir_paths, sample_names,
+                              gapped.reads.only=FALSE)
+{
+    if (!is(sg, "SplicingGraphs"))
+        stop("'sg' must be a SplicingGraphs object")
+    if (!is.character(subdir_paths))
+        stop("'subdir_paths' must be a character vector")
+    if (!is.character(sample_names))
+        stop("'sample_names' must be a character vector")
     nsample <- length(sample_names)
     for (i in seq_len(nsample)) {
         sample_name <- sample_names[[i]]

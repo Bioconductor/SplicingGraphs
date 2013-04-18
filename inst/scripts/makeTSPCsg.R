@@ -26,7 +26,7 @@ source(TSPC_utils_path)
 ### Make the SplicingGraphs object.
 TSPCsg <- make_TSPC_SplicinGraphs(subdir_paths)
 
-### Make the BAM status matrix.
+### Compute the BAM status matrix.
 ### BAM status:
 ###   ".": BAM file doesn't exist;
 ###   "0": file is empty (no alignments);
@@ -42,13 +42,18 @@ bam_status_matrix[ , 1:8]
 ###     MKRN3, and ST14. No BAM files for KIAA0319L and TREM2.
 ###   - 54 TSPC samples: 42 have single-end reads, 12 have paired-end reads.
 
-### Make the "BAM gap rate" matrix.
+### Compute the "BAM gap rate" matrix.
 bam_gaprate_matrix <- make_TSPC_bam_gaprate_matrix(subdir_paths, sample_names)
 bam_gaprate_matrix[ , 1:8]
 
+### Compute the matrix of "Gapped Read Compatibility Ratio" (this takes about
+### 3 min 20 sec on rhino02).
+grcr_matrix <- make_TSPC_grcr_matrix(TSPCsg, subdir_paths, sample_names)
+grcr_matrix[ , 1:8]
+
 ### Assign the reads to the SplicingGraphs object (this takes about 4 min on
 ### rhino02).
-TSPCsg <- assign_TSPC_reads(TSPCsg, subdir_paths)
+TSPCsg <- assign_TSPC_reads(TSPCsg, subdir_paths, sample_names)
 
 ### Serialized the SplicingGraphs object.
 save(TSPCsg, file="TSPCsg.rda", compress="xz")
