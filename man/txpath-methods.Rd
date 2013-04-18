@@ -163,12 +163,12 @@ ov0 <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
 
 ## Encode the overlaps (this compare the fragmentation of the reads with
 ## the splicing of the transcripts):
-ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
-                        flip.query.if.wrong.strand=TRUE)
-is_comp <- isCompatibleWithSplicing(ovenc)
+ovenc0 <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
+                         flip.query.if.wrong.strand=TRUE)
+ov0_is_compat <- isCompatibleWithSplicing(ovenc0)
 
 ## Keep compatible overlaps only:
-ov1 <- ov0[is_comp]
+ov1 <- ov0[ov0_is_compat]
 
 ## Only keep overlaps that are compatible with exactly 1 transcript:
 ov2 <- ov1[queryHits(ov1) \%in\% which(countQueryHits(ov1) == 1L)]

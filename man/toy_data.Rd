@@ -102,16 +102,16 @@ stopifnot(identical(df0, toy_ov[ , 1:2]))
 ## D. DETECT THE OVERLAPS THAT ARE COMPATIBLE WITH THE GENE MODEL
 ## ---------------------------------------------------------------------
 ## First we encode the overlaps:
-ovenc <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
-                        flip.query.if.wrong.strand=TRUE)
-ovenc
+ovenc0 <- encodeOverlaps(grl, ex_by_tx, hits=ov0,
+                         flip.query.if.wrong.strand=TRUE)
+ovenc0
 
 ## Each encoding tells us whether the corresponding overlap is
 ## compatible or not with the gene model:
-is_comp <- isCompatibleWithSplicing(ovenc)
-head(is_comp)
+ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
+head(ov0_is_comp)
 
 ## Overlap compatibility has also been manually checked and included in
 ## the table returned by toy_overlaps():
-stopifnot(identical(is_comp, toy_ov[ , 3]))
+stopifnot(identical(ov0_is_comp, toy_ov[ , 3]))
 }

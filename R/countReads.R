@@ -107,8 +107,8 @@ assignReads <- function(sg, reads, sample.name=NA)
     ov0 <- findOverlaps(reads, ex_by_tx, ignore.strand=TRUE)
     ovenc0 <- encodeOverlaps(reads, ex_by_tx, hits=ov0,
                              flip.query.if.wrong.strand=TRUE)
-    ov0_is_comp <- isCompatibleWithSplicing(ovenc0)
-    ov1 <- ov0[ov0_is_comp]
+    ov0_is_compat <- isCompatibleWithSplicing(ovenc0)
+    ov1 <- ov0[ov0_is_compat]
 
     query.breaks <- mcols(reads)$query.break
     ## 'reads2' is obtained by removing the gaps (i.e. Ns in the CIGAR) in
