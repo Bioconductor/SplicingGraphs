@@ -35,9 +35,29 @@
     ## Compute the genomic range of the transcripts.
     unlisted_x <- unlist(x, use.names=FALSE)
     strand(unlisted_x) <- "*"
-    tx_range <- range(unlisted_x)
-    if (length(tx_range) != 1L)
+    plot_range <- range(unlisted_x)
+    if (length(plot_range) != 1L)
         stop("cannot plot transcripts that are on different chromosomes")
+
+    ## Compute 'from' and 'to'.
+    if (!(is.null(from) || isSingleNumberOrNA(from)))
+        stop("'from' must be a single number, or NA, or NULL")
+    if (!(is.null(to) || isSingleNumberOrNA(to)))
+        stop("'to' must be a single number, or NA, or NULL")
+    from_is_na <- !is.null(from) && is.na(from)
+    to_is_na <- !is.null(to) && is.na(to)
+    if (from_is_na || to_is_na) {
+        x_min_start <- start(plot_range)
+        x_max_end <- end(plot_range)
+        margin <- 0.10 * (x_max_end - x_min_start)
+        if (from_is_na)
+            from <- x_min_start - margin
+        if (to_is_na)
+            to <- x_max_end + margin
+        from_str <- ifelse(is.null(from), "NULL", from)
+        to_str <- ifelse(is.null(to), "NULL", to)
+        message("using: from=", from_str, ", to=", to_str)
+    }
 
     ## Genome axis.
     tracks <- list(Gviz::GenomeAxisTrack())
@@ -56,7 +76,19 @@
 
     ## Reads track.
     if (!is.null(reads)) {
-        reads <- .subsetByOverlapWithSingleRange(reads, tx_range)
+        if (length(reads) != 0L && !(is.null(from) && is.null(to))) {
+            if (is.null(from)) {
+                start(plot_range) <- min(start(reads))
+            } else {
+                start(plot_range) <- from
+            }
+            if (is.null(to)) {
+                end(plot_range) <- max(end(reads))
+            } else {
+                end(plot_range) <- to
+            }
+            reads <- .subsetByOverlapWithSingleRange(reads, plot_range)
+        }
         reads <- grglist(reads, order.as.in.query=TRUE)
 
         ## Set strand to *.
@@ -69,17 +101,6 @@
         reads_track <- Gviz::AnnotationTrack(reads, name=name,
                                              fill="blue", shape="box")
         tracks <- c(tracks, list(reads_track))
-    }
-
-    if (identical(from, NA) || identical(to, NA)) {
-        x_min_start <- start(tx_range)
-        x_max_end <- end(tx_range)
-        margin <- 0.10 * (x_max_end - x_min_start)
-        if (identical(from, NA))
-            from <- x_min_start - margin
-        if (identical(to, NA))
-            to <- x_max_end + margin
-        message("using: from=", from, ", to=", to)
     }
 
     Gviz::plotTracks(tracks, from=from, to=to)
