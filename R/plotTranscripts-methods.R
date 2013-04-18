@@ -4,7 +4,7 @@
 
 ### Slighly faster and less memory consuming than subsetByOverlaps()
 ### when 'subject' contains 1 range only. Ignores the strand.
-.subsetByOverlapWithRange <- function(query, subject)
+.subsetByOverlapWithSingleRange <- function(query, subject)
 {
     if (!(is(query, "GAlignments") || is(query, "GAlignmentPairs")))
         stop("'query' must be a GAlignments or GAlignmentPairs object")
@@ -30,7 +30,7 @@
     query[-5L <= cmp & cmp <= 5L]
 }
 
-.plotTranscripts.GRangesList <- function(x, reads=NULL, from=NULL, to=NULL)
+.plotTranscripts.GRangesList <- function(x, reads=NULL, from=NA, to=NA)
 {
     ## Compute the genomic range of the transcripts.
     unlisted_x <- unlist(x, use.names=FALSE)
@@ -56,7 +56,7 @@
 
     ## Reads track.
     if (!is.null(reads)) {
-        reads <- .subsetByOverlapWithRange(reads, tx_range)
+        reads <- .subsetByOverlapWithSingleRange(reads, tx_range)
         reads <- grglist(reads, order.as.in.query=TRUE)
 
         ## Set strand to *.
@@ -71,28 +71,29 @@
         tracks <- c(tracks, list(reads_track))
     }
 
-    if (is.null(from) || is.null(to)) {
+    if (identical(from, NA) || identical(to, NA)) {
         x_min_start <- start(tx_range)
         x_max_end <- end(tx_range)
         margin <- 0.10 * (x_max_end - x_min_start)
-        if (is.null(from))
+        if (identical(from, NA))
             from <- x_min_start - margin
-        if (is.null(to))
+        if (identical(to, NA))
             to <- x_max_end + margin
+        message("using: from=", from, ", to=", to)
     }
 
     Gviz::plotTracks(tracks, from=from, to=to)
 }
 
 setGeneric("plotTranscripts", signature="x",
-    function(x, reads=NULL, from=NULL, to=NULL)
+    function(x, reads=NULL, from=NA, to=NA)
         standardGeneric("plotTranscripts")
 )
 
 setMethod("plotTranscripts", "GRangesList", .plotTranscripts.GRangesList)
 
 setMethod("plotTranscripts", "TranscriptDb",
-    function(x, reads=NULL, from=NULL, to=NULL)
+    function(x, reads=NULL, from=NA, to=NA)
     {
         ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)
         plotTranscripts(ex_by_tx, reads=reads, from=from, to=to)
@@ -100,7 +101,7 @@ setMethod("plotTranscripts", "TranscriptDb",
 )
 
 setMethod("plotTranscripts", "SplicingGraphs",
-    function(x)
+    function(x, reads=NULL, from=NA, to=NA)
     {
         if (length(x) != 1L)
             stop("'x' must be a SplicingGraphs object of length 1")

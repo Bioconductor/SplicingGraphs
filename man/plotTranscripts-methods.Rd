@@ -18,7 +18,7 @@
 }
 
 \usage{
-plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
+plotTranscripts(x, reads=NULL, from=NA, to=NA)
 }
 
 \arguments{
@@ -34,7 +34,11 @@ plotTranscripts(x, reads=NULL, from=NULL, to=NULL)
     or paired-end reads.
   }
   \item{from, to}{
-    TODO
+    Single numeric values, giving the range of genomic coordinates to plot
+    the tracks in. By default (i.e. \code{from=NA} and \code{to=NA}), the
+    plot covers the range spanned by the transcripts.
+    If \code{from=NULL} and \code{to=NULL}, then the plot covers the
+    range spanned by the transcripts and the reads.
   }
 }
 
