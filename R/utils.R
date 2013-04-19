@@ -98,13 +98,13 @@ commonStrand.GRangesList <- function(x)
 EXON_MCOLS <- c("exon_id", "exon_name", "exon_rank", "start_SSid", "end_SSid")
 
 ### All edge metadata columns.
-ALL_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in", "tx_id", EXON_MCOLS)
+ALL_EDGE_MCOLS <- c("from", "to", "sgedge_id", "ex_or_in", "tx_id", EXON_MCOLS)
 
 ### Subset of 'ALL_EDGE_MCOLS' made of those columns that are considered
 ### invariant i.e. the values in them associated with the same sgedge_id
 ### (global edge id) should be the same. Note that we also include the
 ### "sgedge_id" col itself.
-INVARIANT_EDGE_MCOLS <- c("sgedge_id", "from", "to", "ex_or_in",
+INVARIANT_EDGE_MCOLS <- c("from", "to", "sgedge_id", "ex_or_in",
                           "start_SSid", "end_SSid")
 
 EX_OR_IN_LEVELS2 <- c("ex", "in", "", "mixed")
@@ -156,6 +156,23 @@ get_index_of_invariant_edge_mcols <- function(colnames)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### make_sgedge_id()
+###
+### Returns "global splicing graph edge id".
+###
+
+make_global_sgedge_id <- function(gene_id, from, to)
+{
+    ans_len <- length(from)
+    stopifnot(length(to) == ans_len)
+    stopifnot(length(gene_id) == 1L || length(gene_id) == ans_len)
+    if (ans_len == 0L)
+        return(character(0))
+    paste0(gene_id, ":", from, ",", to)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### unlistAndSplit()
 ###
 ### Example:
@@ -181,6 +198,55 @@ unlistAndSplit <- function(x, f, drop=FALSE)
     x2 <- unlist(x)
     f2 <- rep.int(f, elementLengths(x))
     splitAsList(x2, f2, drop=drop)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### fancy_punion() -- fancy parallel union
+###
+### Expects 'x' and 'y' to be 2 list-like objects such that:
+###   (a) all the list elements in 'x' and 'y' are vector-like objects of the
+###       same class;
+###   (b) 'x' and 'y' have the same length and names;
+###   (c) 'x' and 'y' have the same shape i.e. for any valid 'i', 'x[[i]]'
+###       and 'y[[i]]' have the same length;
+###   (d) 'x' and 'y' have no zero-length list elements;
+###   (e) for any valid index 'i', 'y[[i]][-L_i]' is identical to 'x[[i]][-1]',
+###       where L_i is the length of 'y[[i]]' (and 'x[[i]]').
+### Performs an optimized 'mendoapply(union, x, y)'.
+###
+### Example:
+###
+###   > x <- IntegerList(c(12, 4, 9), 5, c(8, -2))
+###   > y <- IntegerList(c(4, 9, 8), 0, c(-2, 10))
+###   > fancy_punion(x, y)
+###   IntegerList of length 3
+###   [[1]] 12 4 9 8
+###   [[2]] 5 0
+###   [[3]] 8 -2 10
+###
+fancy_punion <- function(x, y)
+{
+    x_partitioning <- PartitioningByEnd(x)
+    y_partitioning <- PartitioningByEnd(y)
+    if (!identical(x_partitioning, y_partitioning))
+        stop("'x' and 'y' must have the same length, names, and shape")
+    starts <- start(x_partitioning)
+    ends <- end(x_partitioning)
+    if (any(ends - starts == -1L))
+        stop("'x' and 'y' have zero-length list elements")
+    x_flesh <- unlist(x, use.names=FALSE)
+    y_flesh <- unlist(y, use.names=FALSE)
+    if (!identical(x_flesh[-starts], y_flesh[-ends]))
+        stop("for any valid index 'i', 'y[[i]][-length(y[[i]])]' ",
+             "must be identical to 'x[[i]][-1]'")
+    ans_breakpoints <- ends + seq_along(ends)
+    ans_flesh <- c(x_flesh, y_flesh[ends])
+    ans_flesh[-ans_breakpoints] <- x_flesh
+    ans_flesh[ans_breakpoints] <- y_flesh[ends]
+    ans_skeleton <- PartitioningByEnd(ans_breakpoints,
+                                      names=names(x_partitioning))
+    relist(ans_flesh, ans_skeleton)
 }
 
 

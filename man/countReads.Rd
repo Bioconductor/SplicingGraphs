@@ -99,10 +99,19 @@ countReads(x, by=c("sgedge", "rsgedge"))
   the reads assigned to it.
 
   For \code{countReads}: a \link[IRanges]{DataFrame} object with one row
-  per unique splicing graph edge and one column of counts per sample.
-  Two additional columns (\code{"sgedge_id"} and \code{"ex_or_in"}) contain
-  the splicing graph edge ids and the type of edge (exon or intron),
-  respectively.
+  per unique splicing graph edge if \code{by="sgedge"}, or one row per
+  unique reduced splicing graph edge if \code{by="rsgedge"}.
+  There is one column of counts per sample, and the following two
+  additional columns:
+  \enumerate{
+    \item \code{"sgedge_id"} if \code{by="sgedge"} or \code{"rsgedge_id"}
+          if \code{by="rsgedge"}: contains the \emph{global splicing graph
+          edge ids} if \code{by="sgedge"}, or the \emph{global reduced
+          splicing graph edge ids} if \code{by="rsgedge"}.
+    \item \code{"ex_or_in"}: the type of edge. This can be exon or intron
+          if \code{by="sgedge"}, or exon, intron, or mixed if
+          \code{by="rsgedge"}.
+  }
 }
 
 \author{

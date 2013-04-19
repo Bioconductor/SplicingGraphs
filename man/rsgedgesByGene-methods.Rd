@@ -119,6 +119,8 @@ edges_by_gene[["geneA"]]
 ## "geneA:2,4" (intron), and "geneA:4,5" (exon), during the graph
 ## reduction.
 
+stopifnot(identical(edges_by_gene["geneB"], rsgedgesByGene(sg["geneB"])))
+
 ## ---------------------------------------------------------------------
 ## 3. sgedgesByTranscript()
 ## ---------------------------------------------------------------------

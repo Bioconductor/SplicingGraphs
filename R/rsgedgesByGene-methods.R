@@ -6,8 +6,8 @@
 ### *reduced* splicing graphs.
 ###
 
-### Return the uninformative fully qualified nodes.
-.uninformative_fqnodes <- function(sg)
+### Return the fully qualified uninformative nodes.
+.get_fq_uninfnodes <- function(sg)
 {
     txpath <- txpath(unlist(sg))
     skeleton2 <- PartitioningByEnd(end(PartitioningByEnd(txpath)) * 2L)
@@ -25,63 +25,82 @@
     gene_id <- gene_id[c(TRUE, FALSE)]
     from <- tmp[c(TRUE, FALSE)]
     to <- tmp[c(FALSE, TRUE)]
-    sgedge_id <- paste0(gene_id, ":", from, ",", to)
+    sgedge_id <- make_global_sgedge_id(gene_id, from, to)
     keep_idx <- which(!duplicated(sgedge_id))
-    fqfrom <- paste0(gene_id, ":", from)[keep_idx]  # fully qualified ids
-    fqto <- paste0(gene_id, ":", to)[keep_idx]  # fully qualified ids
-    uninformative_sgnodes(fqfrom, fqto)
+    fq_from <- paste(gene_id, from, sep=":")[keep_idx]  # fully qualified ids
+    fq_to <- paste(gene_id, to, sep=":")[keep_idx]  # fully qualified ids
+    uninformative_sgnodes(fq_from, fq_to)
 }
 
-.pmerge <- function(x, y)
+### 'f': factor. The "reverse factor" of 'f' is the named list of integer
+### vectors that maps each level of 'f' to the positions in 'f' where that
+### level is used. It can quickly be computed with:
+###
+###     revfactor <- split(seq_along(f), f)
+###
+### 'f' can be rebuilt from 'revfactor' with:
+###
+###     f2 <- .make_factor_from_revfactor(revfactor, length(f))
+###     stopifnot(identical(f2, f)
+###
+.make_factor_from_revfactor <- function(revfactor, f_len)
 {
-    x_partitioning <- PartitioningByEnd(x)
-    y_partitioning <- PartitioningByEnd(y)
-    stopifnot(identical(x_partitioning, y_partitioning))
-    starts <- start(x_partitioning)
-    ends <- end(x_partitioning)
-    unlisted_x <- unlist(x, use.names=FALSE)
-    unlisted_y <- unlist(y, use.names=FALSE)
-    stopifnot(identical(unlisted_x[-starts], unlisted_y[-ends]))
-    y <- as(unlisted_y[ends], "List")
-    xy <- c(x, y)
-    f <- rep.int(seq_along(x), 2L)
-    ans <- unlistAndSplit(xy, f)
-    names(ans) <- names(x_partitioning)
-    ans
+    f_levels <- names(revfactor)
+    idx <- integer(f_len)
+    idx[] <- NA_integer_
+    idx[unlist(revfactor, use.names=FALSE)] <- rep.int(seq_along(revfactor),
+                                                   elementLengths(revfactor))
+    factor(f_levels[idx], levels=f_levels)
 }
 
-### 'gene_id', 'from', and 'to', must have the same length N (nb of unique
-### edges in the SplicingGraphs object befor reduction).
+### 'from' and 'to' must have the same length N (nb of unique edges in the
+### SplicingGraphs object before reduction).
+.make_revfactor_from_uninfnodes <- function(uninfnodes, from, to)
+{
+    from_idx <- match(uninfnodes, from)
+    to_idx <- match(uninfnodes, to)
+    keep_idx <- which(!(is.na(from_idx) | is.na(to_idx)))
+    from_idx <- from_idx[keep_idx]
+    to_idx <- to_idx[keep_idx]
+    stopifnot(all(from_idx == to_idx + 1L))  # sanity check
+    if (length(from_idx) == 0L) {
+        group1 <- integer(0)
+    } else {
+        group1 <- cumsum(c(TRUE, diff(from_idx) != 1L))
+    }
+    split_to_idx <- unname(splitAsList(to_idx, group1))
+    split_from_idx <- unname(splitAsList(from_idx, group1))
+    fancy_punion(split_to_idx, split_from_idx)
+}
+
+### 'revfactor' must be a "reverse factor" as returned by
+### .make_revfactor_from_uninfnodes().
 ### Returns a character vector of length N containing the global rsgedge id
 ### (global reduced splicing graph edge id) corresponding to each input edge.
-.build_sgedge2rsgedge_map <- function(gene_id, from, to, ui_fqnodes)
+.build_sgedge2rsgedge_map_from_revfactor <- function(revfactor,
+                                                     gene_id, from, to)
 {
-    ans <- paste0(gene_id, ":", from, ",", to)
+    ans <- make_global_sgedge_id(gene_id, from, to)
 
-    fqfrom <- paste0(gene_id, ":", from)  # fully qualified ids
-    fqto <- paste0(gene_id, ":", to)  # fully qualified ids
-    idx1 <- match(ui_fqnodes, fqfrom)
-    idx2 <- match(ui_fqnodes, fqto)
-    keep_idx <- which(!(is.na(idx1) | is.na(idx2)))
-    idx1 <- idx1[keep_idx]
-    idx2 <- idx2[keep_idx]
-    stopifnot(all(idx1 == idx2 + 1L))  # sanity check
-    group1 <- cumsum(c(TRUE, diff(idx1) != 1L))
-    split_idx2 <- unname(splitAsList(idx2, group1))
-    split_idx1 <- unname(splitAsList(idx1, group1))
-    idx <- .pmerge(split_idx2, split_idx1)
-    alter_idx <- idx@unlistData
-
-    from_list <- relist(from[alter_idx], idx)
-    to_list <- relist(to[alter_idx], idx)
-    nodes_list <- .pmerge(from_list, to_list)
+    unlisted_revfactor <- unlist(revfactor, use.names=FALSE)
+    from_list <- relist(from[unlisted_revfactor], revfactor)
+    to_list <- relist(to[unlisted_revfactor], revfactor)
+    nodes_list <- fancy_punion(from_list, to_list)
 
     rsgedge_id <- sapply(nodes_list, paste0, collapse=",")
-    rsgedge_id <- rep.int(rsgedge_id, elementLengths(idx))
-    rsgedge_id <- paste(gene_id[alter_idx], rsgedge_id, sep=":")
+    rsgedge_id <- rep.int(rsgedge_id, elementLengths(revfactor))
+    rsgedge_id <- paste(gene_id[unlisted_revfactor], rsgedge_id, sep=":")
 
-    ans[alter_idx] <- rsgedge_id
+    ans[unlisted_revfactor] <- rsgedge_id
     ans
+}
+
+.build_sgedge2rsgedge_map <- function(uninfnodes, gene_id, from, to)
+{
+    fq_from <- paste(gene_id, from, sep=":")  # fully qualified ids
+    fq_to <- paste(gene_id, to, sep=":")  # fully qualified ids
+    revfactor <- .make_revfactor_from_uninfnodes(uninfnodes, fq_from, fq_to)
+    .build_sgedge2rsgedge_map_from_revfactor(revfactor, gene_id, from, to)
 }
 
 ### 'edges' must be a GRanges object.
@@ -136,9 +155,9 @@
     stopifnot(identical(edges_tx_id, edges_tx_id[sm]))  # sanity check
     ans_tx_id <- edges_tx_id[keep_idx]
 
-    ans_mcols <- DataFrame(rsgedge_id=levels(f),
-                           from=ans_from,
+    ans_mcols <- DataFrame(from=ans_from,
                            to=ans_to,
+                           rsgedge_id=levels(f),
                            ex_or_in=ans_ex_or_in,
                            tx_id=ans_tx_id)
 
@@ -244,9 +263,9 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
         gene_id <- names(edges0)
         from <- edges0_mcols[ , "from"]
         to <- edges0_mcols[ , "to"]
-        ui_fqnodes <- .uninformative_fqnodes(x)
-        sgedge2rsgedge_map <- .build_sgedge2rsgedge_map(gene_id, from, to,
-                                                        ui_fqnodes)
+        uninfnodes <- .get_fq_uninfnodes(x)
+        sgedge2rsgedge_map <- .build_sgedge2rsgedge_map(uninfnodes,
+                                                        gene_id, from, to)
         f <- factor(sgedge2rsgedge_map, levels=unique(sgedge2rsgedge_map))
         ans_flesh <- .reduce_edges(edges0, f)
         ans_flesh_names <- Rle(names(ans_flesh))
@@ -261,7 +280,7 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### rsgedges() extractor
 ###
-### Same as sgedges() except that uninformative nodes (i.e. SSids) are removed.
+### Same as sgedges() except that uninformative nodes are removed.
 ###
 
 ### 'sgedges' must be a DataFrame as returned by:
@@ -278,23 +297,18 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
              "to rsgedges()?")
     levels(ex_or_in) <- EX_OR_IN_LEVELS2
     uninformative_SSids <- uninformativeSSids(sgedges)
-    if (length(uninformative_SSids) == 0L)
+    if (length(uninformative_SSids) == 0L) {
+        col_idx <- match("sgedge_id", colnames(sgedges))
+        colnames(sgedges)[col_idx] <- "rsgedge_id"
+        sgedges$ex_or_in <- ex_or_in
         return(sgedges)
+    }
+
     from <- sgedges[ , "from"]
     to <- sgedges[ , "to"]
-    tx_id <- sgedges[ , "tx_id"]
-    idx1 <- match(uninformative_SSids, from)
-    idx2 <- match(uninformative_SSids, to)
-    ## 2 sanity checks.
-    if (!identical(unname(tx_id[idx1]), unname(tx_id[idx2])))
-        stop("Malformed input.\n",
-             "  In the input data.frame (or DataFrame) representing the ",
-             "original splicing graph, the 2 rows containing a given ",
-             "uninformative splicing site id must contain the same tx_id.",
-             "Could it be that the \"tx_id\" column was manually altered ",
-             "before the data.frame (or DataFrame) was passed to ",
-             "rsgedges()?")
-    if (!all(idx1 == idx2 + 1L))
+    from_idx <- match(uninformative_SSids, from)
+    to_idx <- match(uninformative_SSids, to)
+    if (!all(from_idx == to_idx + 1L))
         stop("Malformed input.\n",
              "  In the input data.frame (or DataFrame) representing the ",
              "original splicing graph, each uninformative splicing site ",
@@ -302,12 +316,42 @@ setMethod("rsgedgesByGene", "SplicingGraphs",
              "column, then in the \"from\" column. Could it be that the ",
              "rows were subsetted before the data.frame (or DataFrame) ",
              "was passed to rsgedges()?")
-    from <- from[-idx1]
-    to <- to[-idx2]
-    ex_or_in[idx1] <- EX_OR_IN_LEVELS2[4L]
-    ex_or_in <- ex_or_in[-idx2]
-    tx_id <- tx_id[-idx1]
-    DataFrame(from=from, to=to, ex_or_in=ex_or_in, tx_id=tx_id)
+
+    ## Reduce "from" and "to" cols.
+    ans_from <- from[-from_idx]
+    ans_to <- to[-to_idx]
+
+    ## Reduce "sgedge_id" col.
+    sgedges_id <- sgedges[ , "sgedge_id"]
+    tmp <- unlist(strsplit(sgedges_id, ":", fixed=TRUE), use.names=FALSE)
+    gene_id <- tmp[c(TRUE, FALSE)]
+    revfactor <- .make_revfactor_from_uninfnodes(uninformative_SSids, from, to)
+    sgedge2rsgedge_map <- .build_sgedge2rsgedge_map_from_revfactor(revfactor,
+                                                             gene_id, from, to)
+    f <- factor(sgedge2rsgedge_map, levels=unique(sgedge2rsgedge_map))
+    ans_rsgedge_id <- levels(f)
+
+    ## Reduce "ex_or_in" col.
+    ex_or_in[from_idx] <- EX_OR_IN_LEVELS2[4L]
+    ans_ex_or_in <- ex_or_in[-to_idx]
+
+    ## Reduce "tx_id" col.
+    tx_id <- sgedges[ , "tx_id"]
+    if (!identical(unname(tx_id[from_idx]), unname(tx_id[to_idx])))
+        stop("Malformed input.\n",
+             "  In the input data.frame (or DataFrame) representing the ",
+             "original splicing graph, the 2 rows containing a given ",
+             "uninformative splicing site id must contain the same tx_id.",
+             "Could it be that the \"tx_id\" column was manually altered ",
+             "before the data.frame (or DataFrame) was passed to ",
+             "rsgedges()?")
+    ans_tx_id <- tx_id[-from_idx]
+
+    DataFrame(from=ans_from,
+              to=ans_to,
+              rsgedge_id=ans_rsgedge_id,
+              ex_or_in=ans_ex_or_in,
+              tx_id=ans_tx_id)
 }
 
 rsgedges <- function(x)

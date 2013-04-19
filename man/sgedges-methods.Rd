@@ -4,11 +4,9 @@
 
 \alias{sgedges}
 \alias{sgedges,SplicingGraphs-method}
-\alias{sgedges,IntegerList-method}
-\alias{sgedges,data.frame-method}
 
 \alias{sgnodes}
-\alias{sgnodes,ANY-method}
+\alias{sgnodes,SplicingGraphs-method}
 \alias{sgnodes,IntegerList-method}
 \alias{sgnodes,data.frame-method}
 \alias{sgnodes,DataFrame-method}
@@ -94,7 +92,6 @@ check_way1_vs_way2 <- function(res1, res2)
 {
     edges1 <- res1[res1$ex_or_in != "", ]  # remove artificial edges
     edges2 <- mcols(unlist(res2, use.names=FALSE))
-    edges2 <- edges2[ , -1]  # remove "sgedge_id" col (global edge id)
     stopifnot(identical(edges1, edges2))
 }
 

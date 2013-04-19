@@ -543,6 +543,8 @@ The \Rclass{DataFrame} object returned by \Rfunction{sgedges} has the
 following columns:
 \begin{itemize}
   \item \Rcode{from}, \Rcode{to}: The 2 nodes connected by the edge.
+  \item \Rcode{sgedge\_id}: A \textit{global edge id} of the form
+        \Rcode{gene\_id:from,to}.
   \item \Rcode{ex\_or\_in}: The type of the edge, i.e., exon, intron, or
         no type if it's an artificial edge.
   \item \Rcode{tx\_id}: The ids of the transcripts that support the edge.
@@ -566,17 +568,11 @@ edges_by_gene[["107328"]]
 @
 \end{small}
 
-The edge-level metadata columns are the following:
-\begin{itemize}
-  \item \Rcode{sgedge\_id}: A \textit{global edge id} of the form
-        \Rcode{gene\_id:from,to}.
-  \item \Rcode{from}, \Rcode{to}, \Rcode{ex\_or\_in}, \Rcode{tx\_id}:
-        See the columns of the \Rclass{DataFrame} object returned
-        by \Rfunction{sgedges}.
-\end{itemize}
-
-The artificial edges (i.e., edges starting from the root
-node (\Rcode{R}) or ending at the leaf node (\Rcode{L})) are omitted!
+The edge-level metadata columns are the same as the columns of the
+\Rclass{DataFrame} object returned by \Rfunction{sgedges}.
+An important difference though is that the artificial edges (i.e., edges
+starting from the root node (\Rcode{R}) or ending at the leaf node
+(\Rcode{L})) are omitted!
 
 Finally, to plot a given splicing graph:
 

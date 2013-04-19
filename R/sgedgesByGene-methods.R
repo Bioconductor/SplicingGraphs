@@ -82,7 +82,6 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         in_prepend_mcols$ex_or_in <- ex_or_in
 
         tx_id <- mcols(ex_by_tx)[ , "tx_id"]
-        tx_id <- factor(tx_id, levels=unique(tx_id))
         ex_prepend_mcols$tx_id <- rep.int(tx_id, nex_by_tx)
         in_prepend_mcols$tx_id <- rep.int(tx_id, nin_by_tx)
 
@@ -131,11 +130,14 @@ setMethod("sgedgesByTranscript", "SplicingGraphs",
         stopifnot(identical(ans_unlistData_end[minus_introns_idx] + 1L,
                             ans_unlistData_start[minus_introns_idx - 1L]))
 
-        ## Add "sgedge_id" metadata col.
-        sgedge_id <- paste0(rep.int(gene_ids, width(ans_partitioning)), ":",
-                            from, ",", to)
-        ans_unlistData_mcols <- cbind(DataFrame(sgedge_id=sgedge_id),
-                                      ans_unlistData_mcols)
+        ## Insert "sgedge_id" metadata col after first 2 metadata cols
+        ## ("from" and "to").
+        sgedge_id <- make_global_sgedge_id(
+                         rep.int(gene_ids, width(ans_partitioning)),
+                         from, to)
+        ans_unlistData_mcols <- c(ans_unlistData_mcols[1:2],
+                                  DataFrame(sgedge_id=sgedge_id),
+                                  ans_unlistData_mcols[-(1:2)])
         check_all_edge_mcolnames(colnames(ans_unlistData_mcols))
 
         ## Drop unwanted columns.

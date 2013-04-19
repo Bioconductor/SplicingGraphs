@@ -22,7 +22,7 @@
 ### transcript) for a given gene. Should have been obtained thru the txpath()
 ### accessor. Returns a 4-col (or 5-col if 'txweight' is supplied) data.frame
 ### representing the splicing graph.
-.make_sgedges0_from_txpath <- function(txpath, txweight=NULL)
+.make_sgedges0_from_txpath <- function(txpath, gene_id, txweight=NULL)
 {
     if (!is.null(txweight)) {
         if (!is.numeric(txweight))
@@ -40,6 +40,8 @@
                                      "an odd number of splicing site ids")
                             from <- c("R", txpath_i)
                             to <- c(txpath_i, "L")
+                            sgedge_id <- make_global_sgedge_id(gene_id,
+                                                               from, to)
                             nexons <- txpath_i_len %/% 2L
                             if (nexons == 0L) {
                                 ex_or_in <- EX_OR_IN_LEVELS[3L]
@@ -55,6 +57,7 @@
                                                levels=EX_OR_IN_LEVELS)
                             data.frame(from=from,
                                        to=to,
+                                       sgedge_id=sgedge_id,
                                        ex_or_in=ex_or_in,
                                        stringsAsFactors=FALSE)
                         })
@@ -63,7 +66,7 @@
     tx_id <- names(txpath)
     if (is.null(tx_id))
         tx_id <- seq_along(txpath)
-    tx_id <- rep.int(factor(tx_id, levels=tx_id), nedges_per_tx)
+    tx_id <- rep.int(tx_id, nedges_per_tx)
     sgedges0$tx_id <- tx_id
     if (!is.null(txweight))
         sgedges0$txweight <- rep.int(txweight, nedges_per_tx)
@@ -72,17 +75,15 @@
 
 ### Collapse the duplicated edges in 'sgedges0' into a DataFrame.
 ### We use a DataFrame instead of a data.frame because we want to store
-### the tx_id col in a CompressedFactorList (even though this container
-### doesn't formally exist and a CompressedIntegerList is actually what's
-### being used).
+### the "tx_id" col in a CharacterList.
 .make_sgedges_from_sgedges0 <- function(sgedges0, ex_hits=NULL, in_hits=NULL)
 {
     from <- sgedges0[ , "from"]
     to <- sgedges0[ , "to"]
+    sgedge_id <- sgedges0[ , "sgedge_id"]
     ex_or_in <- sgedges0[ , "ex_or_in"]
     tx_id <- sgedges0[ , "tx_id"]
-    edges <- paste(from, to, sep="~")
-    sm <- match(edges, edges)
+    sm <- match(sgedge_id, sgedge_id)
     if (!all(ex_or_in == ex_or_in[sm]))
         stop("invalid splicing graph")
     is_not_dup <- sm == seq_along(sm)
@@ -178,14 +179,14 @@ setMethod("sgedges", "SplicingGraphs",
     {
         if (!isTRUEorFALSE(keep.dup.edges))
             stop("'keep.dup.edges' must be TRUE or FALSE")
-        txpath <- txpath(x)
+        txpath <- txpath(x)  # fails if length(x) != 1
+        gene_id <- names(x)
         if (is.null(txweight))
             txweight <- txweight(x)
+        sgedges0 <- .make_sgedges0_from_txpath(txpath, gene_id,
+                                               txweight=txweight)
         if (keep.dup.edges)
-            return(sgedges(txpath, txweight=txweight,
-                                   keep.dup.edges=keep.dup.edges))
-        sgedges0 <- sgedges(txpath, txweight=txweight,
-                                    keep.dup.edges=TRUE)
+            return(sgedges0)
         exon_hits <- .extract_sgedges_exon_hits(x)
         intron_hits <- .extract_sgedges_intron_hits(x)
         ## FIXME: Once .extract_sgedges_intron_hits() is fixed, merge the
@@ -198,28 +199,6 @@ setMethod("sgedges", "SplicingGraphs",
     }
 )
 
-setMethod("sgedges", "IntegerList",
-    function(x, txweight=NULL, keep.dup.edges=FALSE)
-    {
-        sgedges0 <- .make_sgedges0_from_txpath(x, txweight=txweight)
-        sgedges(sgedges0, keep.dup.edges=keep.dup.edges)
-    }
-)
-
-setMethod("sgedges", "data.frame",
-    function(x, txweight=NULL, keep.dup.edges=FALSE)
-    {
-        if (!is.null(txweight))
-            stop("the 'txweight' arg is not supported ",
-                 "when 'x' is a data.frame")
-        if (!isTRUEorFALSE(keep.dup.edges))
-            stop("'keep.dup.edges' must be TRUE or FALSE")
-        if (keep.dup.edges)
-            return(x)  # no-op
-        .make_sgedges_from_sgedges0(x)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### sgnodes() accessor
@@ -229,7 +208,7 @@ setGeneric("sgnodes", signature="x",
     function(x) standardGeneric("sgnodes")
 )
 
-setMethod("sgnodes", "ANY",
+setMethod("sgnodes", "SplicingGraphs",
     function(x)
     {
         txpath <- txpath(x)
@@ -270,7 +249,8 @@ setMethod("outdeg", "DataFrame",
     function(x)
     {
         sgnodes <- sgnodes(x)
-        ans <- countMatches(sgnodes, x[ , "from"])
+        m <- match(x[ , "from"], sgnodes)
+        ans <- tabulate(m, nbins=length(sgnodes))
         names(ans) <- sgnodes
         ans
     }
@@ -292,7 +272,8 @@ setMethod("indeg", "DataFrame",
     function(x)
     {
         sgnodes <- sgnodes(x)
-        ans <- countMatches(sgnodes, x[ , "to"])
+        m <- match(x[ , "to"], sgnodes)
+        ans <- tabulate(m, nbins=length(sgnodes))
         names(ans) <- sgnodes
         ans
     }
