@@ -213,10 +213,9 @@ sg2
 
 ## Note that because SplicingGraphs objects have a slot that is an
 ## environment (for caching the bubbles), they cannot be compared with
-## identical() (will always return FALSE). A workaround is to unlist
-## them before comparison (see below for what unlist() does exactly on
-## a SplicingGraphs object):
-stopifnot(identical(unlist(sg2), unlist(sg)))
+## 'identical()' (will always return FALSE). 'all.equal()' should be
+## used instead:
+stopifnot(isTRUE(all.equal(sg2, sg)))
 
 ## 'sg' has 1 element per gene and 'names(sg)' gives the gene ids:
 length(sg)

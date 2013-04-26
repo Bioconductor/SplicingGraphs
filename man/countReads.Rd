@@ -3,6 +3,7 @@
 \alias{assignReads}
 \alias{countReads}
 \alias{countReads,SplicingGraphs-method}
+\alias{removeReads}
 
 
 \title{
@@ -14,11 +15,17 @@
   \link{SplicingGraphs} object.
 
   \code{countReads} returns a summarized count of the assigned reads.
+
+  \code{removeReads} removes all the reads assigned to a
+  \link{SplicingGraphs} object.
 }
 
 \usage{
 assignReads(sg, reads, sample.name=NA)
+
 countReads(x, by=c("sgedge", "rsgedge", "tx"))
+
+removeReads(sg)
 }
 
 \arguments{
@@ -201,4 +208,9 @@ countReads(sg, by="rsgedge")
 ## 6. Count the number of reads per transcript
 ## ---------------------------------------------------------------------
 countReads(sg, by="tx")
+
+## ---------------------------------------------------------------------
+## 7. Remove the reads from 'sg'.
+## ---------------------------------------------------------------------
+removeReads(sg)
 }

@@ -166,9 +166,9 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{CIB3-transcripts.pdf}
+  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{images/CIB3-transcripts.pdf}
   \hskip 0.5in
-  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}}
+  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{images/CIB3-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the four transcript variants
     of gene CIB3 (Entrez ID 117286).
@@ -206,9 +206,9 @@ An example of such a splicing graph is shown in Figure~\ref{img:ZNF813}.
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{ZNF813-transcripts.pdf}
+  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{images/ZNF813-transcripts.pdf}
   \hskip 0.5in
-  \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{ZNF813-sg.pdf}}
+  \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{images/ZNF813-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the two transcript
     variants of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a
@@ -246,9 +246,9 @@ illustrated in Figure~\ref{img:CIB3-simplified}.
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=2in,height=5.5in]{CIB3-sg.pdf}
+  \includegraphics[width=2in,height=5.5in]{images/CIB3-sg.pdf}
   \hskip 0.5in
-  \includegraphics[width=2in,height=5.5in]{CIB3-sg2.pdf}
+  \includegraphics[width=2in,height=5.5in]{images/CIB3-sg2.pdf}
   \end{center}
   \caption{Nodes \Rcode{1}, \Rcode{3}, \Rcode{5}, \Rcode{6}, \Rcode{9},
     \Rcode{11}, \Rcode{12}, and \Rcode{13}, are uninformative and can be
@@ -310,6 +310,9 @@ Splicing graphs are computed by calling the \Rfunction{SplicingGraphs}
 function on the gene model. This is the constructor function for
 \Rclass{SplicingGraphs} objects. It will compute information about all
 the splicing graphs (1 per gene) and store it in the returned object.
+By default, only genes with at least 2 transcripts are considered (this
+can be changed by using the \Rcode{min.ntx} argument of
+\Rfunction{SplicingGraphs}):
 
 <<sg>>=
 library(SplicingGraphs)
@@ -320,9 +323,9 @@ sg
 %% bubbles_cache slot.
 <<loadPrecomputed_sg,echo=FALSE>>=
 sg2 <- .loadPrecomputed("sg")
-sg@.bubbles_cache <- sg2@.bubbles_cache
-if (!identical(sg, sg2))
+if (!isTRUE(all.equal(sg, sg2)))
     stop("'sg' is not identical to precomputed version")
+sg@.bubbles_cache <- sg2@.bubbles_cache
 @
 
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
@@ -900,7 +903,12 @@ for (i in seq_along(bam_files)) {
 }
 @
 <<loadPrecomputed_sg_with_reads,echo=FALSE>>=
-sg <- .loadPrecomputed("sg_with_reads")
+sg_with_reads <- .loadPrecomputed("sg_with_reads")
+## Remove the reads from 'sg_with_reads' and compare with 'sg'.
+if (!isTRUE(all.equal(removeReads(sg_with_reads), sg)))
+    stop("after removal of the hits, precomputed version of 'sg_with_reads' ",
+         "is not identical to 'sg'")
+sg <- sg_with_reads
 @
 
 The assignments to the exonic and intronic edges of a given gene

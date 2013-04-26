@@ -166,12 +166,12 @@ assignReads <- function(sg, reads, sample.name=NA)
 {
     ex_by_tx <- unlist(x)
     tx_id <- mcols(ex_by_tx)[ , "tx_id"]
-    gene_id <- names(edges_by_tx)
+    gene_id <- names(ex_by_tx)
     edges_by_tx <- sgedgesByTranscript(x, with.hits.mcols=TRUE)
-    edge_data <- mcols(unlist(edge_by_tx))
+    edge_data <- mcols(unlist(edges_by_tx, use.names=FALSE))
     edge_data_colnames <- colnames(edge_data)
     hits_mcol_idx <- grep("\\.hits$", edge_data_colnames)
-    edge_data_breakpoints <- end(PartitioningByEnd(edge_by_tx))
+    edge_data_breakpoints <- end(PartitioningByEnd(edges_by_tx))
 
     ## FIXME: endoapply() on a DataFrame object is broken when applying
     ## a function 'FUN' that modifies the nb of rows. Furthermore, the
@@ -206,4 +206,24 @@ setMethod("countReads", "SplicingGraphs",
             tx=.countReads_by_tx(x))
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### removeReads()
+###
+
+removeReads <- function(sg)
+{
+    ## Remove "hits" cols from exons.
+    ex_mcols <- mcols(sg@genes@unlistData@unlistData)
+    hits_idx <- grep("hits$", colnames(ex_mcols))
+    if (length(hits_idx != 0L))
+        mcols(sg@genes@unlistData@unlistData) <- ex_mcols[-hits_idx]
+    ## Remove "hits" cols from introns.
+    in_mcols <- mcols(sg@in_by_tx@unlistData)
+    hits_idx <- grep("hits$", colnames(in_mcols))
+    if (length(hits_idx != 0L))
+        mcols(sg@in_by_tx@unlistData) <- in_mcols[-hits_idx]
+    sg
+}
 
