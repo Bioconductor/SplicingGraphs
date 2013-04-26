@@ -57,20 +57,49 @@
     cbind(DataFrame(tx_id=tx_id, gene_id=gene_id), ans)
 }
 
+.countReads_by_gene <- function(x)
+{
+    edges_by_gene <- sgedgesByGene(x, with.hits.mcols=TRUE)
+    edge_data <- mcols(unlist(edges_by_gene, use.names=FALSE))
+    edge_data_colnames <- colnames(edge_data)
+    hits_mcol_idx <- grep("\\.hits$", edge_data_colnames)
+    edge_data_breakpoints <- end(PartitioningByEnd(edges_by_gene))
+
+    ## FIXME: endoapply() on a DataFrame object is broken when applying
+    ## a function 'FUN' that modifies the nb of rows. Furthermore, the
+    ## returned object passes validation despite being broken! Fix it
+    ## in IRanges.
+    ans <- endoapply(edge_data[hits_mcol_idx],
+                     function(hits)
+                       elementLengths(unique(regroup(hits,
+                                                     edge_data_breakpoints))))
+
+    ## Fix the broken DataFrame returned by endoapply().
+    ans@nrows <- length(edges_by_gene)
+    ans@rownames <- NULL
+
+    colnames(ans) <- sub("\\.hits$", "", colnames(ans))
+    gene_id <- names(edges_by_gene)
+    tx_id <- unique(regroup(edge_data[ , "tx_id"], edge_data_breakpoints))
+    cbind(DataFrame(gene_id=gene_id, tx_id=tx_id), ans)
+}
+
 setGeneric("countReads", signature="x",
-    function(x, by=c("sgedge", "rsgedge", "tx")) standardGeneric("countReads")
+    function(x, by=c("sgedge", "rsgedge", "tx", "gene"))
+        standardGeneric("countReads")
 )
 
 ### Return a DataFrame with 1 row per splicing graph edge (or reduced
 ### splicing graph edge), and 1 column per sample.
 setMethod("countReads", "SplicingGraphs",
-    function(x, by=c("sgedge", "rsgedge", "tx"))
+    function(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     {
         by <- match.arg(by)
         switch(by,
             sgedge=.countReads_by_sgedge(x),
             rsgedge=.countReads_by_rsgedge(x),
-            tx=.countReads_by_tx(x))
+            tx=.countReads_by_tx(x),
+            gene=.countReads_by_gene(x))
     }
 )
 

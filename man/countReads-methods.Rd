@@ -39,11 +39,12 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
   \itemize{
     \item unique splicing graph edge, if \code{by="sgedge"};
     \item unique \emph{reduced} splicing graph edge, if \code{by="rsgedge"};
-    \item transcript if \code{by="tx"}.
+    \item transcript if \code{by="tx"};
+    \item gene if \code{by="gene"}.
   }
 
-  And with one column per sample (containing the counts for each sample),
-  and the two following additional leading columns:
+  And with one column per sample (containing the counts for that sample),
+  plus the two following additional leading columns:
   \itemize{
     \item if \code{by="sgedge"}: \code{"sgedge_id"}, containing the
           \emph{global splicing graph edge ids}, and \code{"ex_or_in"},
@@ -52,7 +53,8 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
           \emph{global reduced splicing graph edge ids}, and
           \code{"ex_or_in"}, containing the type of edge (exon, intron,
           or mixed);
-    \item if \code{by="tx"}: \code{"tx_id"} and \code{"gene_id"}.
+    \item if \code{by="tx"}: \code{"tx_id"} and \code{"gene_id"};
+    \item if \code{by="gene"}: \code{"gene_id"} and \code{"tx_id"}.
   }
 }
 
@@ -74,22 +76,16 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 example(assignReads)
 
 ## ---------------------------------------------------------------------
-## 2. Count the number of reads per splicing graph edge
+## 2. Summarize the reads assigned to 'sg'
 ## ---------------------------------------------------------------------
-countReads(sg)
+countReads(sg)  # nb of reads per splicing graph edge
+countReads(sg, by="rsgedge")  # ... per reduced splicing graph edge
+countReads(sg, by="tx")  # ... per transcript
+countReads(sg, by="gene")  # ... per gene
 
 ## ---------------------------------------------------------------------
-## 3. Count the number of reads per reduced splicing graph edge
-## ---------------------------------------------------------------------
-countReads(sg, by="rsgedge")
-
-## ---------------------------------------------------------------------
-## 4. Count the number of reads per transcript
-## ---------------------------------------------------------------------
-countReads(sg, by="tx")
-
-## ---------------------------------------------------------------------
-## 5. Remove the reads from 'sg'.
+## 3. Remove the reads from 'sg'.
 ## ---------------------------------------------------------------------
 removeReads(sg)
+countReads(sg)
 }
