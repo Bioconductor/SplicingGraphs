@@ -28,7 +28,7 @@ Collate: utils.R
 	 sgraph-methods.R
 	 rsgedgesByGene-methods.R
 	 bubbles-methods.R
-	 countReads.R
+	 countReads-methods.R
 	 toy_data.R
 	 zzz.R
 biocViews: Genetics, Annotation, HighThroughputSequencing

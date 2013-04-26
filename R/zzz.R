@@ -28,3 +28,5 @@ ASCODE2DESC <- NULL
     ASCODE2DESC <<- tmp
 }
 
+run_unitTests <- function() BiocGenerics:::testPackage("SplicingGraphs")
+

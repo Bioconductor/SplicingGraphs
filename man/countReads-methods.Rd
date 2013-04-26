@@ -1,4 +1,6 @@
-\name{countReads}
+\name{countReads-methods}
+
+\alias{countReads-methods}
 
 \alias{assignReads}
 \alias{countReads}
