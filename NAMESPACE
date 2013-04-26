@@ -54,7 +54,7 @@ export(
     ## bubbles-methods.R:
     ASCODE2DESC,
 
-    ## countReads-methods.R:
+    ## assignReads.R:
     assignReads,
     removeReads,
 

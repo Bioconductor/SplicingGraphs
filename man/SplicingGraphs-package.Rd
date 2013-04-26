@@ -70,8 +70,11 @@
 
     \item \code{\link{bubbles}} for computing the bubbles of a splicing graph.
 
-    \item \code{\link{countReads}} for assigning reads to the edges of a
-          SplicingGraphs object and summarizing them.
+    \item \code{\link{assignReads}} for assigning reads to the edges of a
+          SplicingGraphs object.
+
+    \item \code{\link{countReads}} for summarizing the reads assigned to
+          the edges of a SplicingGraphs object.
 
     \item \code{\link{toy_genes_gff}} for details about the toy data included
           in this package.
