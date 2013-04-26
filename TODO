@@ -13,14 +13,20 @@ o Complete man pages (get rid of all TODO from them).
 o Fix issue with calls to plotting functions requiring 1 more key-stroke than
   necessary before they actually start to plot something.
 
-o Add other counting modes to countReads(), controlled via the 'by'
-  argument. For example:
+o Add by="gene" to countReads() for counting of unique reads per gene.
 
-    - Nb of unique reads per transcript.
+o Add 'drop.ambiguous.hits' arg to countReads() for dropping reads that are
+  assigned to multiple edges (when by="sgedge"), to multiple reduced edges
+  (when by="rsgedge"), to multiple transcripts (when by="tx"), or to
+  multiple genes (when by="gene"). Default value for 'drop.ambiguous.hits'
+  should be FALSE. But the exact effect of dropping ambiguous hits when
+  by="sgedge" (or by="rsgedge") needs to be closely examined first. For
+  example, that would mean always dropping junction reads since they are
+  always assigned to more than 1 edge (they're assigned to an intron + its
+  2 flanking exons).
 
-    - Nb of "unambiguous compatible hits" per transcript. Currently done
-      by hand in man page for txweight(). Could be done in a simpler way
-      by looking at the reads already assigned to the SplicingGraphs.
-
-    - Nb of unique reads per gene.
+  Counting the nb of "unambiguous compatible hits" per transcript is currently
+  done "by hand" in the man page for txweight(). Do it again with
+  countReads(sg, by="tx", drop.ambiguous.hits=TRUE) and compare. Should
+  produce the same result.
 

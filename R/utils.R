@@ -173,8 +173,9 @@ make_global_sgedge_id <- function(gene_id, from, to)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### unlistAndSplit()
+### unlistAndSplit() and regroup()
 ###
+
 ### Example:
 ###
 ###   > x <- SimpleList(A=4:5, B=letters[1:4], C=NULL, D=1:2, E=-2:0, F=TRUE)
@@ -198,6 +199,19 @@ unlistAndSplit <- function(x, f, drop=FALSE)
     x2 <- unlist(x)
     f2 <- rep.int(f, elementLengths(x))
     splitAsList(x2, f2, drop=drop)
+}
+
+### Assumes 'breakpoints' is a (possibly named) integer vector with no NAs,
+### containing valid indices into 'x' in ascending order. This is not checked!
+### Returns a list-like object of the same elementType as 'x' but with the
+### length and names of 'breakpoints'. Behaves as an endomorphism on a
+### CompressedList object.
+regroup <- function(x, breakpoints)
+{
+   ans_breakpoints <- end(PartitioningByEnd(x))[breakpoints]
+   ans_skeleton <- PartitioningByEnd(ans_breakpoints,
+                                     names=names(breakpoints))
+   relist(unlist(x, use.names=FALSE), ans_skeleton)
 }
 
 

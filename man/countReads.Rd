@@ -18,7 +18,7 @@
 
 \usage{
 assignReads(sg, reads, sample.name=NA)
-countReads(x, by=c("sgedge", "rsgedge"))
+countReads(x, by=c("sgedge", "rsgedge", "tx"))
 }
 
 \arguments{
@@ -39,8 +39,8 @@ countReads(x, by=c("sgedge", "rsgedge"))
     are coming from.
   }
   \item{by}{
-    Summarize by splicing graph edge (\code{"sgedge"}) or by \emph{reduced}
-    splicing graph edge (\code{"rsgedge"}).
+    Summarize by splicing graph edge (\code{"sgedge"}), by \emph{reduced}
+    splicing graph edge (\code{"rsgedge"}), or by transcript (\code{"tx"}).
   }
 }
 
@@ -98,19 +98,24 @@ countReads(x, by=c("sgedge", "rsgedge"))
   For \code{assignReads}: the supplied \link{SplicingGraphs} object with
   the reads assigned to it.
 
-  For \code{countReads}: a \link[IRanges]{DataFrame} object with one row
-  per unique splicing graph edge if \code{by="sgedge"}, or one row per
-  unique reduced splicing graph edge if \code{by="rsgedge"}.
-  There is one column of counts per sample, and the following two
-  additional columns:
-  \enumerate{
-    \item \code{"sgedge_id"} if \code{by="sgedge"} or \code{"rsgedge_id"}
-          if \code{by="rsgedge"}: contains the \emph{global splicing graph
-          edge ids} if \code{by="sgedge"}, or the \emph{global reduced
-          splicing graph edge ids} if \code{by="rsgedge"}.
-    \item \code{"ex_or_in"}: the type of edge. This can be exon or intron
-          if \code{by="sgedge"}, or exon, intron, or mixed if
-          \code{by="rsgedge"}.
+  For \code{countReads}: a \link[IRanges]{DataFrame} object.
+  It has one row per:
+  \itemize{
+    \item unique splicing graph edge, if \code{by="sgedge"};
+    \item unique \emph{reduced} splicing graph edge, if \code{by="rsgedge"};
+    \item transcript if \code{by="tx"}.
+  }
+  The returned \link[IRanges]{DataFrame} object has one column of counts per
+  sample, and the two following additional leading columns:
+  \itemize{
+    \item if \code{by="sgedge"}: \code{"sgedge_id"}, containing the
+          \emph{global splicing graph edge ids}, and \code{"ex_or_in"},
+          containing the type of edge (exon or intron);
+    \item if \code{by="rsgedge"}: \code{"rsgedge_id"}, containing the
+          \emph{global reduced splicing graph edge ids}, and
+          \code{"ex_or_in"}, containing the type of edge (exon, intron,
+          or mixed);
+    \item if \code{by="tx"}: \code{"tx_id"} and \code{"gene_id"}.
   }
 }
 
@@ -191,4 +196,9 @@ countReads(sg)
 ## 5. Count the number of reads per reduced splicing graph edge
 ## ---------------------------------------------------------------------
 countReads(sg, by="rsgedge")
+
+## ---------------------------------------------------------------------
+## 6. Count the number of reads per transcript
+## ---------------------------------------------------------------------
+countReads(sg, by="tx")
 }
