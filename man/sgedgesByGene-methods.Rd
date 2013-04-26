@@ -42,13 +42,14 @@ sgedgesByTranscript(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
     A \link{SplicingGraphs} object.
   }
   \item{with.exon.mcols}{
-    Whether to include or not the \emph{exon metadata columns} in the
+    Whether or not to include the \emph{exon metadata columns} in the
     returned object. Those columns are named: \code{exon_id},
     \code{exon_name}, \code{exon_rank}, \code{start_SSid}, and
     \code{end_SSid}. They are set to \code{NA} for edges of type intron.
   }
   \item{with.hits.mcols}{
-    TODO
+    Whether or not to include the \emph{hits metadata columns} in the
+    returned object. See \code{?\link{countReads}} for more information.
   }
   \item{keep.dup.edges}{
     If \code{FALSE} (the default), then within each group of the returned
@@ -58,12 +59,26 @@ sgedgesByTranscript(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
   }
 }
 
-\details{
-  TODO
-}
-
 \value{
-  TODO
+  A \link[GenomicRanges]{GRangesList} object named with the gene ids and
+  where the items are grouped by gene (for \code{sgedgesByGene}), or by
+  transcript (for \code{sgedgesByTranscript} and \code{intronsByTranscript}).
+  In the latter case (i.e. grouping by transcript), the names are not unique.
+
+  The items that are being grouped are the splicing graph edges of type
+  exon and intron (no artificial edges) for \code{sgedgesByGene} and
+  \code{sgedgesByTranscript}, and the introns for \code{intronsByTranscript}.
+
+  When the grouping is by transcript (i.e. for \code{sgedgesByTranscript}
+  and \code{intronsByTranscript}, items are ordered by their position
+  from 5' to 3'.
+
+  About duplicated edges: A given edge can typically be shared by more than
+  1 transcript within the same gene, therefore \code{sgedgesByTranscript}
+  typically returns an object where the same \emph{global edge id} shows
+  up in more than 1 group. However, the same \emph{global edge id} is never
+  shared across genes. By default \code{sgedgesByGene} removes duplicated
+  edges, unless \code{keep.dup.edges=TRUE} is used.
 }
 
 \author{

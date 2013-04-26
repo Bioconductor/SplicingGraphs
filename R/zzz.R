@@ -2,16 +2,15 @@ ASCODE2DESC <- NULL
 
 .onLoad <- function(libname, pkgname)
 {
-    ## We need to fix the prototypes of the .SplicingGraphGenes and
-    ## SplicingGraphs classes. Without these fixes,
-    ## 'new(".SplicingGraphGenes")' and 'new("SplicingGraphs")' would
-    ## return invalid objects e.g.
+    ## We need to fix the prototypes of the GeneModel and SplicingGraphs
+    ## classes. Without these fixes, 'new("GeneModel")' and
+    ## 'new("SplicingGraphs")' would return invalid objects e.g.
     ##
     ##     validObject(new("SplicingGraphs"), complete=TRUE)
     ##
     ## would fail.
     sg0 <- emptySplicingGraphs()
-    IRanges:::setPrototypeFromObject(".SplicingGraphGenes",
+    IRanges:::setPrototypeFromObject("GeneModel",
                                      sg0@genes,
                                      where=asNamespace(pkgname))
     IRanges:::setPrototypeFromObject("SplicingGraphs",

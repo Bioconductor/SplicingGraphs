@@ -12,11 +12,13 @@
 ### work (the API is huge), and (b) we don't need those operations in the
 ### first place. All we need are: length(), names(), [, [[, elementLengths(),
 ### and unlist().
-### Note that the .SplicingGraphGenes class is an internal class that is not
-### intended to be exposed to the user. It's defined like the GRangesListList
-### class would be if we had one.
+### The GeneModel class is an internal class that is not intended to be
+### exposed to the user. It's a list-like class where the elements are
+### GRangesList objects, each of them representing a gene. It's currently
+### defined exactly how the GRangesListList class would be if we decided to
+### have one in the GenomicRanges package.
 
-setClass(".SplicingGraphGenes",
+setClass("GeneModel",
     contains="CompressedList",
     representation(
         unlistData="GRangesList",
@@ -29,7 +31,7 @@ setClass(".SplicingGraphGenes",
 
 setClass("SplicingGraphs",
     representation(
-        genes=".SplicingGraphGenes",
+        genes="GeneModel",
         in_by_tx="GRangesList",
         .bubbles_cache="environment"
     )
@@ -37,10 +39,10 @@ setClass("SplicingGraphs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .SplicingGraphGenes Validity.
+### GeneModel validity.
 ###
 
-.valid.SplicingGraphGenes.names <- function(x)
+.valid.GeneModel.names <- function(x)
 {
     x_names <- names(x)
     if (is.null(x_names)) {
@@ -53,7 +55,7 @@ setClass("SplicingGraphs",
     NULL
 }
 
-.valid.SplicingGraphGenes.ex_by_tx <- function(x)
+.valid.GeneModel.ex_by_tx <- function(x)
 {
     ex_by_tx <- x@unlistData
     if (!is.null(names(ex_by_tx)))
@@ -62,29 +64,29 @@ setClass("SplicingGraphs",
     valid_exon_mcolnames(colnames(ex_mcols))
 }
 
-.valid.SplicingGraphGenes <- function(x)
+.valid.GeneModel <- function(x)
 {
-    c(.valid.SplicingGraphGenes.names(x),
-      .valid.SplicingGraphGenes.ex_by_tx(x))
+    c(.valid.GeneModel.names(x),
+      .valid.GeneModel.ex_by_tx(x))
 }
 
-setValidity2(".SplicingGraphGenes", .valid.SplicingGraphGenes)
+setValidity2("GeneModel", .valid.GeneModel)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .SplicingGraphGenes API.
+### GeneModel API.
 ###
 
 ### From the CompressedList API:
-### .SplicingGraphGenes objects inherit the CompressedList API i.e. anything
-### that works on a CompressedList object works on a .SplicingGraphGenes
-### object. But the only things we're using are: length(), names(), [, [[,
-### elementLengths(), and unlist().
+### GeneModel objects inherit the CompressedList API i.e. anything that works
+### on a CompressedList object works on a GeneModel object. But the only
+### things we're using/supporting in the SplicingGraphs package are: length(),
+### names(), [, [[, elementLengths(), and unlist().
 
 ### From the GRanges API:
 ### We only need seqnames(), strand(), and seqinfo() from the GRanges API.
 
-setMethod("seqnames", ".SplicingGraphGenes",
+setMethod("seqnames", "GeneModel",
     function(x)
     {
         x_unlisted <- unlist(x)
@@ -96,7 +98,7 @@ setMethod("seqnames", ".SplicingGraphGenes",
     }
 )
 
-setMethod("strand", ".SplicingGraphGenes",
+setMethod("strand", "GeneModel",
     function(x)
     {
         x_unlisted <- unlist(x)
@@ -108,18 +110,21 @@ setMethod("strand", ".SplicingGraphGenes",
     }
 )
 
-setMethod("seqinfo", ".SplicingGraphGenes",
+setMethod("seqinfo", "GeneModel",
     function(x) seqinfo(unlist(x, use.names=FALSE))
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .SplicingGraphGenes() constructor.
+### GeneModel() constructor.
 ###
 ### Used only in this file.
 ###
 
-.SplicingGraphGenes <- function(ex_by_tx)
+### 'ex_by_tx' must be a *named* GRangesList object containing exons grouped
+### by transcript. The names must be the gene ids, NOT the transcript ids or
+### transcript names.
+GeneModel <- function(ex_by_tx)
 {
     ex_by_tx_names <- names(ex_by_tx)
     if (is.null(ex_by_tx_names)) {
@@ -130,7 +135,7 @@ setMethod("seqinfo", ".SplicingGraphGenes",
         ans_names <- ex_by_tx_names[ans_end]
         ans_partitioning <- PartitioningByEnd(ans_end, names=ans_names)
     }
-    IRanges:::newCompressedList0(getClass(".SplicingGraphGenes"),
+    IRanges:::newCompressedList0(getClass("GeneModel"),
                                  ex_by_tx, ans_partitioning)
 }
 
@@ -562,7 +567,7 @@ setMethod("SplicingGraphs", "GRangesList",
         ans_ex_by_tx <- .make_ex_by_tx_from_GRangesList(x, grouping=grouping,
                             min.ntx=min.ntx, max.ntx=max.ntx,
                             check.introns=check.introns)
-        ans_genes <- .SplicingGraphGenes(ans_ex_by_tx)
+        ans_genes <- GeneModel(ans_ex_by_tx)
         mcols(ans_ex_by_tx) <- NULL
         ans_in_by_tx <- psetdiff(range(ans_ex_by_tx), ans_ex_by_tx)
         common_strand <- commonStrand.GRangesList(ans_in_by_tx)
@@ -588,7 +593,7 @@ setMethod("SplicingGraphs", "TranscriptDb",
 )
 
 ### Not exported. Only used in the .onLoad hook (see zzz.R file) for fixing
-### the prototypes of the .SplicingGraphGenes and SplicingGraphs classes.
+### the prototypes of the GeneModel and SplicingGraphs classes.
 emptySplicingGraphs <- function()
 {
     ex_by_tx <- GRangesList()

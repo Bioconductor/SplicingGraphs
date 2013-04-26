@@ -1,14 +1,14 @@
 \name{SplicingGraphs-class}
 
-\alias{class:.SplicingGraphGenes}
-\alias{.SplicingGraphGenes-class}
+\alias{class:GeneModel}
+\alias{GeneModel-class}
 
 \alias{class:SplicingGraphs}
 \alias{SplicingGraphs-class}
 
-\alias{seqnames,.SplicingGraphGenes-method}
-\alias{strand,.SplicingGraphGenes-method}
-\alias{seqinfo,.SplicingGraphGenes-method}
+\alias{seqnames,GeneModel-method}
+\alias{strand,GeneModel-method}
+\alias{seqinfo,GeneModel-method}
 
 \alias{length,SplicingGraphs-method}
 \alias{names,SplicingGraphs-method}
