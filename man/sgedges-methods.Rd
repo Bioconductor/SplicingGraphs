@@ -44,7 +44,9 @@ indeg(x)
     TODO
   }
   \item{keep.dup.edges}{
-    TODO
+    If \code{FALSE} (the default), then edges with the same \emph{global
+    edge id} are merged into a single row. Use \code{keep.dup.edges=TRUE}
+    if this merging should not be performed.
   }
 }
 

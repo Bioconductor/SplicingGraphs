@@ -35,10 +35,12 @@ slideshow(x)
     TODO
   }
   \item{keep.dup.edges}{
-    TODO
+    If \code{FALSE} (the default), then edges with the same \emph{global
+    edge id} are merged together. Use \code{keep.dup.edges=TRUE} if this
+    merging should not be performed.
   }
   \item{tx_id.as.edge.label}{
-    TODO
+    Whether or not to use the transcript ids as edge labels.
   }
   \item{as.igraph}{
     TODO

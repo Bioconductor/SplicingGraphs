@@ -59,16 +59,14 @@ uninformativeSSids(x)
     \code{rsgraph}, and \code{uninformativeSSids}.
   }
   \item{with.hits.mcols}{
-    TODO
+    Whether or not to include the \emph{hits metadata columns} in the
+    returned object. See \code{?\link{countReads}} for more information.
   }
   \item{keep.dup.edges}{
-    If \code{FALSE} (the default), then within each group of the returned
-    object, edges with the same \emph{global edge id} are merged into
-    a single element. Use \code{keep.dup.edges=TRUE} if this merging should
-    not be performed.
+    Not supported yet.
   }
   \item{tx_id.as.edge.label}{
-    TODO
+    Whether or not to use the transcript ids as edge labels.
   }
   \item{as.igraph}{
     TODO
@@ -76,11 +74,15 @@ uninformativeSSids(x)
 }
 
 \details{
-  TODO
+  TODO: Explain graph reduction.
 }
 
 \value{
-  TODO
+  For \code{rsgedgesByGene}: A \link[GenomicRanges]{GRangesList} object
+  named with the gene ids and where the reduced splicing graph edges are
+  grouped by gene.
+
+  TODO: Explain values returned by the other function.
 }
 
 \author{
