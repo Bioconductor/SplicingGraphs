@@ -8,13 +8,14 @@ Description: This package allows the user to create, manipulate, and visualize
 	organism. Additionally it allows the user to assign RNA-seq reads to
 	the edges of a set of splicing graphs, and to summarize them.
 Maintainer: H. Pages <hpages@fhcrc.org>
-Depends: BiocGenerics, IRanges (>= 1.17.43), GenomicRanges (>= 1.13.5),
-	 Rgraphviz (>= 2.3.7), GenomicFeatures (>= 1.11.8),
-	 Rsamtools (>= 1.13.1)
+Depends: BiocGenerics,
+	 IRanges (>= 1.17.43), GenomicRanges (>= 1.13.5), GenomicFeatures,
+	 Rgraphviz (>= 2.3.7)
 Imports: methods, utils, igraph,
-	 BiocGenerics, IRanges, GenomicRanges,
-	 graph, Rgraphviz, GenomicFeatures, Rsamtools
-Suggests: igraph, Gviz,
+	 BiocGenerics,
+	 IRanges, GenomicRanges, GenomicFeatures,
+	 graph, Rgraphviz
+Suggests: igraph, Gviz, Rsamtools,
 	 TxDb.Hsapiens.UCSC.hg19.knownGene,
 	 TxDb.Mmusculus.UCSC.mm9.knownGene, TBX20BamSubset,
 	 RUnit
@@ -32,4 +33,4 @@ Collate: utils.R
 	 countReads-methods.R
 	 toy_data.R
 	 zzz.R
-biocViews: Genetics, Annotation, HighThroughputSequencing
+biocViews: Genetics, Annotation, DataRepresentation, Visualization, Sequencing, RNAseq, GeneExpression

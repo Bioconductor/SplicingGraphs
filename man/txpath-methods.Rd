@@ -141,6 +141,7 @@ plot(sgraph(sg["geneD"], tx_id.as.edge.label=TRUE, as.igraph=TRUE))
 ## secondary alignments, reads not passing quality controls, and PCR or
 ## optical duplicates (see ?scanBamFlag in the Rsamtools package for
 ## more information):
+library(Rsamtools)
 flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
