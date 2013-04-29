@@ -2,18 +2,9 @@ o Replace the RNA-seq data used in the vignette by data that actually
   contains junction reads. The BAM files in TBX20BamSubset don't contain
   any!
 
-o Move vignette to vignettes/
-
-o Implement rsgedgesByTranscript().
-
 o Complete vignette (get rid of all TODO from it).
 
 o Complete man pages (get rid of all TODO from them).
-
-o Fix issue with calls to plotting functions requiring 1 more key-stroke than
-  necessary before they actually start to plot something.
-
-o Add by="gene" to countReads() for counting of unique reads per gene.
 
 o Add 'drop.ambiguous.hits' arg to countReads() for dropping reads that are
   assigned to multiple edges (when by="sgedge"), to multiple reduced edges
@@ -29,4 +20,12 @@ o Add 'drop.ambiguous.hits' arg to countReads() for dropping reads that are
   done "by hand" in the man page for txweight(). Do it again with
   countReads(sg, by="tx", drop.ambiguous.hits=TRUE) and compare. Should
   produce the same result.
+
+o Fix issue with calls to plotting functions requiring 1 more key-stroke than
+  necessary before they actually start to plot something.
+
+o Implement rsgedgesByTranscript().
+
+o Move vignette to vignettes/
+
 

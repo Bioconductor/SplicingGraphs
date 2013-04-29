@@ -74,7 +74,7 @@
           SplicingGraphs object.
 
     \item \code{\link{countReads}} for summarizing the reads assigned to
-          the edges of a SplicingGraphs object.
+          a SplicingGraphs object.
 
     \item \code{\link{toy_genes_gff}} for details about the toy data included
           in this package.

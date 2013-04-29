@@ -7,15 +7,21 @@
 
 
 \title{
-  Summarize the reads assigned to the edges of a SplicingGraphs object
+  Summarize the reads assigned to a SplicingGraphs object
 }
 
 \description{
-  \code{countReads} returns a summarized count of the reads assigned to
-  the edges of a SplicingGraphs object.
+  \code{getReads} returns the reads assigned to a SplicingGraphs object,
+  summarized either by splicing graph edge, \emph{reduced} splicing graph
+  edge, transcript, or gene.
+
+  \code{countReads} counts the reads assigned to a SplicingGraphs object.
+  The counting can be done by splicing graph edge, \emph{reduced} splicing
+  graph edge, transcript, or gene.
 }
 
 \usage{
+getReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 }
 
@@ -24,9 +30,9 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     A \link{SplicingGraphs} object.
   }
   \item{by}{
-    Summarize by splicing graph edge (\code{by="sgedge"}), by \emph{reduced}
-    splicing graph edge (\code{by="rsgedge"}), by transcript (\code{by="tx"}),
-    or by gene (\code{by="gene"}).
+    Summarize/count by splicing graph edge (\code{by="sgedge"}), by
+    \emph{reduced} splicing graph edge (\code{by="rsgedge"}), by transcript
+    (\code{by="tx"}), or by gene (\code{by="gene"}).
   }
 }
 
@@ -43,8 +49,9 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     \item gene if \code{by="gene"}.
   }
 
-  And with one column per sample (containing the counts for that sample),
-  plus the two following additional leading columns:
+  And with one column per sample (containing the reads for that sample for
+  \code{getReads}, and the counts for that sample for \code{countReads}),
+  plus the following two additional leading columns:
   \itemize{
     \item if \code{by="sgedge"}: \code{"sgedge_id"}, containing the
           \emph{global splicing graph edge ids}, and \code{"ex_or_in"},
@@ -76,16 +83,32 @@ countReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 example(assignReads)
 
 ## ---------------------------------------------------------------------
-## 2. Summarize the reads assigned to 'sg'
+## 2. Summarize the reads by splicing graph edge
 ## ---------------------------------------------------------------------
-countReads(sg)  # nb of reads per splicing graph edge
-countReads(sg, by="rsgedge")  # ... per reduced splicing graph edge
-countReads(sg, by="tx")  # ... per transcript
-countReads(sg, by="gene")  # ... per gene
+getReads(sg) 
+countReads(sg)
 
 ## ---------------------------------------------------------------------
-## 3. Remove the reads from 'sg'.
+## 3. Summarize the reads by reduced splicing graph edge
 ## ---------------------------------------------------------------------
-removeReads(sg)
+getReads(sg, by="rsgedge")
+countReads(sg, by="rsgedge")
+
+## ---------------------------------------------------------------------
+## 4. Summarize the reads by transcript
+## ---------------------------------------------------------------------
+getReads(sg, by="tx")
+countReads(sg, by="tx")
+
+## ---------------------------------------------------------------------
+## 4. Summarize the reads by gene
+## ---------------------------------------------------------------------
+getReads(sg, by="gene")
+countReads(sg, by="gene")
+
+## ---------------------------------------------------------------------
+## 5. Remove the reads from 'sg'.
+## ---------------------------------------------------------------------
+sg <- removeReads(sg)
 countReads(sg)
 }
