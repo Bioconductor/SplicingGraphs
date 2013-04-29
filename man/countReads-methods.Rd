@@ -73,11 +73,12 @@ reportReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     resolution is defined by combining the relationships between consecutive
     levels. All possible parent-child relationships are summarized in the
     following table:
-    \tabular{rlll}{
-                    \tab to: sgedge   \tab to: rsgedge  \tab to: tx      \cr
-      from: rsgedge \tab one-to-many  \tab              \tab             \cr
-      from: tx      \tab many-to-many \tab many-to-many \tab             \cr
-      from: gene    \tab one-to-many  \tab one-to-many  \tab one-to-many \cr
+    \preformatted{
+                    | to: sgedge   | to: rsgedge  | to: tx
+      --------------+--------------+--------------+------------
+      from: rsgedge | one-to-many  |              |            
+      from: tx      | many-to-many | many-to-many |            
+      from: gene    | one-to-many  | one-to-many  | one-to-many
     }
   }
 
