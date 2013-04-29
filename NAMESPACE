@@ -102,7 +102,7 @@ export(
     bubbles,
 
     ## countReads-methods.R:
-    getReads,
+    reportReads,
     countReads
 )
 
@@ -122,7 +122,7 @@ exportMethods(
     rsgedgesByTranscript,
     rsgedgesByGene,
     bubbles,
-    getReads,
+    reportReads,
     countReads
 )
 

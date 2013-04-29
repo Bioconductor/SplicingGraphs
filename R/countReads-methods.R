@@ -4,10 +4,10 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### getReads()
+### reportReads()
 ###
 
-.getReads_by_sgedge <- function(x)
+.reportReads_by_sgedge <- function(x)
 {
     edges_by_gene <- sgedgesByGene(x, with.hits.mcols=TRUE)
     edge_data <- mcols(unlist(edges_by_gene, use.names=FALSE))
@@ -19,7 +19,7 @@
     cbind(left_cols, hits_cols)
 }
 
-.getReads_by_rsgedge <- function(x)
+.reportReads_by_rsgedge <- function(x)
 {
     edges_by_gene <- rsgedgesByGene(x, with.hits.mcols=TRUE)
     edge_data <- mcols(unlist(edges_by_gene, use.names=FALSE))
@@ -31,7 +31,7 @@
     cbind(left_cols, hits_cols)
 }
 
-.getReads_by_tx <- function(x)
+.reportReads_by_tx <- function(x)
 {
     ex_by_tx <- unlist(x)
     tx_id <- mcols(ex_by_tx)[ , "tx_id"]
@@ -57,7 +57,7 @@
     cbind(DataFrame(tx_id=tx_id, gene_id=gene_id), hits_cols)
 }
 
-.getReads_by_gene <- function(x)
+.reportReads_by_gene <- function(x)
 {
     edges_by_gene <- sgedgesByGene(x, with.hits.mcols=TRUE)
     edge_data <- mcols(unlist(edges_by_gene, use.names=FALSE))
@@ -82,22 +82,22 @@
     cbind(DataFrame(gene_id=gene_id, tx_id=tx_id), hits_cols)
 }
 
-setGeneric("getReads", signature="x",
+setGeneric("reportReads", signature="x",
     function(x, by=c("sgedge", "rsgedge", "tx", "gene"))
-        standardGeneric("getReads")
+        standardGeneric("reportReads")
 )
 
 ### Return a DataFrame with 1 row per splicing graph edge (or reduced
 ### splicing graph edge), and 1 column per sample.
-setMethod("getReads", "SplicingGraphs",
+setMethod("reportReads", "SplicingGraphs",
     function(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     {
         by <- match.arg(by)
         switch(by,
-            sgedge=.getReads_by_sgedge(x),
-            rsgedge=.getReads_by_rsgedge(x),
-            tx=.getReads_by_tx(x),
-            gene=.getReads_by_gene(x))
+            sgedge=.reportReads_by_sgedge(x),
+            rsgedge=.reportReads_by_rsgedge(x),
+            tx=.reportReads_by_tx(x),
+            gene=.reportReads_by_gene(x))
     }
 )
 
@@ -116,13 +116,13 @@ setGeneric("countReads", signature="x",
 setMethod("countReads", "SplicingGraphs",
     function(x, by=c("sgedge", "rsgedge", "tx", "gene"))
     {
-        assigned_reads <- getReads(x, by=by)
-        hits_col_idx <- grep("\\.hits$", colnames(assigned_reads))
+        reported_reads <- reportReads(x, by=by)
+        hits_col_idx <- grep("\\.hits$", colnames(reported_reads))
         if (length(hits_col_idx) == 0L)
-            return(assigned_reads)
-        read_counts <- endoapply(assigned_reads[hits_col_idx], elementLengths)
+            return(reported_reads)
+        read_counts <- endoapply(reported_reads[hits_col_idx], elementLengths)
         colnames(read_counts) <- sub("\\.hits$", "", colnames(read_counts))
-        cbind(assigned_reads[-hits_col_idx], read_counts)
+        cbind(reported_reads[-hits_col_idx], read_counts)
     }
 )
 
