@@ -13,8 +13,8 @@
 }
 
 \description{
-  \code{plotTranscripts} uses the Gviz package to plot the exon structure
-  of a set of transcripts along genomic coordinates.
+  \code{plotTranscripts} uses the \pkg{Gviz} package to plot the exon
+  structure of a set of transcripts along genomic coordinates.
 }
 
 \usage{
@@ -47,22 +47,22 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA)
 }
 
 \seealso{
-  This man page is part of the SplicingGraphs package.
+  This man page is part of the \pkg{SplicingGraphs} package.
   Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
   package and for an index of its man pages.
 
   Other topics related to this man page and documented in other packages:
   \itemize{
-    \item The \code{\link[Gviz]{plotTracks}} function in the Gviz package
-          that \code{plotTranscripts} is based on.
+    \item The \code{\link[Gviz]{plotTracks}} function in the \pkg{Gviz}
+          package that \code{plotTranscripts} is based on.
 
     \item The \link[GenomicRanges]{GRangesList},
           \link[GenomicRanges]{GAlignments}, and
           \link[GenomicRanges]{GAlignmentPairs} classes
-          in the GenomicRanges package.
+          in the \pkg{GenomicRanges} package.
 
-    \item The \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
-          package.
+    \item The \link[GenomicFeatures]{TranscriptDb} class in the
+          \pkg{GenomicFeatures} package.
   }
 }
 

@@ -60,7 +60,7 @@ txweight(x) <- value
 }
 
 \seealso{
-  This man page is part of the SplicingGraphs package.
+  This man page is part of the \pkg{SplicingGraphs} package.
   Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
   package and for an index of its man pages.
 
@@ -69,14 +69,14 @@ txweight(x) <- value
     \item The \link[GenomicRanges]{GRangesList},
           \link[GenomicRanges]{GAlignments}, and
           \link[GenomicRanges]{GAlignmentPairs} classes
-          in the GenomicRanges package.
+          in the \pkg{GenomicRanges} package.
 
     \item \link[GenomicRanges]{findOverlaps-methods} and
           \link[GenomicRanges]{encodeOverlaps-methods} in the
-          GenomicRanges package.
+          \pkg{GenomicRanges} package.
 
     \item The \code{\link[Rsamtools]{ScanBamParam}} function in the
-          Rsamtools package.
+          \pkg{Rsamtools} package.
   }
 }
 

@@ -65,8 +65,8 @@ removeReads(sg)
 
   If (a): you can find out whether reads in a BAM file are single- or
   paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
-  from the Rsamtools package. If they're paired-end, load them with
-  \code{\link[GenomicRanges]{readGAlignmentPairs}}
+  from the \pkg{Rsamtools} package. If they're paired-end, load them
+  with \code{\link[GenomicRanges]{readGAlignmentPairs}}
   instead of \code{\link[GenomicRanges]{readGAlignments}}, and that
   will pair them.
 
@@ -84,7 +84,7 @@ removeReads(sg)
                                   param=param0)
   }
   This will filter out records that have flag 0x100 (secondary alignment)
-  set to 1. See \code{?\link[Rsamtools]{scanBamFlag}} in the Rsamtools
+  set to 1. See \code{?\link[Rsamtools]{scanBamFlag}} in the \pkg{Rsamtools}
   package for more information.
   See the SAM Specs on the SAMtools project page at
   \url{http://samtools.sourceforge.net/} for a description of the
@@ -104,7 +104,7 @@ removeReads(sg)
 }
 
 \seealso{
-  This man page is part of the SplicingGraphs package.
+  This man page is part of the \pkg{SplicingGraphs} package.
   Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
   package and for an index of its man pages.
 
@@ -113,11 +113,11 @@ removeReads(sg)
     \item The \link[GenomicRanges]{GRangesList},
           \link[GenomicRanges]{GAlignments}, and
           \link[GenomicRanges]{GAlignmentPairs} classes
-          in the GenomicRanges package.
+          in the \pkg{GenomicRanges} package.
 
     \item The \code{\link[Rsamtools]{quickCountBam}} and
           \code{\link[Rsamtools]{ScanBamParam}} functions in the
-          Rsamtools package.
+          \pkg{Rsamtools} package.
   }
 }
 

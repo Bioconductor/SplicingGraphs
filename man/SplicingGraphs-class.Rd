@@ -207,22 +207,22 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 }
 
 \seealso{
-  This man page is part of the SplicingGraphs package.
+  This man page is part of the \pkg{SplicingGraphs} package.
   Please see \code{?`\link{SplicingGraphs-package}`} for an overview of the
   package and for an index of its man pages.
 
   Other topics related to this man page and documented in other packages:
   \itemize{
     \item The \code{\link[GenomicFeatures]{exonsBy}} and
-          \code{\link[GenomicFeatures]{transcriptsBy}} functions, and the
-          \link[GenomicFeatures]{TranscriptDb} class in the GenomicFeatures
-          package.
+          \code{\link[GenomicFeatures]{transcriptsBy}} functions, and
+          the \link[GenomicFeatures]{TranscriptDb} class in the
+          \pkg{GenomicFeatures} package.
 
-    \item The \link[GenomicRanges]{GRangesList} class in the GenomicRanges
-          package.
+    \item The \link[GenomicRanges]{GRangesList} class in the
+          \pkg{GenomicRanges} package.
 
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
-          and \link[IRanges]{DataFrame} classes in the IRanges package.
+          and \link[IRanges]{DataFrame} classes in the \pkg{IRanges} package.
   }
 }
 

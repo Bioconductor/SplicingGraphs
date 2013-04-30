@@ -4,12 +4,13 @@
 \alias{SplicingGraphs-package}
 
 \title{
-  Creation, manipulation, visualization of splicing graphs
+  Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
+  to them
 }
 
 \description{
-  The SplicingGraphs package allows the user to create, manipulate, and
-  visualize splicing graphs and their bubbles based on a gene model for
+  The \pkg{SplicingGraphs} package allows the user to create, manipulate,
+  and visualize splicing graphs and their bubbles based on a gene model for
   a given organism. Additionally it allows the user to assign RNA-seq
   reads to the edges of a set of splicing graphs, and to summarize them.
 }
@@ -19,12 +20,14 @@
 }
 
 \author{
-  SplicingGraphs is a reincarnation of an internal project, the SpliceGraph
-  package, originally written by D. Bindreither, M. Carlson, and M. Morgan.
-  The SpliceGraph package was never released as part of Bioconductor.
+  \pkg{SplicingGraphs} is a reincarnation of an internal project, the
+  \pkg{SpliceGraph} package, originally written by D. Bindreither,
+  M. Carlson, and M. Morgan.
+  The \pkg{SpliceGraph} package was never released as part of Bioconductor.
 
-  The SplicingGraphs package is a complete revamp (design and implementation)
-  of the SpliceGraph package, and was written by H. Pages.
+  The \pkg{SplicingGraphs} package is a complete revamp (design and
+  implementation) of the \pkg{SpliceGraph} package, and was written by
+  H. Pages.
 
   Maintainer: H. Pages <hpages@fhcrc.org>
 }
@@ -46,7 +49,7 @@
 }
 
 \seealso{
-  The man pages in the SplicingGraphs package are:
+  The man pages in the \pkg{SplicingGraphs} package are:
   \enumerate{
     \item The \link{SplicingGraphs} class.
 
