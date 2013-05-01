@@ -211,7 +211,7 @@ ambiguous_reads
 
 ## Reads that are ambiguous at the "rsgedge" level must also be
 ## ambiguous at the "sgedge" level:
-stopifnot(all(ambiguous_reads$rsgedge %in% ambiguous_reads$sgedge))
+stopifnot(all(ambiguous_reads$rsgedge \%in\% ambiguous_reads$sgedge))
 
 ## However, there is no reason why reads that are ambiguous at the
 ## "tx" level should also be ambiguous at the "sgedge" or "rsgedge"
