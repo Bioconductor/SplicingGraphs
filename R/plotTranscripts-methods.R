@@ -1,5 +1,5 @@
 ### =========================================================================
-### "plotTranscripts" methods
+### plotTranscripts()
 ### -------------------------------------------------------------------------
 
 ### Slighly faster and less memory consuming than subsetByOverlaps()
@@ -30,8 +30,17 @@
     query[-5L <= cmp & cmp <= 5L]
 }
 
-.plotTranscripts.GRangesList <- function(x, reads=NULL, from=NA, to=NA)
+.plotTranscripts.GRangesList <- function(x, reads=NULL,
+                                         from=NA, to=NA, max.plot.reads=200)
 {
+    ## Check 'max.plot.reads'.
+    if (!isSingleNumber(max.plot.reads))
+        stop("'max.plot.reads' must be a single number")
+    if (!is.integer(max.plot.reads))
+        max.plot.reads <- as.integer(max.plot.reads)
+    if (max.plot.reads < 0L)
+        stop("'max.plot.reads' cannot be negative")
+
     ## Compute the genomic range of the transcripts.
     unlisted_x <- unlist(x, use.names=FALSE)
     strand(unlisted_x) <- "*"
@@ -56,7 +65,7 @@
             to <- x_max_end + margin
         from_str <- ifelse(is.null(from), "NULL", from)
         to_str <- ifelse(is.null(to), "NULL", to)
-        message("using: from=", from_str, ", to=", to_str)
+        message("  - plotting genomic range: from=", from_str, ", to=", to_str)
     }
 
     ## Genome axis.
@@ -76,6 +85,8 @@
 
     ## Tracks of compatible and incompatible reads.
     if (!is.null(reads)) {
+        if (!(is(reads, "GAlignments") || is(reads, "GAlignmentPairs")))
+            stop("'reads' must be a GAlignments or GAlignmentPairs object")
         if (length(reads) != 0L && !(is.null(from) && is.null(to))) {
             if (is.null(from)) {
                 start(plot_range) <- min(start(reads))
@@ -88,6 +99,19 @@
                 end(plot_range) <- to
             }
             reads <- .subsetByOverlapWithSingleRange(reads, plot_range)
+        }
+        reads_len <- length(reads)
+        message("  - nb of reads to plot (i.e. overlapping with that ",
+                "range): ", reads_len)
+        if (reads_len > max.plot.reads) {
+            message("  - plotting only ", max.plot.reads, " randomly chosen",
+                    " reads (use the 'max.plot.reads' argument\n",
+                    "    to change that limit, and/or use the 'from' and 'to'",
+                    " arguments to narrow\n    down the region to plot)")
+            #idx <- seq_len(max.plot.reads)
+            set.seed(11L)
+            idx <- order(sample(reads_len, max.plot.reads))
+            reads <- reads[idx]
         }
         grl <- grglist(reads, order.as.in.query=TRUE)
         ov0 <- findOverlaps(grl, x, ignore.strand=TRUE)
@@ -126,26 +150,28 @@
 }
 
 setGeneric("plotTranscripts", signature="x",
-    function(x, reads=NULL, from=NA, to=NA)
+    function(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
         standardGeneric("plotTranscripts")
 )
 
 setMethod("plotTranscripts", "GRangesList", .plotTranscripts.GRangesList)
 
 setMethod("plotTranscripts", "TranscriptDb",
-    function(x, reads=NULL, from=NA, to=NA)
+    function(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
     {
         ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)
-        plotTranscripts(ex_by_tx, reads=reads, from=from, to=to)
+        plotTranscripts(ex_by_tx, reads=reads,
+                        from=from, to=to, max.plot.reads=max.plot.reads)
     }
 )
 
 setMethod("plotTranscripts", "SplicingGraphs",
-    function(x, reads=NULL, from=NA, to=NA)
+    function(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
     {
         if (length(x) != 1L)
             stop("'x' must be a SplicingGraphs object of length 1")
-        plotTranscripts(x[[1L]], reads=reads, from=from, to=to)
+        plotTranscripts(x[[1L]], reads=reads,
+                        from=from, to=to, max.plot.reads=max.plot.reads)
     }
 )
 

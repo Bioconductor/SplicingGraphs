@@ -18,7 +18,7 @@
 }
 
 \usage{
-plotTranscripts(x, reads=NULL, from=NA, to=NA)
+plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
 }
 
 \arguments{
@@ -39,6 +39,13 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA)
     plot covers the range spanned by the transcripts.
     If \code{from=NULL} and \code{to=NULL}, then the plot covers the
     range spanned by the transcripts and the reads.
+  }
+  \item{max.plot.reads}{
+    The maximum number of reads that will be plotted. When the number of
+    reads that fall in the region being plotted is very large, plotting them
+    all would take a long time and result in a plot that is not very useful.
+    If that number is greater than \code{max.plot.reads}, then only
+    \code{max.plot.reads} randomly chosen reads are plotted.
   }
 }
 
