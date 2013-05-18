@@ -860,8 +860,8 @@ alignment pair (alignment pair = pair of BAM records). Although paired-end
 reads could also be loaded with \Rfunction{readGAlignments} (also from the
 \Rpackage{GenomicRanges} package), they should be loaded with the
 \Rfunction{readGAlignmentPairs}: this actually pairs the BAM records
-and return the pairs in a \Rclass{GAlignmentPairs} object. Otherwise they
-won't be paired and will be returned in a \Rclass{GAlignments} object.
+and returns the pairs in a \Rclass{GAlignmentPairs} object. Otherwise the
+records won't be paired and will be returned in a \Rclass{GAlignments} object.
 
 \subsection{Assigning reads to the edges of a \Rclass{SplicingGraphs} object}
 
@@ -890,7 +890,7 @@ param0 <- ScanBamParam(flag=flag0)
 Loop:
 
 <<assignReads,eval=FALSE>>=
-## The following loop should take about 7-8 minutes...
+## The following loop takes about 7-8 minutes on a modern laptop/desktop...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
     cat("Processing run ", names(bam_file), " ... ", sep="")
@@ -958,13 +958,13 @@ plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
 The resulting plot is shown on figure \ref{img:3183-transcripts-and-reads}.
 
 <<plotTranscripts_sg_3183_and_reads_as_pdf,echo=FALSE,results=hide>>=
-pdf("3183-transcripts-and-reads.pdf", width=6, height=3)
+pdf("3183-transcripts-and-reads.pdf", width=12, height=12)
 plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=6in,height=3in]{3183-transcripts-and-reads.pdf}
+  \includegraphics[width=6in,height=4in]{3183-transcripts-and-reads.pdf}
   \end{center}
   \caption{Plot of the genomic region chr14:21675000-21702000 showing the 11
            transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
@@ -974,12 +974,33 @@ dev.off()
   \label{img:3183-transcripts-and-reads}
 \end{figure}
 
+Figure \ref{img:3183-transcripts-and-reads-zoom} is a zoom on genomic region
+chr14:21698400-21698600 that was obtained with:
+
+<<plotTranscripts_sg_3183_and_reads_zoom,eval=FALSE>>=
+plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21698400, to=21698600)
+@
+
+<<plotTranscripts_sg_3183_and_reads_zoom_as_pdf,echo=FALSE,results=hide>>=
+pdf("3183-transcripts-and-reads-zoom.pdf", width=12, height=12)
+plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21698400, to=21698600)
+dev.off()
+@
+\begin{figure}[!htbp]
+  \begin{center}
+  \includegraphics[width=6in,height=4in]{3183-transcripts-and-reads-zoom.pdf}
+  \end{center}
+  \caption{Zoom on genomic region chr14:21698400-21698600 of
+           figure \ref{img:3183-transcripts-and-reads}.}
+  \label{img:3183-transcripts-and-reads-zoom}
+\end{figure}
+
 [TODO: To be continued.]
 
 \subsection{Counting and summarizing the assigned reads}
 
-We use \Rfunction{countReads} to count the number of reads assigned
-to each (non-artificial) edge in \Rcode{sg} for each run:
+We use \Rfunction{countReads} to count the number of reads assigned to
+each (non-artificial) edge in \Rcode{sg} for each run:
 
 <<countReads_sg>>=
 sg_counts <- countReads(sg)
@@ -1030,11 +1051,6 @@ sessionInfo()
 {Kathi Zarnack} and {Julian Konig} and {Mojca Tajnik} and {Inigo Martincorena} and {Sebastian Eustermann} and {Isabelle Stevant} and {Alejandro Reyes} and {Simon Anders} and {Nicholas M. Luscombe} and {Jernej Ule}
 \newblock Direct Competition between hnRNP C and U2AF65 Protects the Transcriptome from the Exonization of Alu Elements
 \newblock {\em Cell}, 2012, Europe PMC 23374342.
-
-\bibitem{Sakabe:2012}
-{Sakabe, Noboru J.} and {Aneas, Ivy} and {Shen, Tao} and {Shokri, Leila} and {Park, Soo-Young} and {Bulyk, Martha L.} and {Evans, Sylvia M.} and {Nobrega, Marcelo A.}
-\newblock Dual transcriptional activator and repressor roles of TBX20 regulate adult cardiac structure and function
-\newblock {\em Human Molecular Genetics}, \textbf{21}(10), 2194-2204, 2012.
 
 \bibitem{RSEM2011}
 {LI, Bo} and {Dewey, Colin}.
