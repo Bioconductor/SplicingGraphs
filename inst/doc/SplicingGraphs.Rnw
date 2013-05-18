@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Splicing graph analysis of RNA-Seq data}
-%\VignetteDepends{SplicingGraphs,TxDb.Mmusculus.UCSC.mm9.knownGene,TBX20BamSubset,Rsamtools}
+%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HeLa.bam.chr14,Rsamtools}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass{article}
@@ -39,7 +39,7 @@
   Marc Carlson\and
   Martin Morgan}
 
-\date{Last modified: April 2013; Compiled: \today}
+\date{Last modified: May 2013; Compiled: \today}
 
 \begin{document}
 
@@ -93,8 +93,9 @@ the edges of a \Rclass{SplicingGraphs} object and to summarize them.
 This requires that the reads have been previously aligned to the exact
 same reference genome that the gene model is based on. RNA-seq data
 from an already published study is used to illustrate this functionality.
-The study, performed on \textit{Mus musculus}, compares TBX20 (T-box
-protein 20) knock-out with wilde type heart tissue samples \cite{Sakabe:2012}.
+In that study\cite{Zarnack:2012}, the authors performed transcription
+profiling by high throughput sequencing of HNRNPC knockdown and control
+HeLa cells (\textit{Human}).
 
 %Although there exist several software solutions for RNA-seq 
 %based transcriptome analysis, like RSEM \cite{RSEM2011},
@@ -270,7 +271,7 @@ describing a \textit{gene model} for a given organism. In \Bioconductor,
 a gene model is typically represented as a \Rclass{TranscriptDb}.
 A few prepackaged \Rclass{TranscriptDb} objects are available as
 \Rpackage{TxDb.*} annotation packages in the \Bioconductor{} package
-repositories. Here the \Rpackage{TxDb.Mmusculus.UCSC.mm9.knownGene}
+repositories. Here the \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
 package is used. If there is no prepackaged \Rclass{TranscriptDb}
 object for the genome/track that the user wants to use, such objects can
 easily be created by using tools from the \Rpackage{GenomicFeatures} 
@@ -279,28 +280,28 @@ package.
 First we load the \Rpackage{TxDb.*} package:
 
 <<txdb>>=
-library(TxDb.Mmusculus.UCSC.mm9.knownGene)
-txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 @
 
 Creating the splicing graphs for all genes in the \Rclass{TranscriptDb}
 object can take a long time (up to 20 minutes or more). In order to keep
 things running in a reasonable time in this vignette, we restrict the gene
-model to the genes located on chromosome 19. Let's use the
+model to the genes located on chromosome 14. Let's use the
 \Rfunction{isActiveSeq} getter/setter for this. By default, all the
 chromosomes in a \Rclass{TranscriptDb} object are ``active'':
 
 \begin{small}
 <<isActiveSeq>>=
-isActiveSeq(txdb)
+isActiveSeq(txdb)[1:25]
 @
 \end{small}
 
 Next we set all the values in this named logical vector to \Rcode{FALSE},
-except the value for \Rcode{chr19}:
+except the value for \Rcode{chr14}:
 
-<<keep_chr19_only>>=
-isActiveSeq(txdb)[-match("chr19", names(isActiveSeq(txdb)))] <- FALSE
+<<keep_chr14_only>>=
+isActiveSeq(txdb)[-match("chr14", names(isActiveSeq(txdb)))] <- FALSE
 names(which(isActiveSeq(txdb)))
 @
 
@@ -314,18 +315,20 @@ By default, only genes with at least 2 transcripts are considered (this
 can be changed by using the \Rcode{min.ntx} argument of
 \Rfunction{SplicingGraphs}):
 
-<<sg>>=
+<<SplicingGraphs_constructor>>=
 library(SplicingGraphs)
 sg <- SplicingGraphs(txdb)
 sg
 @
-%% We load a precomputed 'sg' that contains all the bubbles in its
-%% bubbles_cache slot.
-<<loadPrecomputed_sg,echo=FALSE>>=
-sg2 <- .loadPrecomputed("sg")
-if (!isTRUE(all.equal(sg, sg2)))
+<<load_sg_with_bubbles,echo=FALSE>>=
+## We load a precomputed 'sg' that contains all the bubbles in its
+## ".bubbles_cache" slot.
+sg_with_bubbles <- .loadPrecomputed("sg_with_bubbles")
+## We use all.equal() instead of identical() to compare 'sg_with_bubbles'
+## with 'sg' because it ignores the ".bubbles_cache" slot.
+if (!isTRUE(all.equal(sg, sg_with_bubbles)))
     stop("'sg' is not identical to precomputed version")
-sg@.bubbles_cache <- sg2@.bubbles_cache
+sg@.bubbles_cache <- sg_with_bubbles@.bubbles_cache
 @
 
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
@@ -370,8 +373,8 @@ it will return an \textbf{unnamed} \Rclass{GRangesList} object
 containing the exons of the gene grouped by transcript:
 
 \begin{small}
-<<sg_double_bracket_107328>>=
-sg[["107328"]]
+<<sg_double_bracket_3183>>=
+sg[["3183"]]
 @
 \end{small}
 
@@ -407,23 +410,17 @@ gene on the plus (resp. minus) strand, the ids in the \Rcode{start\_SSid}
 metadata column are always lower (resp. greater) than those in the
 \Rcode{end\_SSid} metadata column.
 
-\begin{small}
-<<sg_double_bracket_104252>>=
-sg[["104252"]]
-@
-\end{small}
-
 However, on both strands, the \textit{Splicing Site id} increases with the
 rank of the exon.
 
 The \Rfunction{show} method for \Rclass{GRangesList} objects only
 displays the inner metadata columns (which are at the exon level for
-objects like \Rcode{sg[["107328"]]}). To see the outer metadata columns
-(transcript-level metadata columns for objects like \Rcode{sg[["107328"]]}),
+an object like \Rcode{sg[["3183"]]}). To see the outer metadata columns
+(transcript-level metadata columns for objects like \Rcode{sg[["3183"]]}),
 we need to extract them explicitely:
 
-<<mcols_sg_double_bracket_107328>>=
-mcols(sg[["107328"]])
+<<mcols_sg_double_bracket_3183>>=
+mcols(sg[["3183"]])
 @
 
 The transcript-level metadata columns are:
@@ -437,42 +434,41 @@ The transcript-level metadata columns are:
         \textit{Splicing Site ids} that it goes thru.
 \end{itemize}
 
-<<mcols_sg_double_bracket_107328>>=
-mcols(sg[["107328"]])$txpath
-mcols(sg[["104252"]])$txpath
+<<mcols_sg_double_bracket_3183>>=
+mcols(sg[["3183"]])$txpath
 @
 
 A more convenient way to extract this information is to use the
 \Rfunction{txpath} accessor:
 
-<<txpath_sg_104252>>=
-txpath(sg[["104252"]])
+<<txpath_sg_3183>>=
+txpath(sg[["3183"]])
 @
 
 The list elements of the \Rcode{txpath} metadata column
 always consist of an even number of \textit{Splicing Site ids} in
 ascending order.
 
-The transcripts in a \Rclass{GRangesList} object like \Rcode{sg[["107328"]]}
+The transcripts in a \Rclass{GRangesList} object like \Rcode{sg[["3183"]]}
 can be plotted with \Rfunction{plotTranscripts}:
 
-<<plotTranscripts_sg_107328,eval=FALSE>>=
-plotTranscripts(sg[["107328"]])
+<<plotTranscripts_sg_3183,eval=FALSE>>=
+plotTranscripts(sg[["3183"]])
 @
 
-The resulting plot is shown in figure~\ref{img:107328-transcripts}.
+The resulting plot is shown in figure~\ref{img:3183-transcripts}.
 
-<<plotTranscripts_sg_107328_as_pdf,echo=FALSE,results=hide>>=
-pdf("107328-transcripts.pdf", width=6, height=3)
-plotTranscripts(sg[["107328"]])
+<<plotTranscripts_sg_3183_as_pdf,echo=FALSE,results=hide>>=
+pdf("3183-transcripts.pdf", width=6, height=3)
+plotTranscripts(sg[["3183"]])
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=6in,height=3in]{107328-transcripts.pdf}
+  \includegraphics[width=6in,height=3in]{3183-transcripts.pdf}
   \end{center}
-  \caption{The 3 transcripts of gene 107328 (Entrez ID).}
-  \label{img:107328-transcripts}
+  \caption{The 11 transcripts of gene HNRNPC (Entrez ID 3183).}
+  \label{img:3183-transcripts}
 \end{figure}
 
 \Rclass{SplicingGraphs} objects, like most list-like objects, can be
@@ -487,17 +483,17 @@ head(names(ex_by_tx))
 
 Because each element in the object represents a transcript
 (and not a gene), the names are not unique! This means that trying to
-subset the object by name (e.g. with \Rcode{ex\_by\_tx["107328"]}
-or \Rcode{ex\_by\_tx[["107328"]]}) is probably a bad idea because this
+subset the object by name (e.g. with \Rcode{ex\_by\_tx["3183"]}
+or \Rcode{ex\_by\_tx[["3183"]]}) is probably a bad idea because this
 will only select the first element with that name.
 When the names on a vector-like object \Rcode{x} are not unique, a safe
 way to select the elements with some given names is to do something like
 \Rcode{x[names(x) \%in\% c("name1", "name2")]}.
-For example, to select transcripts from genes 107328 and 104252:
+For example, to select transcripts from genes 10001 and 100129075:
 
 \begin{small}
 <<unlist_sg>>=
-ex_by_tx[names(ex_by_tx) %in% c("107328", "104252")]
+ex_by_tx[names(ex_by_tx) %in% c("10001", "100129075")]
 @
 \end{small}
 
@@ -518,13 +514,13 @@ Using \Rfunction{[} on a \Rclass{SplicingGraphs} object returns a
 sg[strand(sg) == "-"]
 sg[1:20]
 tail(sg)  # equivalent to 'sg[tail(seq_along(sg))]'
-sg["107328"]
+sg["3183"]
 @
 
-Let's extract the splicing graph edges for gene 107328 (Entrez ID):
+Let's extract the splicing graph edges for gene HNRNPC (Entrez ID 3183):
 
-<<sgedges_sg_107328>>=
-sgedges(sg["107328"])
+<<sgedges_sg_3183>>=
+sgedges(sg["3183"])
 @
 
 The \Rclass{DataFrame} object returned by \Rfunction{sgedges} has 1 row
@@ -532,8 +528,8 @@ per edge. Its columns are explained below.
 
 Let's extract the splicing graph nodes for that gene:
 
-<<sgnodes_sg_107328>>=
-sgnodes(sg["107328"])
+<<sgnodes_sg_3183>>=
+sgnodes(sg["3183"])
 @
 
 The character vector returned by \Rfunction{sgnodes} contains the node
@@ -563,11 +559,11 @@ edges_by_gene <- sgedgesByGene(sg)
 In this case the edges are returned in a \Rclass{GRangesList} object where they
 are grouped by gene. \Rcode{edges\_by\_gene} has the length and names of
 \Rcode{sg}, that is, the names on it are the gene ids and are guaranteed
-to be unique. Let's look at the edges for gene 107328:
+to be unique. Let's look at the edges for gene 3183:
 
 \begin{small}
-<<edges_by_gene_107328>>=
-edges_by_gene[["107328"]]
+<<edges_by_gene_3183>>=
+edges_by_gene[["3183"]]
 @
 \end{small}
 
@@ -579,32 +575,32 @@ starting from the root node (\Rcode{R}) or ending at the leaf node
 
 Finally, to plot a given splicing graph:
 
-<<plot_sg_107328,eval=FALSE>>=
-plot(sgraph(sg["107328"]))
-plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
+<<plot_sg_3183,eval=FALSE>>=
+plot(sg["3183"])
+plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
 @
 
-The resulting plots are shown in figure~\ref{img:107328-sgraph}.
+The resulting plots are shown in figure~\ref{img:3183-sgraph}.
 
-<<plot_sg_107328_as_pdf,echo=FALSE,results=hide>>=
-pdf("107328-sgraph.pdf", width=3, height=5)
-plot(sgraph(sg["107328"]))
+<<plot_sg_3183_as_pdf,echo=FALSE,results=hide>>=
+pdf("3183-sgraph.pdf", width=3, height=5)
+plot(sgraph(sg["3183"]))
 dev.off()
-pdf("107328-sgraph-labelled.pdf", width=3, height=5)
-plot(sgraph(sg["107328"], tx_id.as.edge.label=TRUE))
+pdf("3183-sgraph-labelled.pdf", width=3, height=5)
+plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=3in,height=5in]{107328-sgraph.pdf}
+  \includegraphics[width=3in,height=5in]{3183-sgraph.pdf}
   \hskip 0.25in
-  \includegraphics[width=3in,height=5in]{107328-sgraph-labelled.pdf}
+  \includegraphics[width=3in,height=5in]{3183-sgraph-labelled.pdf}
   \end{center}
-  \caption{Splicing graph representation of gene 107328 (Entrez ID).
+  \caption{Splicing graph representation of gene HNRNPC (Entrez ID 3183).
     Left: unlabelled edges. Right: edge labelled with the transcript
     ids (or names).
   }
-  \label{img:107328-sgraph}
+  \label{img:3183-sgraph}
 \end{figure}
 
 
@@ -621,31 +617,30 @@ of a splicing graph is a path followed by at least 1 transcript (see the
 \Rfunction{txpath} function in previous section for how to extract the
 transcript paths).
 
-Let's illustrate this by looking at the splicing graph for gene 329047
-(Entrez ID). The graph is shown in figure~\ref{img:329047-sgraph}.
+Let's illustrate this by looking at the splicing graph for gene 100309464
+(Entrez ID). The graph is shown in figure~\ref{img:100309464-sgraph}.
 
-<<plot_sg_329047_as_pdf,echo=FALSE,results=hide>>=
-pdf("329047-sgraph-labelled.pdf", width=5, height=5)
-plot(sgraph(sg["329047"], tx_id.as.edge.label=TRUE))
+<<plot_sg_100309464_as_pdf,echo=FALSE,results=hide>>=
+pdf("100309464-sgraph-labelled.pdf", width=5, height=5)
+plot(sgraph(sg["100309464"], tx_id.as.edge.label=TRUE))
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=5in,height=5in]{329047-sgraph-labelled.pdf}
+  \includegraphics[width=5in,height=5in]{100309464-sgraph-labelled.pdf}
   \end{center}
-  \caption{Splicing graph representation of gene 329047 (Entrez ID).
-    Valid paths between nodes \Rcode{2} and \Rcode{9} are:
-    \Rcode{\{2,3,5,6,7,9\}} (followed by transcript \Rcode{uc012bjy.1});
-    \Rcode{\{2,3,5,6,8,9\}} (followed by transcript \Rcode{uc012bjz.1});
-    \Rcode{\{2,4,5,6,7,9\}} (followed by transcript \Rcode{uc008hbs.1}).
-    Path \Rcode{\{2,4,5,6,8,9\}} is not followed by any known transcript
-    and thus is not a valid path.
+  \caption{Splicing graph representation of gene 100309464 (Entrez ID).
+    Valid paths between nodes \Rcode{R} and \Rcode{14} are:
+    \Rcode{\{R,3,5,6,7,14\}} (followed by transcript \Rcode{uc021rto.1});
+    \Rcode{\{R,3,5,8,9,10,11,14\}} (followed by transcript \Rcode{uc001xcr.2}).
+    Paths \Rcode{\{R,1,2,4,5,6,7,14\}} and \Rcode{\{R,1,2,4,5,8,9,10,11,14\}}
+    are not followed by any known transcript and thus are not valid paths.
   }
-  \label{img:329047-sgraph}
+  \label{img:100309464-sgraph}
 \end{figure}
 
-Path \Rcode{\{2,3,5,6,7,9\}} in that graph is followed by transcript
-\Rcode{uc012bjy.1} and thus is valid. However path \Rcode{\{2,4,5,6,8,9\}}
+Path \Rcode{\{R,3,5,6,7,14\}} in that graph is followed by transcript
+\Rcode{uc021rto.1} and thus is valid. However path \Rcode{\{R,1,2,4,5,6,7,14\}}
 is not followed by any known transcript and thus is not valid.
 
 Now the definition of a bubble: there is a ``bubble'' between 2 nodes $s$
@@ -656,11 +651,11 @@ Nodes $s$ and $t$ are said to be the ``source'' and ``sink'' of the bubble.
 The number of distinct valid paths between $s$ and $t$ is the ``dimension''
 of the bubble.
 
-For example, there is a bubble between nodes \Rcode{2} and \Rcode{5} of
-gene 329047 (see figure~\ref{img:329047-sgraph}) because the 2 valid paths
-between them don't share other nodes. The dimension of this bubble is 2.
-However, there is no bubble between nodes \Rcode{2} and \Rcode{9} because
-the 3 valid paths between them also share nodes \Rcode{5} and \Rcode{6}.
+For example, there is a bubble between nodes \Rcode{5} and \Rcode{L} of
+gene 100309464 (see figure~\ref{img:100309464-sgraph}) because the 3 valid
+paths between them don't share other nodes. The dimension of this bubble is 3.
+However, there is no bubble between nodes \Rcode{R} and \Rcode{14} because
+the 2 valid paths between them also share nodes \Rcode{3} and \Rcode{5}.
 
 The set of all valid paths that form a bubble describes
 a ``complete alternative splicing event'' (a.k.a. ``complete AS event'',
@@ -671,11 +666,11 @@ the bubble are sometimes called the ``variants'' of the bubble or event.
 
 Like with the \Rfunction{sgedges} and \Rfunction{sgnodes} functions,
 the bubbles can only be computed for one gene (or graph) at a time.
-Let's compute the bubbles for gene 107328 (Entrez ID) (represented on
-figure~\ref{img:107328-sgraph}):
+Let's compute the bubbles for gene 100309464 (Entrez ID) (represented on
+figure~\ref{img:100309464-sgraph}):
 
-<<bubbles_sg_107328>>=
-bubbles(sg["107328"])
+<<bubbles_sg_100309464>>=
+bubbles(sg["100309464"])
 @
 
 The \Rclass{DataFrame} object returned by \Rfunction{bubbles} has 1 row
@@ -693,10 +688,10 @@ per bubble in the graph and the following columns:
 \end{itemize}
 
 Bubbles can be nested, i.e., contain (or be contained in) other
-bubbles of smaller (or higher) dimensions. For example, in gene 107328,
-the bubble between nodes \Rcode{4} and \Rcode{9} (3rd bubble returned
+bubbles of smaller (or higher) dimensions. For example, in gene 100309464,
+the bubble between nodes \Rcode{5} and \Rcode{L} (3rd bubble returned
 by \Rfunction{bubbles}) is of dimension 3 and contains the smaller bubble
-between nodes \Rcode{4} and \Rcode{7} (2nd bubble returned by
+between nodes \Rcode{5} and \Rcode{14} (2nd bubble returned by
 \Rfunction{bubbles}) which is of dimension 2.
 
 Bubbles can also overlap without one containing any of the others.
@@ -706,20 +701,23 @@ Bubbles can also overlap without one containing any of the others.
 See \cite{Sammeth:2010} for how AS codes are generated.
 
 Let's illustrate this by looking at how the AS code for the 2nd bubble
-in gene 107328 is obtained. In 3 steps:
+in gene 100309464 is obtained. In 3 steps:
 \begin{enumerate}
-  \item The paths reported for this bubble are \Rcode{\{\}} and
-        \Rcode{\{5,6\}}. All the nodes involved in these paths are
-        renumbered starting at \Rcode{1} so nodes \Rcode{5} and \Rcode{6}
-        become \Rcode{1} and \Rcode{2}, respectively.
+  \item The paths reported for this bubble are \Rcode{\{6,7\}} and
+        \Rcode{\{8,9,10,11\}}. All the nodes involved in these paths are
+        renumbered starting at \Rcode{1} so nodes \Rcode{6}, \Rcode{7},
+        \Rcode{8}, \Rcode{9}, \Rcode{10}, \Rcode{11} become \Rcode{1},
+        \Rcode{2}, \Rcode{3}, \Rcode{4}, \Rcode{5}, \Rcode{6},
+        respectively.
   \item Then, for each path, a string is generated by putting together
         the new node numbers and node types in that path. By convention,
         this string is set to \Rcode{0} if the path is empty. So path
-        \Rcode{\{\}} and \Rcode{\{5,6\}} generate strings \Rcode{0} and
-        \Rcode{1-2\^}, respectively.
+        \Rcode{\{6,7\}} and \Rcode{\{8,9,10,11\}} generate strings
+        \Rcode{1-2\^} and \Rcode{3-4\^5-6\^}, respectively.
   \item Finally, the strings obtained previously are sorted
         lexicographically and concatenated together separated
-        by commas (\Rcode{,}). This gives the final code: \Rcode{0,1-2\^}.
+        by commas (\Rcode{,}). This gives the final code:
+        \Rcode{1-2\^,3-4\^5-6\^}.
 \end{enumerate}
 
 Verbose descriptions of the AS codes are obtained by looking them up
@@ -729,8 +727,8 @@ codes of the 50 most frequent patterns of internal complete events found
 in Human as reported in Table $1$ of Sammeth's paper \cite{Sammeth:2010}.
 
 <<ASCODE2DESC>>=
-codes <- bubbles(sg["107328"])$AScode
-data.frame(AScode=codes, description=ASCODE2DESC[codes])
+codes <- bubbles(sg["10202"])$AScode
+data.frame(AScode=codes, description=ASCODE2DESC[codes], row.names=NULL)
 @
 
 \Rcode{ASCODE2DESC} only contains the 50 code descriptions
@@ -754,9 +752,9 @@ in the table? and why does the code contain \Rcode{*} instead of \Rcode{[}?
 A third question could be: why exclude complete events that are not
 internal in the first place?}
 
-\subsection{Tabulating all the AS codes for Mouse chromosome 19}
+\subsection{Tabulating all the AS codes for Human chromosome 14}
 
-To extract all the bubbles from all the genes on Mouse chromosome 19
+To extract all the bubbles from all the genes on Human chromosome 14
 and tabulate their codes, we do the following:
 
 \begin{small}
@@ -779,7 +777,7 @@ head(AScode_summary, n=10)
 \end{small}
 
 Amongst the \Sexpr{nrow(AScode_summary)} distinct complete events we observe
-on Mouse chromosome 19, the most frequent one is named ``skip 1 exon''.
+on Human chromosome 14, the most frequent one is named ``skip 1 exon''.
 At this point it should be mentioned that not all splicing
 events have names since there are a variety of different events.
 
@@ -821,18 +819,18 @@ In this section, we illustrate how RNA-seq reads can be assigned
 to the exonic and intronic edges of a \Rclass{SplicingGraphs} object, and
 how these assignments can be summarized in a table of counts.
 The reads we're going to assign are stored as BAM files available in the
-\Rpackage{TBX20BamSubset} package. They've been aligned to the \textit{mm9}
-reference genome from UCSC, which is also the reference genome of the gene
-model in our \Rclass{SplicingGraphs} object \Rcode{sg}. As a general rule,
-the aligned reads and the annotations should always be based on the same
-reference genome.
+\Rpackage{RNAseqData.HeLa.bam.chr14} package. They've been aligned
+to the \textit{hg19} reference genome from UCSC, which is also the reference
+genome of the gene model in our \Rclass{SplicingGraphs} object \Rcode{sg}.
+As a general rule, the aligned reads and the annotations should always be
+based on the same reference genome.
 
-Let's start by loading the \Rpackage{TBX20BamSubset} package:
+Let's start by loading the \Rpackage{RNAseqData.HeLa.bam.chr14} package:
 
 <<bam_files>>=
-library(TBX20BamSubset)
-bam_files <- getBamFileList()
-names(bam_files)  # the names of the samples
+library(RNAseqData.HeLa.bam.chr14)
+bam_files <- RNAseqData.HeLa.bam.chr14_BAMFILES
+names(bam_files)  # the names of the runs
 @
 
 Another important question about RNA-seq reads is whether they are
@@ -844,27 +842,26 @@ library(Rsamtools)
 quickCountBam(bam_files[1], mainGroupsOnly=TRUE)
 @
 
-Doing this for the 6 BAM files confirms that all the reads in the
-files are single-end. This means that they should be loaded with the
-\Rfunction{readGAlignments} function from the \Rpackage{GenomicRanges}
-package. As a quick example, we load the reads located on the first 3.2
-million bases of chromosome 19:
+Doing this for the 8 BAM files confirms that all the reads in the
+files are paired-end. This means that they should be loaded with the
+\Rfunction{readGAlignmentPairs} function from the \Rpackage{GenomicRanges}
+package. As a quick example, we load the reads located on the first 20
+million bases of chromosome 14:
 
-<<readGAlignments>>=
-param <- ScanBamParam(which=GRanges("chr19", IRanges(1, 3200000)))
-gal <- readGAlignments(bam_files[1], param=param)
-length(gal)  # nb of BAM records
-head(gal)
+<<readGAlignmentPairs>>=
+param <- ScanBamParam(which=GRanges("chr14", IRanges(1, 20000000)))
+galp <- readGAlignmentPairs(bam_files[1], param=param)
+length(galp)  # nb of alignment pairs
+galp
 @
 
-The result is a \Rclass{GAlignments} object with 1 element per BAM
-record. Although paired-end reads can also be loaded with
-this function, they should preferably be loaded with the
-\Rfunction{readGAlignmentPairs} function (also from the
-\Rpackage{GenomicRanges} package): this will actually pair
-the BAM records and return the pairs in a \Rclass{GAlignmentPairs}
-object. Otherwise they won't be paired and will be returned in a
-\Rclass{GAlignments} object.
+The result is a \Rclass{GAlignmentPairs} object with 1 element per
+alignment pair (alignment pair = pair of BAM records). Although paired-end
+reads could also be loaded with \Rfunction{readGAlignments} (also from the
+\Rpackage{GenomicRanges} package), they should be loaded with the
+\Rfunction{readGAlignmentPairs}: this actually pairs the BAM records
+and return the pairs in a \Rclass{GAlignmentPairs} object. Otherwise they
+won't be paired and will be returned in a \Rclass{GAlignments} object.
 
 \subsection{Assigning reads to the edges of a \Rclass{SplicingGraphs} object}
 
@@ -875,11 +872,11 @@ a junction read with 1 gap (i.e., 1 \Rcode{N} in its CIGAR) can be assigned
 to an intron and its 2 flanking exons, and this can happen for one or more
 transcripts, from the same gene or from different genes.
 
-We're going to loop on the BAM files to assign the reads from 1 sample
+We're going to loop on the BAM files to assign the reads from 1 run
 at a time. When we load the files, we want to filter out secondary
 alignments, reads not passing quality controls, and PCR or optical
 duplicates. This is done by preparing a \Rclass{ScanBamParam} object
-that we'll pass to \Rfunction{readGAlignments} (see
+that we'll pass to \Rfunction{readGAlignmentPairs} (see
 \Rfunction{ScanBamParam} in the Rsamtools package for more information
 about this):
 
@@ -893,16 +890,16 @@ param0 <- ScanBamParam(flag=flag0)
 Loop:
 
 <<assignReads,eval=FALSE>>=
-## The following loop should take about 2-3 minutes...
+## The following loop should take about 7-8 minutes...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
-    cat("Processing sample ", names(bam_file), " ... ", sep="")
-    gal <- readGAlignments(bam_file, use.names=TRUE, param=param0)
-    sg <- assignReads(sg, gal, sample.name=names(bam_file))
+    cat("Processing run ", names(bam_file), " ... ", sep="")
+    galp <- readGAlignmentPairs(bam_file, use.names=TRUE, param=param0)
+    sg <- assignReads(sg, galp, sample.name=names(bam_file))
     cat("OK\n")
 }
 @
-<<loadPrecomputed_sg_with_reads,echo=FALSE>>=
+<<load_sg_with_reads,echo=FALSE>>=
 sg_with_reads <- .loadPrecomputed("sg_with_reads")
 ## Remove the reads from 'sg_with_reads' and compare with 'sg'.
 if (!isTRUE(all.equal(removeReads(sg_with_reads), sg)))
@@ -922,74 +919,74 @@ By default the edge-level metadata columns are the same as with
 \Rfunction{sgedgesByGene} so we use \Rcode{with.hits.mcols=TRUE} to
 get the additional metadata columns containing the assignments:
 
-<<sg_107328_assignments>>=
-edges_by_tx <- sgedgesByTranscript(sg["107328"], with.hits.mcols=TRUE)
+<<sg_3183_assignments>>=
+edges_by_tx <- sgedgesByTranscript(sg["3183"], with.hits.mcols=TRUE)
 edge_data <- mcols(unlist(edges_by_tx))
 colnames(edge_data)
 @
 
-There is 1 \textit{hits} column per sample. They appear in the
+There is 1 \textit{hits} column per run (or sample). They appear in the
 order they were created. Each of them is a \Rclass{CharacterList}
-object that contains the reads from that sample that were assigned
+object that contains the reads from that run (or sample) that were assigned
 to the individual edges. Let's look at the \textit{hits} column for
-the first sample (\Rcode{SRR316184}):
+the first run (\Rcode{ERR127306}):
 
-<<head_edge_data_sgedge_id_SRR316184.hits>>=
-head(edge_data[ , c("sgedge_id", "SRR316184.hits")])
+<<head_edge_data_sgedge_id_ERR127306.hits>>=
+head(edge_data[ , c("sgedge_id", "ERR127306.hits")])
 @
 
 \subsection{How does read assignment work?}
 
 [TODO: Complete this subsection.]
 
-For the purpose of explaining how reads from sample \Rcode{SRR316184}
-were assigned to the edges of gene 107328, we load the reads that are
-in the region of that gene:
+For the purpose of explaining how reads from run \Rcode{ERR127306}
+were assigned to the edges of gene 3183, we load the reads that are
+in the region of that gene and have at least 1 gap:
 
-<<load_reads_in_107328_region>>=
-SRR316184gal <- readGAlignments(bam_files[1], use.names=TRUE, param=param0)
-reads <- subsetByOverlaps(SRR316184gal, range(sg[["107328"]]),
-                          ignore.strand=TRUE)
+<<load_reads_in_3183_region>>=
+param <- ScanBamParam(flag=flag0, which=range(unlist(sg[["3183"]])))
+reads <- readGAlignmentPairs(bam_files[1], use.names=TRUE, param=param)
+gapped_reads <- reads[ngap(first(reads)) + ngap(last(reads)) != 0L]
 @
 
-and we plot them:
+and we plot the genomic region chr14:21675000-21702000:
 
-<<plotTranscripts_sg_107328_and_reads,eval=FALSE>>=
-plotTranscripts(sg[["107328"]], reads=reads)
+<<plotTranscripts_sg_3183_and_reads,eval=FALSE>>=
+plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
 @
 
-The resulting plot is shown on figure \ref{img:107328-transcripts-and-reads}.
+The resulting plot is shown on figure \ref{img:3183-transcripts-and-reads}.
 
-<<plotTranscripts_sg_107328_and_reads_as_pdf,echo=FALSE,results=hide>>=
-pdf("107328-transcripts-and-reads.pdf", width=6, height=3)
-plotTranscripts(sg[["107328"]], reads=reads)
+<<plotTranscripts_sg_3183_and_reads_as_pdf,echo=FALSE,results=hide>>=
+pdf("3183-transcripts-and-reads.pdf", width=6, height=3)
+plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=6in,height=3in]{107328-transcripts-and-reads.pdf}
+  \includegraphics[width=6in,height=3in]{3183-transcripts-and-reads.pdf}
   \end{center}
-  \caption{The 3 transcripts of gene 107328 (Entrez ID) and the reads
-           in that region.}
-  \label{img:107328-transcripts-and-reads}
+  \caption{Plot of the genomic region chr14:21675000-21702000 showing the 11
+           transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
+           region. Reads that are ``compatible'' with the splicing of a
+           transcript are plotted in dark blue. Incompatible reads are in
+           light blue.}
+  \label{img:3183-transcripts-and-reads}
 \end{figure}
 
-[TODO: To be continued. But first we would need to use different RNA-seq
- data. This one is boring: it contains no junction reads (no N's in the
- CIGARs) so is useless for detecting splicing sites and/or assigning reads
- to intronic edges (aka junctions).]
+[TODO: To be continued.]
 
 \subsection{Counting and summarizing the assigned reads}
 
 We use \Rfunction{countReads} to count the number of reads assigned
-to each (non-artificial) edge in \Rcode{sg} for each sample:
+to each (non-artificial) edge in \Rcode{sg} for each run:
 
 <<countReads_sg>>=
 sg_counts <- countReads(sg)
 @
 
 The returned object is a \Rclass{DataFrame} with one row per unique
-splicing graph edge and one column of counts per sample. Two additional
+splicing graph edge and one column of counts per run. Two additional
 columns contain the splicing graph edge ids and the type of edge (exon
 or intron):
 
@@ -998,7 +995,7 @@ dim(sg_counts)
 head(sg_counts[1:5])
 @
 
-Total number of hits per sample:
+Total number of hits per run:
 
 <<sapply_sg_counts>>=
 sapply(sg_counts[-(1:2)], sum)
@@ -1028,6 +1025,11 @@ sessionInfo()
 {Michael Sammeth}.
 \newblock Complete Alternative Splicing Events Are Bubbles in Splicing Graphs
 \newblock {\em Computational Biology}, \textbf{16}, 1117-1140, 2010.
+
+\bibitem{Zarnack:2012}
+{Kathi Zarnack} and {Julian Konig} and {Mojca Tajnik} and {Inigo Martincorena} and {Sebastian Eustermann} and {Isabelle Stevant} and {Alejandro Reyes} and {Simon Anders} and {Nicholas M. Luscombe} and {Jernej Ule}
+\newblock Direct Competition between hnRNP C and U2AF65 Protects the Transcriptome from the Exonization of Alu Elements
+\newblock {\em Cell}, 2012, Europe PMC 23374342.
 
 \bibitem{Sakabe:2012}
 {Sakabe, Noboru J.} and {Aneas, Ivy} and {Shen, Tao} and {Shokri, Leila} and {Park, Soo-Young} and {Bulyk, Martha L.} and {Evans, Sylvia M.} and {Nobrega, Marcelo A.}

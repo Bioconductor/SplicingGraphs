@@ -1,7 +1,7 @@
 Package: SplicingGraphs
 Title: Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
 	to them
-Version: 1.1.9
+Version: 1.1.10
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package allows the user to create, manipulate, and visualize
@@ -17,8 +17,7 @@ Imports: methods, utils, igraph,
 	 IRanges, GenomicRanges, GenomicFeatures,
 	 graph, Rgraphviz
 Suggests: igraph, Gviz, Rsamtools,
-	 TxDb.Hsapiens.UCSC.hg19.knownGene,
-	 TxDb.Mmusculus.UCSC.mm9.knownGene, TBX20BamSubset,
+	 TxDb.Hsapiens.UCSC.hg19.knownGene, RNAseqData.HeLa.bam.chr14,
 	 RUnit
 Collate: utils.R
 	 igraph-utils.R

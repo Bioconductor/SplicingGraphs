@@ -1,7 +1,3 @@
-o Replace the RNA-seq data used in the vignette by data that actually
-  contains junction reads. The BAM files in TBX20BamSubset don't contain
-  any!
-
 o Complete vignette (get rid of all TODO from it).
 
 o Complete man pages (get rid of all TODO from them).
