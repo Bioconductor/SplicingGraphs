@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Splicing graph analysis of RNA-Seq data}
+%\VignetteIndexEntry{Splicing graphs and RNA-seq data}
 %\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HeLa.bam.chr14,Rsamtools}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
@@ -32,7 +32,7 @@
 
 \SweaveOpts{keep.source=TRUE}
 
-\title{Splicing graph analysis of RNA-Seq data}
+\title{Splicing graphs and RNA-seq data}
 
 \author{Herv\'e Pag\`es\and
   Daniel Bindreither\and
@@ -103,24 +103,6 @@ HeLa cells (\textit{Human}).
 %\cite{Anders:2010}, the approach of analyzing splicing events as
 %complete complex structure is still new. 
 
-[TODO: Remove the following TEMPORARY NOTE before BioC 2.12 release.]
-
-TEMPORARY NOTE: The scope of the new \Rpackage{SplicingGraphs} package
-has been reduced roughly to the following functionalities:
-creating/manipulating/plotting splicing graphs, computing the bubbles
-and AS codes, and counting reads. In particular anything in the old
-\Rpackage{SpliceGraph} package that was related to the downstream
-statistical analysis has been dropped. As a consequence the following
-topics/sections from the old \Rpackage{SpliceGraph} vignette are not
-covered in this vignette:
-\begin{itemize}
-  \item ``The experimental design''
-  \item ``Significant altered alternative splice events''
-  \item Modification of GLM employed in the \Rpackage{DEXSeq} package.
-  \item ``Differential edge expression analysis''
-  \item Comparison to the classic \Rpackage{DEXSeq} analysis.
-\end{itemize}
- 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Splicing graphs}

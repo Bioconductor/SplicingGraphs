@@ -1,13 +1,14 @@
 Package: SplicingGraphs
 Title: Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
 	to them
-Version: 1.1.10
+Version: 1.1.11
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pages
 License: Artistic-2.0
 Description: This package allows the user to create, manipulate, and visualize
 	splicing graphs and their bubbles based on a gene model for a given
 	organism. Additionally it allows the user to assign RNA-seq reads to
-	the edges of a set of splicing graphs, and to summarize them.
+	the edges of a set of splicing graphs, and to summarize them in
+        different ways.
 Maintainer: H. Pages <hpages@fhcrc.org>
 Depends: BiocGenerics,
 	 IRanges (>= 1.17.43), GenomicRanges (>= 1.13.5), GenomicFeatures,

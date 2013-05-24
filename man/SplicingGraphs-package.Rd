@@ -12,11 +12,15 @@
   The \pkg{SplicingGraphs} package allows the user to create, manipulate,
   and visualize splicing graphs and their bubbles based on a gene model for
   a given organism. Additionally it allows the user to assign RNA-seq
-  reads to the edges of a set of splicing graphs, and to summarize them.
+  reads to the edges of a set of splicing graphs, and to summarize them in
+  different ways.
 }
 
 \details{
-  TODO
+  See the \emph{Splicing graphs and RNA-seq data} vignette in the package
+  for a gentle introduction to the \pkg{SplicingGraphs} package.
+  To access the vignette, do \code{browseVignettes("SplicingGraphs")}, then
+  click on the link to the PDF version.
 }
 
 \author{
@@ -30,6 +34,27 @@
   H. Pages.
 
   Maintainer: H. Pages <hpages@fhcrc.org>
+}
+
+\note{
+  With respect to the old \pkg{SpliceGraph} package, the scope of the new
+  \pkg{SplicingGraphs} package has been reduced roughly to the following
+  functionalities: creating/manipulating/plotting splicing graphs, computing
+  the bubbles and AS codes, and assigning/counting reads.
+
+  In addition to this, the old \pkg{SpliceGraph} package also had facilities
+  for performing some downstream statistical analysis. They were covered in
+  its vignette under the following topics/sections:
+  \itemize{
+    \item Experimental design
+    \item Significant altered alternative splice events
+    \item Modification of GLM employed in the \pkg{DEXSeq} package
+    \item Differential edge expression analysis
+    \item Comparison to the classic \pkg{DEXSeq} analysis
+  }
+  The \pkg{SplicingGraphs} vignette doesn't cover any of this and the
+  package provides no facilities for doing this type of downstream statistical
+  analysis. 
 }
 
 \references{
@@ -84,4 +109,10 @@
   }
 }
 
+\examples{
+if (interactive()) {
+  ## Access the "Splicing graphs and RNA-seq data" vignette with:
+  browseVignettes("SplicingGraphs")
+}
+}
 \keyword{package}
