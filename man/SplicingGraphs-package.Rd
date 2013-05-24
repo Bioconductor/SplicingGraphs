@@ -18,27 +18,19 @@
 
 \details{
   See the \emph{Splicing graphs and RNA-seq data} vignette in the package
-  for a gentle introduction to the \pkg{SplicingGraphs} package.
+  for a gentle introduction to its use.
   To access the vignette, do \code{browseVignettes("SplicingGraphs")}, then
   click on the link to the PDF version.
 }
 
-\author{
-  \pkg{SplicingGraphs} is a reincarnation of an internal project, the
-  \pkg{SpliceGraph} package, originally written by D. Bindreither,
-  M. Carlson, and M. Morgan.
-  The \pkg{SpliceGraph} package was never released as part of Bioconductor.
-
-  The \pkg{SplicingGraphs} package is a complete revamp (design and
-  implementation) of the \pkg{SpliceGraph} package, and was written by
-  H. Pages.
-
-  Maintainer: H. Pages <hpages@fhcrc.org>
-}
-
 \note{
-  With respect to the old \pkg{SpliceGraph} package, the scope of the new
-  \pkg{SplicingGraphs} package has been reduced roughly to the following
+  The \pkg{SplicingGraphs} package is a reincarnation of an internal project,
+  the \pkg{SpliceGraph} package, originally written by D. Bindreither,
+  M. Carlson, and M. Morgan. \pkg{SpliceGraph} was never released as part of
+  Bioconductor.
+
+  With respect to the old \pkg{SpliceGraph}, the scope of the new
+  \pkg{SplicingGraphs} package has been reduced to focus only on the following
   functionalities: creating/manipulating/plotting splicing graphs, computing
   the bubbles and AS codes, and assigning/counting reads.
 
@@ -52,9 +44,16 @@
     \item Differential edge expression analysis
     \item Comparison to the classic \pkg{DEXSeq} analysis
   }
-  The \pkg{SplicingGraphs} vignette doesn't cover any of this and the
+  The \pkg{SplicingGraphs} vignette doesn't cover any of this and the new
   package provides no facilities for doing this type of downstream statistical
   analysis. 
+}
+
+\author{
+  Author and maintainer: H. Pages <hpages@fhcrc.org>
+
+  The \pkg{SplicingGraphs} package is a complete revamp (design and
+  implementation) of the old \pkg{SpliceGraph} package (see Note above).
 }
 
 \references{
