@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
-%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HeLa.bam.chr14,Rsamtools}
+%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Rsamtools}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass{article}
@@ -801,17 +801,17 @@ In this section, we illustrate how RNA-seq reads can be assigned
 to the exonic and intronic edges of a \Rclass{SplicingGraphs} object, and
 how these assignments can be summarized in a table of counts.
 The reads we're going to assign are stored as BAM files available in the
-\Rpackage{RNAseqData.HeLa.bam.chr14} package. They've been aligned
+\Rpackage{RNAseqData.HNRNPC.bam.chr14} package. They've been aligned
 to the \textit{hg19} reference genome from UCSC, which is also the reference
 genome of the gene model in our \Rclass{SplicingGraphs} object \Rcode{sg}.
 As a general rule, the aligned reads and the annotations should always be
 based on the same reference genome.
 
-Let's start by loading the \Rpackage{RNAseqData.HeLa.bam.chr14} package:
+Let's start by loading the \Rpackage{RNAseqData.HNRNPC.bam.chr14} package:
 
 <<bam_files>>=
-library(RNAseqData.HeLa.bam.chr14)
-bam_files <- RNAseqData.HeLa.bam.chr14_BAMFILES
+library(RNAseqData.HNRNPC.bam.chr14)
+bam_files <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
 names(bam_files)  # the names of the runs
 @
 
