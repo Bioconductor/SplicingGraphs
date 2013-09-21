@@ -26,6 +26,7 @@ exportClasses(GeneModel, SplicingGraphs)
 exportMethods(
     length,
     names,
+    show,
     "[",
     "[[",
     elementLengths,
