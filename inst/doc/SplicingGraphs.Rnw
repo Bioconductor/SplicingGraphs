@@ -39,7 +39,7 @@
   Marc Carlson\and
   Martin Morgan}
 
-\date{Last modified: May 2013; Compiled: \today}
+\date{Last modified: September 2013; Compiled: \today}
 
 \begin{document}
 
@@ -303,8 +303,8 @@ sg <- SplicingGraphs(txdb)
 sg
 @
 <<load_sg_with_bubbles,echo=FALSE>>=
-## We load a precomputed 'sg' that contains all the bubbles in its
-## ".bubbles_cache" slot.
+## We load a precomputed 'sg' that contains all the bubbles in
+## 'sg@.bubbles_cache'.
 sg_with_bubbles <- .loadPrecomputed("sg_with_bubbles")
 ## We use all.equal() instead of identical() to compare 'sg_with_bubbles'
 ## with 'sg' because it ignores the ".bubbles_cache" slot.
@@ -739,6 +739,10 @@ internal in the first place?}
 To extract all the bubbles from all the genes on Human chromosome 14
 and tabulate their codes, we do the following:
 
+% NOTE: The lapply() loop below should take less than 1 min on a modern laptop
+% when the vignette is passed thru Sweave(), because in that case, 'sg' already
+% contains all the precomputed bubbles in 'sg@.bubble_cache'. With a fresh 'sg'
+% however, it would take between 6 and 7 min on a modern laptop.
 \begin{small}
 <<AScode_summary>>=
 AScode_list <- lapply(seq_along(sg), function(i) bubbles(sg[i])$AScode)
