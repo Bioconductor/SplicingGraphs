@@ -876,7 +876,7 @@ param0 <- ScanBamParam(flag=flag0)
 Loop:
 
 <<assignReads,eval=FALSE>>=
-## The following loop takes about 7-8 minutes on a modern laptop/desktop...
+## The following loop takes about 7 minutes on a modern laptop/desktop...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
     cat("Processing run ", names(bam_file), " ... ", sep="")
