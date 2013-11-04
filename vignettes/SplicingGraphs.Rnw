@@ -47,7 +47,7 @@
 
 <<settings,echo=FALSE>>=
 options(width=90)
-.precomputed_results <- system.file("doc", "precomputed_results",
+.precomputed_results <- system.file("extdata",
                                     package="SplicingGraphs", mustWork=TRUE)
 .loadPrecomputed <- function(objname)
 {
