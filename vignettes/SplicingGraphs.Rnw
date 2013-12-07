@@ -93,7 +93,7 @@ the edges of a \Rclass{SplicingGraphs} object and to summarize them.
 This requires that the reads have been previously aligned to the exact
 same reference genome that the gene model is based on. RNA-seq data
 from an already published study is used to illustrate this functionality.
-In that study\cite{Zarnack:2012}, the authors performed transcription
+In that study \cite{Zarnack:2012}, the authors performed transcription
 profiling by high throughput sequencing of HNRNPC knockdown and control
 HeLa cells (\textit{Human}).
 
@@ -830,11 +830,12 @@ quickCountBam(bam_files[1], mainGroupsOnly=TRUE)
 
 Doing this for the 8 BAM files confirms that all the reads in the
 files are paired-end. This means that they should be loaded with the
-\Rfunction{readGAlignmentPairs} function from the \Rpackage{GenomicRanges}
+\Rfunction{readGAlignmentPairs} function from the \Rpackage{GenomicAlignments}
 package. As a quick example, we load the reads located on the first 20
 million bases of chromosome 14:
 
 <<readGAlignmentPairs>>=
+library(GenomicAlignments)
 param <- ScanBamParam(which=GRanges("chr14", IRanges(1, 20000000)))
 galp <- readGAlignmentPairs(bam_files[1], param=param)
 length(galp)  # nb of alignment pairs

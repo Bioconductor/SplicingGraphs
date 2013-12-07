@@ -33,14 +33,16 @@ toy_overlaps()
 
   Other topics related to this man page and documented in other packages:
   \itemize{
-    \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GAlignments}, and
-          \link[GenomicRanges]{GAlignmentPairs} classes
-          in the \pkg{GenomicRanges} package.
+    \item The \link[GenomicRanges]{GRangesList} class defined in the
+          \pkg{GenomicRanges} package.
+
+    \item The \link[GenomicAlignments]{GAlignments} and
+          \link[GenomicAlignments]{GAlignmentPairs} classes defined
+          in the \pkg{GenomicAlignments} package.
 
     \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
           function and the \link[GenomicFeatures]{TranscriptDb} class
-          in the \pkg{GenomicFeatures} package.
+          defined in the \pkg{GenomicFeatures} package.
   }
 }
 

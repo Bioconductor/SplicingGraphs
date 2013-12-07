@@ -215,14 +215,15 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   \itemize{
     \item The \code{\link[GenomicFeatures]{exonsBy}} and
           \code{\link[GenomicFeatures]{transcriptsBy}} functions, and
-          the \link[GenomicFeatures]{TranscriptDb} class in the
+          the \link[GenomicFeatures]{TranscriptDb} class, defined in the
           \pkg{GenomicFeatures} package.
 
-    \item The \link[GenomicRanges]{GRangesList} class in the
+    \item The \link[GenomicRanges]{GRangesList} class defined in the
           \pkg{GenomicRanges} package.
 
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
-          and \link[IRanges]{DataFrame} classes in the \pkg{IRanges} package.
+          and \link[IRanges]{DataFrame} classes defined in the \pkg{IRanges}
+          package.
   }
 }
 

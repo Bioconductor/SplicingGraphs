@@ -29,8 +29,8 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
     object of length 1.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GAlignments} or
-    \link[GenomicRanges]{GAlignmentPairs} object containing single-end
+    A \link[GenomicAlignments]{GAlignments} or
+    \link[GenomicAlignments]{GAlignmentPairs} object containing single-end
     or paired-end reads.
   }
   \item{from, to}{
@@ -60,15 +60,17 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
 
   Other topics related to this man page and documented in other packages:
   \itemize{
-    \item The \code{\link[Gviz]{plotTracks}} function in the \pkg{Gviz}
-          package that \code{plotTranscripts} is based on.
+    \item \code{plotTranscripts} is based on the \code{\link[Gviz]{plotTracks}}
+          function defined in the \pkg{Gviz} package.
 
-    \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GAlignments}, and
-          \link[GenomicRanges]{GAlignmentPairs} classes
-          in the \pkg{GenomicRanges} package.
+    \item The \link[GenomicRanges]{GRangesList} class defined in the
+          \pkg{GenomicRanges} package.
 
-    \item The \link[GenomicFeatures]{TranscriptDb} class in the
+    \item The \link[GenomicAlignments]{GAlignments} and
+          \link[GenomicAlignments]{GAlignmentPairs} classes
+          defined in the \pkg{GenomicAlignments} package.
+
+    \item The \link[GenomicFeatures]{TranscriptDb} class defined in the
           \pkg{GenomicFeatures} package.
   }
 }

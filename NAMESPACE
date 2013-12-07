@@ -10,6 +10,7 @@ import(BiocGenerics)
 import(IRanges)
 import(GenomicRanges)
 import(GenomicFeatures)
+import(GenomicAlignments)
 
 importFrom(graph, nodeDataDefaults, nodeData,
                   edgeDataDefaults, edgeNames, edgeData)

@@ -27,8 +27,8 @@ removeReads(sg)
     A \link{SplicingGraphs} object.
   }
   \item{reads}{
-    A \link[GenomicRanges]{GAlignments},
-    \link[GenomicRanges]{GAlignmentPairs}, or
+    A \link[GenomicAlignments]{GAlignments},
+    \link[GenomicAlignments]{GAlignmentPairs}, or
     \link[GenomicRanges]{GRangesList} object, containing the
     reads to assign to the exons and introns in \code{sg}.
     It must have unique names on it, typically the QNAME ("query name")
@@ -47,8 +47,8 @@ removeReads(sg)
 
 \section{About read names}{
   The read names are typically imported from the BAM file by calling
-  \code{\link[GenomicRanges]{readGAlignments}} (or
-  \code{\link[GenomicRanges]{readGAlignmentPairs}}) with
+  \code{\link[GenomicAlignments]{readGAlignments}} (or
+  \code{\link[GenomicAlignments]{readGAlignmentPairs}}) with
   \code{use.names=TRUE}. This extracts the "query names" from the
   file (stored in the QNAME field), and makes them the names of the
   returned object.
@@ -66,8 +66,8 @@ removeReads(sg)
   If (a): you can find out whether reads in a BAM file are single- or
   paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
   from the \pkg{Rsamtools} package. If they're paired-end, load them
-  with \code{\link[GenomicRanges]{readGAlignmentPairs}}
-  instead of \code{\link[GenomicRanges]{readGAlignments}}, and that
+  with \code{\link[GenomicAlignments]{readGAlignmentPairs}}
+  instead of \code{\link[GenomicAlignments]{readGAlignments}}, and that
   will pair them.
 
   If (b): you can filter out secondary alignments by passing
@@ -110,13 +110,17 @@ removeReads(sg)
 
   Other topics related to this man page and documented in other packages:
   \itemize{
-    \item The \link[GenomicRanges]{GRangesList},
-          \link[GenomicRanges]{GAlignments}, and
-          \link[GenomicRanges]{GAlignmentPairs} classes
-          in the \pkg{GenomicRanges} package.
+    \item The \link[GenomicRanges]{GRangesList} class defined in the
+          \pkg{GenomicRanges} package.
+
+    \item The \link[GenomicAlignments]{GAlignments} and
+          \link[GenomicAlignments]{GAlignmentPairs} classes, as well as
+          the \code{\link[GenomicAlignments]{readGAlignments}} and
+          \code{\link[GenomicAlignments]{readGAlignmentPairs}} functions
+          defined in the \pkg{GenomicAlignments} package.
 
     \item The \code{\link[Rsamtools]{quickCountBam}} and
-          \code{\link[Rsamtools]{ScanBamParam}} functions in the
+          \code{\link[Rsamtools]{ScanBamParam}} functions defined in the
           \pkg{Rsamtools} package.
   }
 }
