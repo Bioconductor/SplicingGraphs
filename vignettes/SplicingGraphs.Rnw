@@ -47,12 +47,11 @@
 
 <<settings,echo=FALSE>>=
 options(width=90)
-.precomputed_results <- system.file("extdata",
-                                    package="SplicingGraphs", mustWork=TRUE)
+.precomputed_results_path <- "precomputed_results"
 .loadPrecomputed <- function(objname)
 {
     filename <- paste0(objname, ".rda")
-    path <- file.path(.precomputed_results, filename)
+    path <- file.path(.precomputed_results_path, filename)
     tempenv <- new.env(parent=emptyenv())
     load(path, envir=tempenv)
     get(objname, envir=tempenv)
