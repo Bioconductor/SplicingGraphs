@@ -288,7 +288,7 @@ setMethod("show", "SplicingGraphs",
 }
 
 ### 'gene' must be a GRangesList object containing the exons of a *single*
-### gene grouped by transcripts. More precisely, each top-level element
+### gene grouped by transcript. More precisely, each top-level element
 ### in 'gene' contains the genomic ranges of the exons for a particular
 ### transcript of the gene.
 ### Should be able to deal with a GRangesList object of length 0 (i.e. a
@@ -352,7 +352,7 @@ setMethod("show", "SplicingGraphs",
 }
 
 ### 'x' must be a GRangesList object containing the exons of one or more
-### genes grouped by transcripts. More precisely, each top-level element
+### genes grouped by transcript. More precisely, each top-level element
 ### in 'x' contains the genomic ranges of the exons for a particular
 ### transcript. Typically 'x' will be obtained from a TranscriptDb object
 ### 'txdb' with 'exonsBy(txdb, by="tx")'.
@@ -367,7 +367,7 @@ setMethod("show", "SplicingGraphs",
 ###       pointing to all the transcripts of the i-th gene.
 ###   (c) A factor, character vector, or integer vector, of length 'x'
 ###       with 1 level per gene.
-###   (d) A named GRangesList object containing transcripts grouped by genes
+###   (d) A named GRangesList object containing transcripts grouped by gene
 ###       i.e. each top-level element in 'grouping' contains the genomic ranges
 ###       of the transcripts for a particular gene. In that case, the grouping
 ###       is inferred from the tx_id (or alternatively tx_name) metadata

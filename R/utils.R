@@ -93,7 +93,7 @@ commonStrand.GRangesList <- function(x)
 ### Edge metadata columns that are considered to be exon attributes (note
 ### that we include the "start_SSid" and "end_SSid" cols). Those columns are
 ### the 5 first inner metadata columns of the GRangesList object containing
-### the exons grouped by transcripts returned by unlist() when called on a
+### the exons grouped by transcript returned by unlist() when called on a
 ### SplicingGraphs object.
 EXON_MCOLS <- c("exon_id", "exon_name", "exon_rank", "start_SSid", "end_SSid")
 
