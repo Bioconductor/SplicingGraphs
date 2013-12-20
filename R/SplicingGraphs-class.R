@@ -344,7 +344,7 @@ setMethod("show", "SplicingGraphs",
     txpath_partitioning_end <- end(PartitioningByEnd(gene)) * 2L
     txpath_partitioning <- PartitioningByEnd(txpath_partitioning_end)
     names(txpath_partitioning) <- tx_id
-    txpath <- splitAsList(as.vector(txpath), txpath_partitioning)
+    txpath <- relist(as.vector(txpath), txpath_partitioning)
     gene_mcols$txpath <- txpath
 
     mcols(gene) <- gene_mcols
@@ -435,7 +435,7 @@ setMethod("show", "SplicingGraphs",
             m <- match(mcols[[idx]], x_names)
             if (any(is.na(m)))
                 next
-            return(splitAsList(m, PartitioningByEnd(grouping)))
+            return(relist(m, PartitioningByEnd(grouping)))
         }
         stop("'unlist(grouping)' has no tx_id or tx_name column, ",
              "or they contain values that are not in 'names(x)'")
