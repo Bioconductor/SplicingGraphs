@@ -34,4 +34,4 @@ Collate: utils.R
 	 countReads-methods.R
 	 toy_data.R
 	 zzz.R
-biocViews: Genetics, Annotation, DataRepresentation, Visualization, Sequencing, RNAseq, GeneExpression
+biocViews: Genetics, Annotation, DataRepresentation, Visualization, Sequencing, RNASeq, GeneExpression
