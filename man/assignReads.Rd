@@ -64,7 +64,7 @@ removeReads(sg)
   }
 
   If (a): you can find out whether reads in a BAM file are single- or
-  paired-end with the \code{\link[Rsamtools]{quickCountBam}} utility
+  paired-end with the \code{\link[Rsamtools]{quickBamFlagSummary}} utility
   from the \pkg{Rsamtools} package. If they're paired-end, load them
   with \code{\link[GenomicAlignments]{readGAlignmentPairs}}
   instead of \code{\link[GenomicAlignments]{readGAlignments}}, and that
@@ -119,7 +119,7 @@ removeReads(sg)
           \code{\link[GenomicAlignments]{readGAlignmentPairs}} functions
           defined in the \pkg{GenomicAlignments} package.
 
-    \item The \code{\link[Rsamtools]{quickCountBam}} and
+    \item The \code{\link[Rsamtools]{quickBamFlagSummary}} and
           \code{\link[Rsamtools]{ScanBamParam}} functions defined in the
           \pkg{Rsamtools} package.
   }

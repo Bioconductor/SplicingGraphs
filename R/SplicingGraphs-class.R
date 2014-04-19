@@ -274,14 +274,14 @@ setMethod("show", "SplicingGraphs",
     ## splicing sites
     ssites <- data.frame(pos=c(exons_start, exons_end),
                          type=rep.int(1:2, c(N, N)))
-    ssites_sm <- IRanges:::selfmatchIntegerPairs(ssites$pos, ssites$type)
+    ssites_sm <- S4Vectors:::selfmatchIntegerPairs(ssites$pos, ssites$type)
     ## unique splicing sites
     ussites <- ssites[ssites_sm == seq_along(ssites_sm), , drop=FALSE]
-    oo <- IRanges:::orderIntegerPairs(ussites$pos, ussites$type,
-                                      decreasing=on.minus.strand)
+    oo <- S4Vectors:::orderIntegerPairs(ussites$pos, ussites$type,
+                                        decreasing=on.minus.strand)
     ussites <- ussites[oo, , drop=FALSE]
-    SSid <- IRanges:::matchIntegerPairs(ssites$pos, ssites$type,
-                                        ussites$pos, ussites$type)
+    SSid <- S4Vectors:::matchIntegerPairs(ssites$pos, ssites$type,
+                                          ussites$pos, ussites$type)
     exons_start_SSid <- head(SSid, n=N)
     exons_end_SSid <- tail(SSid, n=N)
     list(start_SSid=exons_start_SSid, end_SSid=exons_end_SSid)

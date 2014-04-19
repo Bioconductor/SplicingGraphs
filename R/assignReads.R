@@ -66,8 +66,8 @@
                             ignore.strand=ignore.strand)
     subhits_q <- queryHits(subhits)
     subhits_s <- togroup(subject@partitioning, subjectHits(subhits))
-    m <- IRanges:::matchIntegerPairs(subhits_q, subhits_s,
-                                     queryHits(hits), subjectHits(hits))
+    m <- S4Vectors:::matchIntegerPairs(subhits_q, subhits_s,
+                                       queryHits(hits), subjectHits(hits))
     subhits <- subhits[!is.na(m)]
     hit_per_subfeature <- splitAsList(reads_names[queryHits(subhits)],
                                       subjectHits(subhits))

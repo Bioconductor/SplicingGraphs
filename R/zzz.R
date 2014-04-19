@@ -10,12 +10,12 @@ ASCODE2DESC <- NULL
     ##
     ## would fail.
     sg0 <- emptySplicingGraphs()
-    IRanges:::setPrototypeFromObject("GeneModel",
-                                     sg0@genes,
-                                     where=asNamespace(pkgname))
-    IRanges:::setPrototypeFromObject("SplicingGraphs",
-                                     sg0,
-                                     where=asNamespace(pkgname))
+    S4Vectors:::setPrototypeFromObject("GeneModel",
+                                       sg0@genes,
+                                       where=asNamespace(pkgname))
+    S4Vectors:::setPrototypeFromObject("SplicingGraphs",
+                                       sg0,
+                                       where=asNamespace(pkgname))
 
     ## Set the ASCODE2DESC global constant based on the content of the
     ## extdata/ASpatterns.txt file.

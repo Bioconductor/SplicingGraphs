@@ -73,9 +73,11 @@ txweight(x) <- value
           \link[GenomicAlignments]{GAlignmentPairs} classes
           defined in the \pkg{GenomicAlignments} package.
 
-    \item \link[GenomicRanges]{findOverlaps-methods} and
-          \link[GenomicRanges]{encodeOverlaps-methods} in the
+    \item \link[GenomicRanges]{findOverlaps-methods} in the
           \pkg{GenomicRanges} package.
+
+    \item \link[GenomicAlignments]{encodeOverlaps-methods} in the
+          \pkg{GenomicAlignments} package.
 
     \item The \code{\link[Rsamtools]{ScanBamParam}} function defined in the
           \pkg{Rsamtools} package.
