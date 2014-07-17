@@ -118,7 +118,7 @@ assignReads <- function(sg, reads, sample.name=NA)
     } else {
         ## Paired-end reads. We produce a GRangesList object with 2 ranges
         ## per top-level elements.
-        reads2 <- GenomicRanges:::fillGaps(reads)
+        reads2 <- GenomicAlignments:::fillJunctionGaps(reads)
     }
 
     sg@genes@unlistData <- .assignSubfeatureHits(reads2, ex_by_tx, ov1,

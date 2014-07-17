@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
-%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Rsamtools}
+%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Rsamtools,GenomicAlignments,Gviz}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass{article}
@@ -825,7 +825,7 @@ package:
 
 <<quickBamFlagSummary>>=
 library(Rsamtools)
-quickBamFlagSummary(bam_files[1], mainGroupsOnly=TRUE)
+quickBamFlagSummary(bam_files[1], main.groups.only=TRUE)
 @
 
 Doing this for the 8 BAM files confirms that all the reads in the
@@ -855,9 +855,9 @@ records won't be paired and will be returned in a \Rclass{GAlignments} object.
 We can use the \Rcode{assignReads} function to assign reads to the
 the exonic and intronic edges of \Rcode{sg}. The same read
 can be assigned to more than one exonic or intronic edge. For example,
-a junction read with 1 gap (i.e., 1 \Rcode{N} in its CIGAR) can be assigned
-to an intron and its 2 flanking exons, and this can happen for one or more
-transcripts, from the same gene or from different genes.
+a junction read with 1 junction (i.e., 1 \Rcode{N} in its CIGAR) can be
+assigned to an intron and its 2 flanking exons, and this can happen for
+one or more transcripts, from the same gene or from different genes.
 
 We're going to loop on the BAM files to assign the reads from 1 run
 at a time. When we load the files, we want to filter out secondary
@@ -928,25 +928,25 @@ head(edge_data[ , c("sgedge_id", "ERR127306.hits")])
 
 For the purpose of explaining how reads from run \Rcode{ERR127306}
 were assigned to the edges of gene 3183, we load the reads that are
-in the region of that gene and have at least 1 gap:
+in the region of that gene and contain at least 1 junction:
 
 <<load_reads_in_3183_region>>=
 param <- ScanBamParam(flag=flag0, which=range(unlist(sg[["3183"]])))
 reads <- readGAlignmentPairs(bam_files[1], use.names=TRUE, param=param)
-gapped_reads <- reads[njunc(first(reads)) + njunc(last(reads)) != 0L]
+junction_reads <- reads[njunc(first(reads)) + njunc(last(reads)) != 0L]
 @
 
 and we plot the genomic region chr14:21675000-21702000:
 
 <<plotTranscripts_sg_3183_and_reads,eval=FALSE>>=
-plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
 @
 
 The resulting plot is shown on figure \ref{img:3183-transcripts-and-reads}.
 
 <<plotTranscripts_sg_3183_and_reads_as_pdf,echo=FALSE,results=hide>>=
 pdf("3183-transcripts-and-reads.pdf", width=12, height=12)
-plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21675000, to=21702000)
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
 dev.off()
 @
 \begin{figure}[!htbp]
@@ -965,12 +965,12 @@ Figure \ref{img:3183-transcripts-and-reads-zoom} is a zoom on genomic region
 chr14:21698400-21698600 that was obtained with:
 
 <<plotTranscripts_sg_3183_and_reads_zoom,eval=FALSE>>=
-plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21698400, to=21698600)
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
 @
 
 <<plotTranscripts_sg_3183_and_reads_zoom_as_pdf,echo=FALSE,results=hide>>=
 pdf("3183-transcripts-and-reads-zoom.pdf", width=12, height=12)
-plotTranscripts(sg[["3183"]], reads=gapped_reads, from=21698400, to=21698600)
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
 dev.off()
 @
 \begin{figure}[!htbp]
