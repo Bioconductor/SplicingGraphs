@@ -40,7 +40,7 @@ commonSeqnames.RleList <- function(x, errmsg="internal error")
         return(x_runValue@unlistData)
     no_val <- factor(NA_character_, levels=levels(x_runValue@unlistData))
     x_runValue[idx0] <- as(rep.int(no_val, idx0_len), "List")
-    IRanges:::decodeRle(x_runValue@unlistData)
+    x_runValue@unlistData
 }
 
 ### Returns a factor, NOT a factor-Rle!
