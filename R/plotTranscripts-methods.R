@@ -156,7 +156,7 @@ setGeneric("plotTranscripts", signature="x",
 
 setMethod("plotTranscripts", "GRangesList", .plotTranscripts.GRangesList)
 
-setMethod("plotTranscripts", "TranscriptDb",
+setMethod("plotTranscripts", "TxDb",
     function(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
     {
         ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)

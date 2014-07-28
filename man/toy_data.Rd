@@ -41,14 +41,14 @@ toy_overlaps()
           in the \pkg{GenomicAlignments} package.
 
     \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
-          function and the \link[GenomicFeatures]{TranscriptDb} class
+          function and the \link[GenomicFeatures]{TxDb} class
           defined in the \pkg{GenomicFeatures} package.
   }
 }
 
 \examples{
 ## ---------------------------------------------------------------------
-## A. LOAD THE TOY GENE MODEL AS A TranscriptDb OBJECT AND PLOT IT
+## A. LOAD THE TOY GENE MODEL AS A TxDb OBJECT AND PLOT IT
 ## ---------------------------------------------------------------------
 toy_genes_gff()
 

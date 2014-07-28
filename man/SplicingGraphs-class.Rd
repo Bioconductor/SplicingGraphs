@@ -24,7 +24,7 @@
 
 \alias{SplicingGraphs}
 \alias{SplicingGraphs,GRangesList-method}
-\alias{SplicingGraphs,TranscriptDb-method}
+\alias{SplicingGraphs,TxDb-method}
 
 
 \title{
@@ -64,7 +64,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   \item{x}{
     For \code{SplicingGraphs}: A \link[GenomicRanges]{GRangesList} object
     containing the exons of one or more genes grouped by transcript.
-    Alternatively, \code{x} can be a \link[GenomicFeatures]{TranscriptDb}
+    Alternatively, \code{x} can be a \link[GenomicFeatures]{TxDb}
     object. See Details section below.
 
     For the methods in the SplicingGraphs basic API: A SplicingGraphs object.
@@ -117,13 +117,13 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
   The first argument of the \code{SplicingGraphs} constructor, \code{x},
   can be either a \link[GenomicRanges]{GRangesList} object or a
-  \link[GenomicFeatures]{TranscriptDb} object.
+  \link[GenomicFeatures]{TxDb} object.
 
   When \code{x} is a \link[GenomicRanges]{GRangesList} object, it must
   contain the exons of one or more genes grouped by transcripts. More
   precisely, each top-level element in \code{x} must contain the genomic
   ranges of the exons for a particular transcript. Typically \code{x}
-  will be obtained from a \link[GenomicFeatures]{TranscriptDb} object
+  will be obtained from a \link[GenomicFeatures]{TxDb} object
   \code{txdb} with \code{\link[GenomicFeatures]{exonsBy}(txdb, by="tx",
   use.names=TRUE)}.
 
@@ -182,7 +182,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   For \code{elementLengths}: the number of transcripts per gene.
 
   For \code{seqinfo}: the seqinfo of the \link[GenomicRanges]{GRangesList}
-  or \link[GenomicFeatures]{TranscriptDb} object that was used to construct
+  or \link[GenomicFeatures]{TxDb} object that was used to construct
   the SplicingGraphs object.
 }
 
@@ -215,7 +215,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   \itemize{
     \item The \code{\link[GenomicFeatures]{exonsBy}} and
           \code{\link[GenomicFeatures]{transcriptsBy}} functions, and
-          the \link[GenomicFeatures]{TranscriptDb} class, defined in the
+          the \link[GenomicFeatures]{TxDb} class, defined in the
           \pkg{GenomicFeatures} package.
 
     \item The \link[GenomicRanges]{GRangesList} class defined in the
@@ -229,7 +229,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 \examples{
 ## ---------------------------------------------------------------------
-## 1. Load a toy gene model as a TranscriptDb object
+## 1. Load a toy gene model as a TxDb object
 ## ---------------------------------------------------------------------
 
 library(GenomicFeatures)
@@ -251,7 +251,7 @@ tx_by_gn <- transcriptsBy(toy_genes_txdb, by="gene")
 sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
 sg
 
-## Alternatively 'sg' can be constructed directly from the TranscriptDb
+## Alternatively 'sg' can be constructed directly from the TxDb
 ## object:
 sg2 <- SplicingGraphs(toy_genes_txdb)  # same as 'sg'
 sg2

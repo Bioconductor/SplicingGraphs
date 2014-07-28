@@ -4,7 +4,7 @@
 
 \alias{plotTranscripts}
 \alias{plotTranscripts,GRangesList-method}
-\alias{plotTranscripts,TranscriptDb-method}
+\alias{plotTranscripts,TxDb-method}
 \alias{plotTranscripts,SplicingGraphs-method}
 
 
@@ -25,7 +25,7 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
   \item{x}{
     A \link[GenomicRanges]{GRangesList} object containing the genomic ranges
     of a set of exons grouped by transcript. Alternatively, \code{x} can be a
-    \link[GenomicFeatures]{TranscriptDb} object, or a \link{SplicingGraphs}
+    \link[GenomicFeatures]{TxDb} object, or a \link{SplicingGraphs}
     object of length 1.
   }
   \item{reads}{
@@ -70,7 +70,7 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
           \link[GenomicAlignments]{GAlignmentPairs} classes
           defined in the \pkg{GenomicAlignments} package.
 
-    \item The \link[GenomicFeatures]{TranscriptDb} class defined in the
+    \item The \link[GenomicFeatures]{TxDb} class defined in the
           \pkg{GenomicFeatures} package.
   }
 }

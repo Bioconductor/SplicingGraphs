@@ -39,7 +39,7 @@
   Marc Carlson\and
   Martin Morgan}
 
-\date{Last modified: September 2013; Compiled: \today}
+\date{Last modified: July 2014; Compiled: \today}
 
 \begin{document}
 
@@ -76,7 +76,7 @@ that is, they need to contain the following information:
   \item The grouping of transcripts by gene.
 \end{itemize}
 
-Annotations need to be provided as a \Rclass{TranscriptDb} or
+Annotations need to be provided as a \Rclass{TxDb} or
 \Rclass{GRangesList} object, which is how a gene model is typically
 represented in \Bioconductor.
 
@@ -249,11 +249,11 @@ illustrated in Figure~\ref{img:CIB3-simplified}.
 
 The starting point for computing splicing graphs is a set of annotations
 describing a \textit{gene model} for a given organism. In \Bioconductor,
-a gene model is typically represented as a \Rclass{TranscriptDb}.
-A few prepackaged \Rclass{TranscriptDb} objects are available as
+a gene model is typically represented as a \Rclass{TxDb}.
+A few prepackaged \Rclass{TxDb} objects are available as
 \Rpackage{TxDb.*} annotation packages in the \Bioconductor{} package
 repositories. Here the \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
-package is used. If there is no prepackaged \Rclass{TranscriptDb}
+package is used. If there is no prepackaged \Rclass{TxDb}
 object for the genome/track that the user wants to use, such objects can
 easily be created by using tools from the \Rpackage{GenomicFeatures} 
 package.
@@ -265,12 +265,12 @@ library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 @
 
-Creating the splicing graphs for all genes in the \Rclass{TranscriptDb}
+Creating the splicing graphs for all genes in the \Rclass{TxDb}
 object can take a long time (up to 20 minutes or more). In order to keep
 things running in a reasonable time in this vignette, we restrict the gene
 model to the genes located on chromosome 14. Let's use the
 \Rfunction{isActiveSeq} getter/setter for this. By default, all the
-chromosomes in a \Rclass{TranscriptDb} object are ``active'':
+chromosomes in a \Rclass{TxDb} object are ``active'':
 
 \begin{small}
 <<isActiveSeq>>=
@@ -362,14 +362,14 @@ sg[["3183"]]
 The exon-level metadata columns are:
 \begin{itemize}
   \item \Rcode{exon\_id}: The original internal exon id as stored in the
-        \Rclass{TranscriptDb} object. This id was created and assigned to
-        each exon when the \Rclass{TranscriptDb} object was created.
+        \Rclass{TxDb} object. This id was created and assigned to
+        each exon when the \Rclass{TxDb} object was created.
         It's not a public id like, say, an Ensembl, RefSeq, or GenBank id.
         Furthermore, it's only guaranteed to be unique within a
-        \Rclass{TranscriptDb} object.
+        \Rclass{TxDb} object.
   \item \Rcode{exon\_name}: The original exon name as provided by the
         annotation resource (e.g., UCSC, Ensembl, or GFF file) and stored
-        in the \Rclass{TranscriptDb} object when it was created.
+        in the \Rclass{TxDb} object when it was created.
         Set to \Rcode{NA} if no exon name was provided.
   \item \Rcode{exon\_rank}: The rank of the exon in the transcript.
   \item \Rcode{start\_SSid}, \Rcode{end\_SSid}: The \textit{Splicing Site
@@ -408,7 +408,7 @@ The transcript-level metadata columns are:
 \begin{itemize}
   \item \Rcode{tx\_id}: The original transcript id as provided by the
         annotation resource (e.g. UCSC, Ensembl, or GFF file) and stored
-        in the \Rclass{TranscriptDb} object when it was created.
+        in the \Rclass{TxDb} object when it was created.
   \item \Rcode{txpath}: A named list-like object with one list element
         per transcript in the gene. Each list element is an integer vector
         that describes the \textit{path} of the transcript, i.e., the

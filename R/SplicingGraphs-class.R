@@ -354,7 +354,7 @@ setMethod("show", "SplicingGraphs",
 ### 'x' must be a GRangesList object containing the exons of one or more
 ### genes grouped by transcript. More precisely, each top-level element
 ### in 'x' contains the genomic ranges of the exons for a particular
-### transcript. Typically 'x' will be obtained from a TranscriptDb object
+### transcript. Typically 'x' will be obtained from a TxDb object
 ### 'txdb' with 'exonsBy(txdb, by="tx")'.
 ### 'grouping' is an optional object that represents the grouping by gene of
 ### the top-level elements (i.e. transcripts) in 'x'. It can be either:
@@ -579,12 +579,12 @@ setMethod("SplicingGraphs", "GRangesList",
     }
 )
 
-setMethod("SplicingGraphs", "TranscriptDb",
+setMethod("SplicingGraphs", "TxDb",
     function(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     {
         if (!is.null(grouping))
             stop("the 'grouping' arg is not supported ",
-                 "when 'x' is a TranscriptDb object")
+                 "when 'x' is a TxDb object")
         ex_by_tx <- exonsBy(x, by="tx", use.names=TRUE)
         tx_by_gn <- transcriptsBy(x, by="gene")
         SplicingGraphs(ex_by_tx, tx_by_gn, min.ntx=min.ntx, max.ntx=max.ntx,
