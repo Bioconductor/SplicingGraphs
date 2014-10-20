@@ -305,11 +305,9 @@ sg
 ## We load a precomputed 'sg' that contains all the bubbles in
 ## 'sg@.bubbles_cache'.
 sg_with_bubbles <- .loadPrecomputed("sg_with_bubbles")
-## We use all.equal() instead of identical() to compare 'sg_with_bubbles'
-## with 'sg' because it ignores the ".bubbles_cache" slot.
-if (!isTRUE(all.equal(sg, sg_with_bubbles)))
-    stop("'sg' is not identical to precomputed version")
 sg@.bubbles_cache <- sg_with_bubbles@.bubbles_cache
+if (!identical(sg, sg_with_bubbles))
+    stop("'sg' is not identical to precomputed version")
 @
 
 \Rcode{sg} is a \Rclass{SplicingGraphs} object. It has 1 element per
