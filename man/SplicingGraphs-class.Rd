@@ -234,7 +234,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 library(GenomicFeatures)
 suppressWarnings(
-  toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+  toy_genes_txdb <- makeTxDbFromGFF(toy_genes_gff())
 )
 
 ## ---------------------------------------------------------------------

@@ -6,7 +6,7 @@
 {
      library(GenomicFeatures)
      suppressWarnings(
-       toy_genes_txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+       toy_genes_txdb <- makeTxDbFromGFF(toy_genes_gff())
      )
      SplicingGraphs(toy_genes_txdb)
 }

@@ -40,7 +40,7 @@ toy_overlaps()
           \link[GenomicAlignments]{GAlignmentPairs} classes defined
           in the \pkg{GenomicAlignments} package.
 
-    \item The \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}
+    \item The \code{\link[GenomicFeatures]{makeTxDbFromGFF}}
           function and the \link[GenomicFeatures]{TxDb} class
           defined in the \pkg{GenomicFeatures} package.
   }
@@ -57,7 +57,7 @@ cat(readLines(toy_genes_gff()), sep="\n")
 
 library(GenomicFeatures)
 suppressWarnings(
-  txdb <- makeTranscriptDbFromGFF(toy_genes_gff())
+  txdb <- makeTxDbFromGFF(toy_genes_gff())
 )
 
 ## Plot all the transcripts in the gene model:
