@@ -146,7 +146,7 @@ plot(sgraph(sg["geneD"], tx_id.as.edge.label=TRUE, as.igraph=TRUE))
 ## optical duplicates (see ?scanBamFlag in the Rsamtools package for
 ## more information):
 library(Rsamtools)
-flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)

@@ -866,7 +866,7 @@ that we'll pass to \Rfunction{readGAlignmentPairs} (see
 about this):
 
 <<ScanBamParam>>=
-flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)

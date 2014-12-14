@@ -121,7 +121,7 @@ get_TSPC_bam_status <- function(subdir_path, sample_name)
         return(".")
     library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
-                         isNotPrimaryRead=FALSE,
+                         isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what="flag")
@@ -161,7 +161,7 @@ get_TSPC_bam_gaprate <- function(subdir_path, sample_name)
         return(NA_real_)
     library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
-                         isNotPrimaryRead=FALSE,
+                         isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what="cigar")
@@ -203,7 +203,7 @@ load_TSPC_bam <- function(subdir_path, sample_name, gapped.reads.only=FALSE)
              "and paired-end reads")
     library(Rsamtools)
     flag0 <- scanBamFlag(#isProperPair=TRUE,
-                         isNotPrimaryRead=FALSE,
+                         isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0, what="mapq")

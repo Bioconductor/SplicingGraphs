@@ -71,12 +71,12 @@ removeReads(sg)
   will pair them.
 
   If (b): you can filter out secondary alignments by passing
-  \code{'isNotPrimaryRead=FALSE'} to \code{\link[Rsamtools]{scanBamFlag}}
+  \code{'isSecondaryAlignment=FALSE'} to \code{\link[Rsamtools]{scanBamFlag}}
   when preparing the \link[Rsamtools]{ScanBamParam} object used to load
   the reads. For example:
   \preformatted{
     library(Rsamtools)
-    flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+    flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
     param0 <- ScanBamParam(flag=flag0)
@@ -144,7 +144,7 @@ names(sg)
 ## duplicates (see ?scanBamFlag in the Rsamtools package for more
 ## information):
 library(Rsamtools)
-flag0 <- scanBamFlag(isNotPrimaryRead=FALSE,
+flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)
 param0 <- ScanBamParam(flag=flag0)
