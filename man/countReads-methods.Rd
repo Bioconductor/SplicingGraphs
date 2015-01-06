@@ -113,7 +113,7 @@ reportReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 }
 
 \value{
-  A \link[IRanges]{DataFrame} object with one row per:
+  A \link[S4Vectors]{DataFrame} object with one row per:
   \itemize{
     \item unique splicing graph edge, if \code{by="sgedge"};
     \item unique \emph{reduced} splicing graph edge, if \code{by="rsgedge"};

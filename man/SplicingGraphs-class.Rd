@@ -156,7 +156,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
           then the \link[GenomicRanges]{GRangesList} object used for grouping
           would typically be obtained with
           \code{\link[GenomicFeatures]{transcriptsBy}(txdb, by="gene")}.
-    \item A data.frame or \link[IRanges]{DataFrame} with 2 character vector
+    \item A data.frame or \link[S4Vectors]{DataFrame} with 2 character vector
           columns: a gene_id column (factor, character vector, or integer
           vector), and a tx_id (or alternatively tx_name) column. In that
           case, \code{x} must be named and all the values in the tx_id
@@ -221,9 +221,11 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
     \item The \link[GenomicRanges]{GRangesList} class defined in the
           \pkg{GenomicRanges} package.
 
-    \item The \link[IRanges]{IntegerList}, \link[IRanges]{CharacterList},
-          and \link[IRanges]{DataFrame} classes defined in the \pkg{IRanges}
-          package.
+    \item The \link[IRanges]{IntegerList} and \link[IRanges]{CharacterList}
+          classes defined in the \pkg{IRanges} package.
+
+    \item The \link[S4Vectors]{DataFrame} class defined in the
+          \pkg{S4Vectors} package.
   }
 }
 
