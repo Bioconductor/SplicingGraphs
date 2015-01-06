@@ -65,7 +65,7 @@ make_TSPC_SplicinGraphs <- function(subdir_paths)
         })
     suppressWarnings(ex_by_tx <- do.call(c, unname(gene_list)))
     ex_by_tx_seqlevels <- seqlevels(ex_by_tx)
-    seq_rank <- makeSeqnameIds(ex_by_tx_seqlevels)
+    seq_rank <- rankSeqlevels(ex_by_tx_seqlevels)
     seqlevels(ex_by_tx) <- ex_by_tx_seqlevels[order(seq_rank)]
     grouping <- rep.int(basename(subdir_paths), elementLengths(gene_list))
     SplicingGraphs(ex_by_tx, grouping=grouping, min.ntx=1L)

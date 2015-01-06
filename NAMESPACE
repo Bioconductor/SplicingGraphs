@@ -8,14 +8,15 @@ importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
+import(GenomeInfoDb)
 import(GenomicRanges)
 import(GenomicFeatures)
 import(GenomicAlignments)
 
 importFrom(graph, nodeDataDefaults, nodeData,
-                  edgeDataDefaults, edgeNames, edgeData)
+                  edgeDataDefaults, edgeNames, edgeData, edgemode)
 
-importFrom(Rgraphviz, agopen)
+importFrom(Rgraphviz, agopen, buildEdgeList, buildNodeList, from, to)
 
 exportClasses(GeneModel, SplicingGraphs)
 

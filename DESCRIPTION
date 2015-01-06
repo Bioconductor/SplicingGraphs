@@ -10,14 +10,11 @@ Description: This package allows the user to create, manipulate, and visualize
 	the edges of a set of splicing graphs, and to summarize them in
         different ways.
 Maintainer: H. Pages <hpages@fhcrc.org>
-Depends: BiocGenerics,
-	 S4Vectors (>= 0.5.16), IRanges (>= 1.99.21),
-	 GenomicRanges (>= 1.17.22), GenomicFeatures (>= 1.17.13),
-	 GenomicAlignments (>= 1.1.22), Rgraphviz (>= 2.3.7)
+Depends: GenomicFeatures (>= 1.17.13), GenomicAlignments (>= 1.1.22),
+	 Rgraphviz (>= 2.3.7)
 Imports: methods, utils, igraph,
-	 BiocGenerics,
-	 IRanges, GenomicRanges, GenomicFeatures, GenomicAlignments,
-	 graph, Rgraphviz
+	 BiocGenerics, S4Vectors, IRanges, GenomeInfoDb, GenomicRanges,
+	 GenomicFeatures, GenomicAlignments, graph, Rgraphviz
 Suggests: igraph, Gviz, Rsamtools (>= 1.19.17),
 	 TxDb.Hsapiens.UCSC.hg19.knownGene, RNAseqData.HNRNPC.bam.chr14,
 	 RUnit
