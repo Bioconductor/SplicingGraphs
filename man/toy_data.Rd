@@ -87,7 +87,9 @@ ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
 ## should call findOverlaps() with 'ignore.strand=TRUE':
 ov0 <- findOverlaps(grl, ex_by_tx, ignore.strand=TRUE)
 
-## Put the overlaps in a data.frame to make it easier to read:
+## Sort and put the overlaps in a data.frame to make them easier to
+## read:
+ov0 <- sort(ov0)
 df0 <- data.frame(QNAME=names(grl)[queryHits(ov0)],
                   tx_id=names(ex_by_tx)[subjectHits(ov0)],
                   stringsAsFactors=FALSE)
