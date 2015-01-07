@@ -18,10 +18,6 @@ toy_reads_sam <- function()
 
 toy_reads_bam <- function()
 {
-    ## The Rsamtools package is needed for asBam().
-    if (!requireNamespace("Rsamtools", quietly=TRUE))
-        stop("Couldn't load the Rsamtools package. Please install ",
-             "the Rsamtools\n  package and try again.")
     toy_reads_bam <- try(get("toy_reads_bam", envir=.toy_reads_bam_cache,
                              inherits=FALSE), silent=TRUE)
     if (!is(toy_reads_bam, "try-error"))

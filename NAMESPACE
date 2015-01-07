@@ -11,6 +11,7 @@ import(IRanges)
 import(GenomeInfoDb)
 import(GenomicRanges)
 import(GenomicFeatures)
+importFrom(Rsamtools, asBam)
 import(GenomicAlignments)
 
 importFrom(graph, nodeDataDefaults, nodeData,

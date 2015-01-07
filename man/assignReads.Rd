@@ -75,7 +75,6 @@ removeReads(sg)
   when preparing the \link[Rsamtools]{ScanBamParam} object used to load
   the reads. For example:
   \preformatted{
-    library(Rsamtools)
     flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
@@ -143,7 +142,6 @@ names(sg)
 ## alignments, reads not passing quality controls, and PCR or optical
 ## duplicates (see ?scanBamFlag in the Rsamtools package for more
 ## information):
-library(Rsamtools)
 flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isDuplicate=FALSE)

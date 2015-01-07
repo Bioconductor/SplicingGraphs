@@ -37,6 +37,8 @@
 }
 
 \usage{
+## Constructor:
+
 SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 ## SplicingGraphs basic API:

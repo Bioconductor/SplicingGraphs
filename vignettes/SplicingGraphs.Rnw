@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
-%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Rsamtools,GenomicAlignments,Gviz}
+%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Gviz}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass{article}
@@ -39,7 +39,7 @@
   Marc Carlson\and
   Martin Morgan}
 
-\date{Last modified: July 2014; Compiled: \today}
+\date{Last modified: January 2015; Compiled: \today}
 
 \begin{document}
 
@@ -822,7 +822,6 @@ single- or paired-end. This can be checked with the
 package:
 
 <<quickBamFlagSummary>>=
-library(Rsamtools)
 quickBamFlagSummary(bam_files[1], main.groups.only=TRUE)
 @
 
@@ -833,7 +832,6 @@ package. As a quick example, we load the reads located on the first 20
 million bases of chromosome 14:
 
 <<readGAlignmentPairs>>=
-library(GenomicAlignments)
 param <- ScanBamParam(which=GRanges("chr14", IRanges(1, 20000000)))
 galp <- readGAlignmentPairs(bam_files[1], param=param)
 length(galp)  # nb of alignment pairs
@@ -862,8 +860,8 @@ at a time. When we load the files, we want to filter out secondary
 alignments, reads not passing quality controls, and PCR or optical
 duplicates. This is done by preparing a \Rclass{ScanBamParam} object
 that we'll pass to \Rfunction{readGAlignmentPairs} (see
-\Rfunction{ScanBamParam} in the Rsamtools package for more information
-about this):
+\Rfunction{ScanBamParam} in the \Rpackage{Rsamtools} package for more
+information about this):
 
 <<ScanBamParam>>=
 flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,

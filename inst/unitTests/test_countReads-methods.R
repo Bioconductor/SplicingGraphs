@@ -13,7 +13,6 @@
 
 .load_toy_reads <- function()
 {
-    library(Rsamtools)
     flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
                          isNotPassingQualityControls=FALSE,
                          isDuplicate=FALSE)
