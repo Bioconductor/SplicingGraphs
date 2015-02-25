@@ -9,7 +9,7 @@ Description: This package allows the user to create, manipulate, and visualize
 	organism. Additionally it allows the user to assign RNA-seq reads to
 	the edges of a set of splicing graphs, and to summarize them in
         different ways.
-Maintainer: H. Pages <hpages@fhcrc.org>
+Maintainer: H. Pages <hpages@fredhutch.org>
 Depends: GenomicFeatures (>= 1.17.13), GenomicAlignments (>= 1.1.22),
 	 Rgraphviz (>= 2.3.7)
 Imports: methods, utils, igraph,
