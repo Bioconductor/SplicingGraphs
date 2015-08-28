@@ -306,6 +306,11 @@ sg
 ## 'sg@.bubbles_cache'.
 sg_with_bubbles <- .loadPrecomputed("sg_with_bubbles")
 sg@.bubbles_cache <- sg_with_bubbles@.bubbles_cache
+## Replace NAs with FALSE in circularity flag (because having the flag set
+## to NA instead of FALSE (or vice-versa) is not considered a significant
+## difference between the 2 objects).
+isCircular(sg) <- isCircular(sg) %in% TRUE
+isCircular(sg_with_bubbles) <- isCircular(sg_with_bubbles) %in% TRUE
 if (!identical(sg, sg_with_bubbles))
     stop("'sg' is not identical to precomputed version")
 @

@@ -36,7 +36,7 @@ exportMethods(
     unlist,
     seqnames,
     strand,
-    seqinfo,
+    seqinfo, "isCircular<-",
     intronsByTranscript,
     plot
 )

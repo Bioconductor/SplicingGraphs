@@ -9,6 +9,7 @@
 \alias{seqnames,GeneModel-method}
 \alias{strand,GeneModel-method}
 \alias{seqinfo,GeneModel-method}
+\alias{isCircular<-,GeneModel-method}
 
 \alias{length,SplicingGraphs-method}
 \alias{names,SplicingGraphs-method}
@@ -19,6 +20,7 @@
 \alias{seqnames,SplicingGraphs-method}
 \alias{strand,SplicingGraphs-method}
 \alias{seqinfo,SplicingGraphs-method}
+\alias{isCircular<-,SplicingGraphs-method}
 
 \alias{show,SplicingGraphs-method}
 

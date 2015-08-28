@@ -114,6 +114,15 @@ setMethod("seqinfo", "GeneModel",
     function(x) seqinfo(unlist(x, use.names=FALSE))
 )
 
+### The only GeneModel setter supported at the moment.
+setReplaceMethod("isCircular", "GeneModel",
+    function(x, value)
+    {
+        isCircular(x@unlistData) <- value
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### GeneModel() constructor.
@@ -233,6 +242,16 @@ setMethod("seqnames", "SplicingGraphs", function(x) seqnames(x@genes))
 setMethod("strand", "SplicingGraphs", function(x) strand(x@genes))
 
 setMethod("seqinfo", "SplicingGraphs", function(x) seqinfo(x@genes))
+
+### isCircular<- and txweight<- are the only SplicingGraphs setters supported
+### at the moment.
+setReplaceMethod("isCircular", "SplicingGraphs",
+    function(x, value)
+    {
+        isCircular(x@genes) <- isCircular(x@in_by_tx) <- value
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
