@@ -40,20 +40,8 @@
     edge_data <- mcols(unlist(edges_by_tx, use.names=FALSE))
     edge_data_colnames <- colnames(edge_data)
     hits_mcol_idx <- grep("\\.hits$", edge_data_colnames)
-    edge_data_breakpoints <- end(PartitioningByEnd(edges_by_tx))
-
-    ## FIXME: endoapply() on a DataFrame object is broken when applying
-    ## a function 'FUN' that modifies the nb of rows. Furthermore, the
-    ## returned object passes validation despite being broken! Fix it
-    ## in IRanges.
-    hits_cols <- endoapply(edge_data[hits_mcol_idx],
-                           function(hits)
-                             unique(regroup(hits, edge_data_breakpoints)))
-
-    ## Fix the broken DataFrame returned by endoapply().
-    hits_cols@nrows <- length(tx_id)
-    hits_cols@rownames <- NULL
-
+    hits_cols <- GenomicFeatures:::.collapse_df(edge_data[hits_mcol_idx],
+                                                edges_by_tx)
     cbind(DataFrame(tx_id=tx_id, gene_id=gene_id), hits_cols)
 }
 
@@ -63,22 +51,11 @@
     edge_data <- mcols(unlist(edges_by_gene, use.names=FALSE))
     edge_data_colnames <- colnames(edge_data)
     hits_mcol_idx <- grep("\\.hits$", edge_data_colnames)
-    edge_data_breakpoints <- end(PartitioningByEnd(edges_by_gene))
-
-    ## FIXME: endoapply() on a DataFrame object is broken when applying
-    ## a function 'FUN' that modifies the nb of rows. Furthermore, the
-    ## returned object passes validation despite being broken! Fix it
-    ## in IRanges.
-    hits_cols <- endoapply(edge_data[hits_mcol_idx],
-                     function(hits)
-                       unique(regroup(hits, edge_data_breakpoints)))
-
-    ## Fix the broken DataFrame returned by endoapply().
-    hits_cols@nrows <- length(edges_by_gene)
-    hits_cols@rownames <- NULL
-
+    hits_cols <- GenomicFeatures:::.collapse_df(edge_data[hits_mcol_idx],
+                                                edges_by_gene)
     gene_id <- names(edges_by_gene)
-    tx_id <- unique(regroup(edge_data[ , "tx_id"], edge_data_breakpoints))
+    tx_id <- unique(IRanges:::regroupBySupergroup(edge_data[ , "tx_id"],
+                                                  edges_by_gene))
     cbind(DataFrame(gene_id=gene_id, tx_id=tx_id), hits_cols)
 }
 

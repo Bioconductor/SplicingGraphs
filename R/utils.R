@@ -173,7 +173,7 @@ make_global_sgedge_id <- function(gene_id, from, to)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### unlistAndSplit() and regroup()
+### unlistAndSplit()
 ###
 
 ### Example:
@@ -201,19 +201,6 @@ unlistAndSplit <- function(x, f, drop=FALSE)
     splitAsList(x2, f2, drop=drop)
 }
 
-### Assumes 'breakpoints' is a (possibly named) integer vector with no NAs,
-### containing valid indices into 'x' in ascending order. This is not checked!
-### Returns a list-like object of the same elementType as 'x' but with the
-### length and names of 'breakpoints'. Behaves as an endomorphism on a
-### CompressedList object.
-regroup <- function(x, breakpoints)
-{
-   ans_breakpoints <- end(PartitioningByEnd(x))[breakpoints]
-   ans_skeleton <- PartitioningByEnd(ans_breakpoints,
-                                     names=names(breakpoints))
-   relist(unlist(x, use.names=FALSE), ans_skeleton)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### fancy_punion() -- fancy parallel union
@@ -239,6 +226,7 @@ regroup <- function(x, breakpoints)
 ###   [[2]] 5 0
 ###   [[3]] 8 -2 10
 ###
+
 fancy_punion <- function(x, y)
 {
     x_partitioning <- PartitioningByEnd(x)
