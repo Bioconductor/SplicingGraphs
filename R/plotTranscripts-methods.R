@@ -113,7 +113,11 @@
             idx <- order(sample(reads_len, max.plot.reads))
             reads <- reads[idx]
         }
-        grl <- grglist(reads, order.as.in.query=TRUE)
+        if (is(reads, "GAlignments")) {
+            grl <- grglist(reads, order.as.in.query=TRUE)
+        } else {
+            grl <- grglist(reads)
+        }
         ov0 <- findOverlaps(grl, x, ignore.strand=TRUE)
         ovenc0 <- encodeOverlaps(grl, x, hits=ov0,
                                  flip.query.if.wrong.strand=TRUE)
