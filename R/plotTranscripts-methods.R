@@ -130,7 +130,7 @@
 
         ## Set group id (required by the Gviz package, why?)
         mcols(grl@unlistData)$group <- rep.int(seq_along(grl), 
-                                               elementLengths(grl))
+                                               elementNROWS(grl))
 
         ## Track of compatible reads.
         compat_grl <- grl[is_compat_read]

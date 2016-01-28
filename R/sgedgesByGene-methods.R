@@ -195,8 +195,8 @@ setMethod("sgedgesByGene", "SplicingGraphs",
             ans_unlistData <- ans_unlistData[keep_idx]
         }
         ans_grouping <- Rle(names(ans_unlistData))
-        ans_eltlens <- runLength(ans_grouping)
-        ans_partitioning <- PartitioningByEnd(cumsum(ans_eltlens),
+        ans_eltNROWS <- runLength(ans_grouping)
+        ans_partitioning <- PartitioningByEnd(cumsum(ans_eltNROWS),
                                               names=runValue(ans_grouping))
 
         ## Compute 'ans_unlistData'.

@@ -116,7 +116,7 @@
         hits[[sm[i]]] <- unique(hits[[sm[i]]], hits[[i]])
     hits <- hits[is_not_dup]
     sgedges$hits <- hits
-    sgedges$nhits <- elementLengths(hits)
+    sgedges$nhits <- elementNROWS(hits)
     sgedges
 }
 

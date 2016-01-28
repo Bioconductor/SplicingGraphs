@@ -7,8 +7,8 @@ tx_by_gn <- transcriptsBy(txdb, by="gene")
 
 ### Keep only clean genes (i.e. genes with all transcripts on the same
 ### chromosome and strand).
-tx_by_gn <- tx_by_gn[elementLengths(runValue(seqnames(tx_by_gn))) == 1L]
-tx_by_gn <- tx_by_gn[elementLengths(runValue(strand(tx_by_gn))) == 1L]
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(seqnames(tx_by_gn))) == 1L]
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(strand(tx_by_gn))) == 1L]
 
 ### Keep only genes that are on chr19:
 is_on_chr19 <- as.character(unlist(runValue(seqnames(tx_by_gn)))) == "chr19"

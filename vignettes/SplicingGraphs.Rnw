@@ -332,16 +332,16 @@ table(strand(sg))
 @
 
 The number of transcripts per gene can be obtained with
-\Rcode{elementLengths(sg)}:
+\Rcode{elementNROWS(sg)}:
 
-<<elementLengths_sg>>=
-elementLengths(sg)[1:20]
+<<elementNROWS_sg>>=
+elementNROWS(sg)[1:20]
 @
 
-\Rfunction{elementLengths} is a core accessor for list-like objects
+\Rfunction{elementNROWS} is a core accessor for list-like objects
 that returns the lengths of the individual list elements.
 
-At this point you might wonder why \Rfunction{elementLengths} works on
+At this point you might wonder why \Rfunction{elementNROWS} works on
 \Rclass{SplicingGraphs} objects. Does this mean that those objects are
 list-like objects? The answer is yes. 
 What do the list elements look like, and how can you access them?
@@ -775,7 +775,7 @@ To answer this we have to count the number of bubbles within
 each gene.
 
 <<nb_bubbles_per_gene>>=
-nb_bubbles_per_gene <- elementLengths(AScode_list)
+nb_bubbles_per_gene <- elementNROWS(AScode_list)
 @ 
 
 Below the genes with the most observed splicing events are shown.
@@ -789,7 +789,7 @@ events.
 We check for the number of unique splicing events for each gene.
 
 <<nb_unique_bubbles_per_gene>>=
-nb_unique_bubbles_per_gene <- elementLengths(unique(CharacterList(AScode_list)))
+nb_unique_bubbles_per_gene <- elementNROWS(unique(CharacterList(AScode_list)))
 @ 
 
 Below the genes with the highest heterogeneity in observed splicing events

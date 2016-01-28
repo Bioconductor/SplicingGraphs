@@ -204,10 +204,10 @@ slideshow <- function(x)
 {
     if (!is(x, "SplicingGraphs"))
         stop("'x' must be a SplicingGraphs object")
-    x_eltlen <- elementLengths(x)
+    x_eltNROWS <- elementNROWS(x)
     for (i in seq_along(x)) {
-        gene_id <- names(x_eltlen)[i]
-        ntx <- x_eltlen[[i]]
+        gene_id <- names(x_eltNROWS)[i]
+        ntx <- x_eltNROWS[[i]]
         cat("Plotting splicing graph for gene \"", gene_id, "\" ",
             "(", ntx, " transcript(s)). ", sep="")
         plot(x[i])

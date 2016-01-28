@@ -15,7 +15,7 @@
 \alias{names,SplicingGraphs-method}
 \alias{[,SplicingGraphs,ANY,ANY-method}
 \alias{[[,SplicingGraphs,ANY,ANY-method}
-\alias{elementLengths,SplicingGraphs-method}
+\alias{elementNROWS,SplicingGraphs-method}
 \alias{unlist,SplicingGraphs-method}
 \alias{seqnames,SplicingGraphs-method}
 \alias{strand,SplicingGraphs-method}
@@ -57,7 +57,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 \S4method{[[}{SplicingGraphs,ANY,ANY}(x, i, j, ...)
 
-\S4method{elementLengths}{SplicingGraphs}(x)
+\S4method{elementNROWS}{SplicingGraphs}(x)
 
 \S4method{unlist}{SplicingGraphs}(x, recursive=TRUE, use.names=TRUE)
 
@@ -183,7 +183,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
   For \code{strand}: a named factor of the length of \code{x} containing
   the strand for each gene.
 
-  For \code{elementLengths}: the number of transcripts per gene.
+  For \code{elementNROWS}: the number of transcripts per gene.
 
   For \code{seqinfo}: the seqinfo of the \link[GenomicRanges]{GRangesList}
   or \link[GenomicFeatures]{TxDb} object that was used to construct
@@ -282,7 +282,7 @@ strand(sg)
 seqinfo(sg)
 
 ## Number of transcripts per gene:
-elementLengths(sg)
+elementNROWS(sg)
 
 ## The transcripts of a given gene can be extracted with [[. The result
 ## is an *unnamed* GRangesList object containing the exons grouped by

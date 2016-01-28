@@ -20,7 +20,7 @@
     txpath3 <- unlistAndSplit(tmp, f)
     names(txpath3) <- names(txpath)
 
-    gene_id <- rep.int(names(txpath3), elementLengths(txpath3))
+    gene_id <- rep.int(names(txpath3), elementNROWS(txpath3))
     tmp <- txpath3@unlistData
     gene_id <- gene_id[c(TRUE, FALSE)]
     from <- tmp[c(TRUE, FALSE)]
@@ -49,7 +49,7 @@
     idx <- integer(f_len)
     idx[] <- NA_integer_
     idx[unlist(revfactor, use.names=FALSE)] <- rep.int(seq_along(revfactor),
-                                                   elementLengths(revfactor))
+                                                   elementNROWS(revfactor))
     factor(f_levels[idx], levels=f_levels)
 }
 
@@ -88,7 +88,7 @@
     nodes_list <- fancy_punion(from_list, to_list)
 
     rsgedge_id <- sapply(nodes_list, paste0, collapse=",")
-    rsgedge_id <- rep.int(rsgedge_id, elementLengths(revfactor))
+    rsgedge_id <- rep.int(rsgedge_id, elementNROWS(revfactor))
     rsgedge_id <- paste(gene_id[unlisted_revfactor], rsgedge_id, sep=":")
 
     ans[unlisted_revfactor] <- rsgedge_id
@@ -145,7 +145,7 @@
     edges_ex_or_in <- edges_mcols[ , "ex_or_in"]
     ans_ex_or_in <- splitAsList(edges_ex_or_in, f)
     levels(ans_ex_or_in@unlistData) <- EX_OR_IN_LEVELS2
-    mixed_idx <- which(elementLengths(ans_ex_or_in) != 1L)
+    mixed_idx <- which(elementNROWS(ans_ex_or_in) != 1L)
     ans_ex_or_in[mixed_idx] <- factor("mixed", levels=EX_OR_IN_LEVELS2)
     ans_ex_or_in <- factor(EX_OR_IN_LEVELS2[ans_ex_or_in@unlistData],
                            levels=EX_OR_IN_LEVELS2)

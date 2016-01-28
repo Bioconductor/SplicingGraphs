@@ -166,11 +166,11 @@ in_by_tx <- intronsByTranscript(sg)
 edges_by_tx <- sgedgesByTranscript(sg)
 
 ## A sanity check:
-stopifnot(identical(elementLengths(in_by_tx) + 1L,
-                    elementLengths(ex_by_tx)))
+stopifnot(identical(elementNROWS(in_by_tx) + 1L,
+                    elementNROWS(ex_by_tx)))
 
 ## 'edges_by_tx' combines 'ex_by_tx' and 'in_by_tx' in a single
 ## GRangesList object. Sanity check:
-stopifnot(identical(elementLengths(edges_by_tx),
-                    elementLengths(ex_by_tx) + elementLengths(in_by_tx)))
+stopifnot(identical(elementNROWS(edges_by_tx),
+                    elementNROWS(ex_by_tx) + elementNROWS(in_by_tx)))
 }

@@ -17,7 +17,7 @@ make_matrix_from_txpath <- function(txpath)
     ans_dimnames <- list(names(txpath), sgnodes)
     ans <- matrix(FALSE , nrow=ans_nrow, ncol=ans_ncol, dimnames=ans_dimnames)
     ans[ , 1L] <- ans[ , ans_ncol] <- TRUE
-    i <- cbind(rep.int(seq_along(txpath), elementLengths(txpath)),
+    i <- cbind(rep.int(seq_along(txpath), elementNROWS(txpath)),
                unlist(txpath, use.names=FALSE) + 1L)
     ans[i] <- TRUE
     ans

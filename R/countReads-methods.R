@@ -97,7 +97,7 @@ setMethod("countReads", "SplicingGraphs",
         hits_col_idx <- grep("\\.hits$", colnames(reported_reads))
         if (length(hits_col_idx) == 0L)
             return(reported_reads)
-        read_counts <- endoapply(reported_reads[hits_col_idx], elementLengths)
+        read_counts <- endoapply(reported_reads[hits_col_idx], elementNROWS)
         colnames(read_counts) <- sub("\\.hits$", "", colnames(read_counts))
         cbind(reported_reads[-hits_col_idx], read_counts)
     }

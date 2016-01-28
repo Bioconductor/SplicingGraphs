@@ -136,7 +136,7 @@ layout.sgraph <- function(graph)
 .safeTranslateEdgeNames <- function(edge_names, old.sep="|", new.sep="~")
 {
     edge_names <- strsplit(edge_names, old.sep, fixed=TRUE)
-    stopifnot(all(elementLengths(edge_names) == 2L))  # sanity check
+    stopifnot(all(elementNROWS(edge_names) == 2L))  # sanity check
     edge_names <- unlist(edge_names, use.names=FALSE)
     paste0(edge_names[c(TRUE, FALSE)], new.sep, edge_names[c(FALSE, TRUE)])
 }

@@ -7,12 +7,12 @@ load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
     models <- read.table(models_path, stringsAsFactors=FALSE)
     stopifnot(ncol(models) == 3L)  # sanity check
     tmp1 <- strsplit(models[[1L]], ":", fixed=TRUE)
-    stopifnot(all(elementLengths(tmp1) == 2L))  # sanity check
+    stopifnot(all(elementNROWS(tmp1) == 2L))  # sanity check
     tmp1 <- unlist(tmp1, use.name=FALSE)
     exons_seqnames <- tmp1[c(TRUE, FALSE)]
     exons_ranges <- tmp1[c(FALSE, TRUE)]
     tmp2 <- strsplit(exons_ranges, "-", fixed=TRUE)
-    stopifnot(all(elementLengths(tmp2) == 2L))  # sanity check
+    stopifnot(all(elementNROWS(tmp2) == 2L))  # sanity check
     tmp2 <- as.integer(unlist(tmp2, use.name=FALSE))
     stopifnot(!any(is.na(tmp2)))  # sanity check
     ## The '_models.txt' files use 0-based starts!
@@ -67,7 +67,7 @@ make_TSPC_SplicinGraphs <- function(subdir_paths)
     ex_by_tx_seqlevels <- seqlevels(ex_by_tx)
     seq_rank <- rankSeqlevels(ex_by_tx_seqlevels)
     seqlevels(ex_by_tx) <- ex_by_tx_seqlevels[order(seq_rank)]
-    grouping <- rep.int(basename(subdir_paths), elementLengths(gene_list))
+    grouping <- rep.int(basename(subdir_paths), elementNROWS(gene_list))
     SplicingGraphs(ex_by_tx, grouping=grouping, min.ntx=1L)
 }
 
@@ -248,7 +248,7 @@ load_TSPC_sample_reads <- function(subdir_paths, sample_name,
             message("> ", appendLF=FALSE)
             reads
         })
-    empty_idx <- which(elementLengths(reads_list) == 0L)
+    empty_idx <- which(elementNROWS(reads_list) == 0L)
     if (length(empty_idx) != 0L)
         reads_list <- reads_list[-empty_idx]
     reads <- do.call(c, unname(reads_list))

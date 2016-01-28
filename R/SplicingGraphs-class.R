@@ -10,7 +10,7 @@
 ### because many operations (like c() or relist()) would be broken, unless
 ### we re-implement them for SplicingGraphs objects. But: (a) that's a lot of
 ### work (the API is huge), and (b) we don't need those operations in the
-### first place. All we need are: length(), names(), [, [[, elementLengths(),
+### first place. All we need are: length(), names(), [, [[, elementNROWS(),
 ### and unlist().
 ### The GeneModel class is an internal class that is not intended to be
 ### exposed to the user. It's a list-like class where the elements are
@@ -81,7 +81,7 @@ setValidity2("GeneModel", .valid.GeneModel)
 ### GeneModel objects inherit the CompressedList API i.e. anything that works
 ### on a CompressedList object works on a GeneModel object. But the only
 ### things we're using/supporting in the SplicingGraphs package are: length(),
-### names(), [, [[, elementLengths(), and unlist().
+### names(), [, [[, elementNROWS(), and unlist().
 
 ### From the GRanges API:
 ### We only need seqnames(), strand(), and seqinfo() from the GRanges API.
@@ -168,8 +168,8 @@ GeneModel <- function(ex_by_tx)
         return("'x@in_by_tx' must have the same length as 'unlist(x@genes)'")
     if (!identical(x_in_by_tx_names, names(x_ex_by_tx)))
         return("'x@in_by_tx' must have the same names as 'unlist(x@genes)'")
-    if (!identical(elementLengths(x_in_by_tx) + 1L,
-                   elementLengths(x_ex_by_tx))) {
+    if (!identical(elementNROWS(x_in_by_tx) + 1L,
+                   elementNROWS(x_ex_by_tx))) {
         msg <- c("the shape of 'x@in_by_tx' is not compatible ",
                  "with the shape of 'unlist(x@genes)'")
         return(paste0(msg, collapse=""))
@@ -226,8 +226,8 @@ setMethod("[[", "SplicingGraphs",
     }
 )
 
-setMethod("elementLengths", "SplicingGraphs",
-    function(x) elementLengths(x@genes)
+setMethod("elementNROWS", "SplicingGraphs",
+    function(x) elementNROWS(x@genes)
 )
 
 setMethod("unlist", "SplicingGraphs",
@@ -529,10 +529,10 @@ setMethod("show", "SplicingGraphs",
     grouping <- .normargGrouping(grouping, x)
 
     ## Keep genes with nb of transcripts >= min.ntx and <= max.ntx.
-    grouping_eltlen <- elementLengths(grouping)
-    keep <- grouping_eltlen >= min.ntx
+    grouping_eltNROWS <- elementNROWS(grouping)
+    keep <- grouping_eltNROWS >= min.ntx
     if (!is.na(max.ntx))
-        keep <- keep & grouping_eltlen <= max.ntx
+        keep <- keep & grouping_eltNROWS <= max.ntx
     grouping <- grouping[keep]
     if (length(grouping) == 0L) {
         ## We need to return an empty GRangesList but it cannot be simply
@@ -569,7 +569,7 @@ setMethod("show", "SplicingGraphs",
     ans <- do.call(c, ans)
     grouping_names <- names(grouping)
     if (!is.null(grouping_names)) {
-        ans_names <- rep.int(grouping_names, elementLengths(grouping))
+        ans_names <- rep.int(grouping_names, elementNROWS(grouping))
         names(ans) <- ans_names
     }
     ans
