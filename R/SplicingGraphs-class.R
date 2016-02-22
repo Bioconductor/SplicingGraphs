@@ -588,7 +588,7 @@ setMethod("SplicingGraphs", "GRangesList",
                             check.introns=check.introns)
         ans_genes <- GeneModel(ans_ex_by_tx)
         mcols(ans_ex_by_tx) <- NULL
-        ans_in_by_tx <- psetdiff(range(ans_ex_by_tx), ans_ex_by_tx)
+        ans_in_by_tx <- setdiff(range(ans_ex_by_tx), ans_ex_by_tx)
         common_strand <- commonStrand.GRangesList(ans_in_by_tx)
         ans_in_by_tx <- revElements(ans_in_by_tx, common_strand == "-")
         ans_bubbles_cache <- new.env(parent=emptyenv())
