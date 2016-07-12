@@ -1,5 +1,6 @@
 import(methods)
 import(utils)
+importFrom(graphics, plot)
 
 importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
                    plot.igraph, igraph.to.graphNEL)
