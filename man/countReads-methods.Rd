@@ -147,7 +147,7 @@ reportReads(x, by=c("sgedge", "rsgedge", "tx", "gene"))
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

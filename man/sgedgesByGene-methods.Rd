@@ -82,7 +82,7 @@ sgedgesByTranscript(x, with.exon.mcols=FALSE, with.hits.mcols=FALSE)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

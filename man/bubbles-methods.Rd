@@ -40,7 +40,7 @@ ASCODE2DESC
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

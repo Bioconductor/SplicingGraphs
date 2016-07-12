@@ -99,7 +99,7 @@ removeReads(sg)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

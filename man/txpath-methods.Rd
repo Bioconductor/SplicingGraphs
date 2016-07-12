@@ -56,7 +56,7 @@ txweight(x) <- value
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

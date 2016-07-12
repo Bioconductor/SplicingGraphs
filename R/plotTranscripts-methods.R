@@ -25,7 +25,7 @@
 
     query_ranges <- granges(query)
     strand(query_ranges) <- "*"
-    cmp <- compare(query_ranges, subject)
+    cmp <- pcompare(query_ranges, subject)
     ## Keep reads that overlap with or are adjacent to 'subject'.
     query[-5L <= cmp & cmp <= 5L]
 }

@@ -191,7 +191,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \references{

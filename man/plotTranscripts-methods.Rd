@@ -50,7 +50,7 @@ plotTranscripts(x, reads=NULL, from=NA, to=NA, max.plot.reads=200)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

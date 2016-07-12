@@ -23,7 +23,7 @@ toy_overlaps()
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

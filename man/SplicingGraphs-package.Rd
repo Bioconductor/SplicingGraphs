@@ -50,7 +50,7 @@
 }
 
 \author{
-  Author and maintainer: H. Pages <hpages@fredhutch.org>
+  Author and maintainer: H. Pagès <hpages@fredhutch.org>
 
   The \pkg{SplicingGraphs} package is a complete revamp (design and
   implementation) of the old \pkg{SpliceGraph} package (see Note above).

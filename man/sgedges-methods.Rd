@@ -59,7 +59,7 @@ indeg(x)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

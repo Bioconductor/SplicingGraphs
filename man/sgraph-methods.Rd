@@ -64,7 +64,7 @@ slideshow(x)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{
