@@ -8,7 +8,7 @@
 \alias{sgraph,DataFrame-method}
 \alias{sgraph,igraph-method}
 
-\alias{plot,SplicingGraphs,ANY-method}
+\alias{plot,SplicingGraphs,missing-method}
 \alias{slideshow}
 
 

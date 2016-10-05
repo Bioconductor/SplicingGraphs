@@ -191,7 +191,7 @@ setMethod("sgraph", "igraph",
 ### "plot" method.
 ###
 
-setMethod("plot", c("SplicingGraphs", "ANY"),
+setMethod("plot", c("SplicingGraphs", "missing"),
     function(x, y, ...) plot(sgraph(x), ...)
 )
 
