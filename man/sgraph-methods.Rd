@@ -26,7 +26,7 @@ sgraph(x, keep.dup.edges=FALSE, tx_id.as.edge.label=FALSE, as.igraph=FALSE)
 
 ## PLotting:
 
-\S4method{plot}{SplicingGraphs,ANY}(x, y, ...)
+\S4method{plot}{SplicingGraphs,missing}(x, y, ...)
 slideshow(x)
 }
 

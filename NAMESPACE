@@ -19,6 +19,7 @@ importFrom(graph, nodeDataDefaults, nodeData,
                   edgeDataDefaults, edgeNames, edgeData, edgemode)
 
 importFrom(Rgraphviz, agopen, buildEdgeList, buildNodeList, from, to)
+importMethodsFrom(Rgraphviz, plot)
 
 exportClasses(GeneModel, SplicingGraphs)
 
