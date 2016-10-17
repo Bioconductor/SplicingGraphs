@@ -30,7 +30,8 @@ TSPCsgedges <- sgedges(TSPCsg["LGSN"])
 TSPCsgedges
 
 ## Plot the graph for a given gene:
-plot(TSPCsg["LGSN"])  # or 'plot(sgraph(TSPCsgedges))'
+\dontrun{plot(TSPCsg["LGSN"])  # or 'plot(sgraph(TSPCsgedges))'
+}
 
 ## The reads from all samples have been assigned to 'TSPCsg'.
 ## Use countReads() to summarize by splicing graph edge:
