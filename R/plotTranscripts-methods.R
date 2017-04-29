@@ -19,9 +19,9 @@
     ## Drop all sequence levels but the one level that is used by the single
     ## range in 'subject'.
     seqlevels(subject) <- as.character(seqnames(subject))
-    ## Set the same one sequence level on 'query'. Use 'force=TRUE' to remove
-    ## the elements in 'query' that are not on that sequence level.
-    seqlevels(query, force=TRUE) <- seqlevels(subject)
+    ## Set the same one sequence level on 'query'. Use 'pruning.mode="coarse"'
+    ## to remove the elements in 'query' that are not on that sequence level.
+    seqlevels(query, pruning.mode="coarse") <- seqlevels(subject)
 
     query_ranges <- granges(query)
     strand(query_ranges) <- "*"
