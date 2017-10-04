@@ -106,7 +106,7 @@ setOldClass("igraph")
         stop("'tx_id.as.edge.label' must be TRUE or FALSE")
     d <- .precook_igraph_edges_from_sgedges(sgedges)
     if (tx_id.as.edge.label)
-        d$label <- sapply(d$tx_id, paste, collapse=",")
+        d$label <- sapply(d$tx_id, base::paste, collapse=",")
     d$tx_id <- NULL
     ## Turning 'd' into an ordinary data.frame. (Looks like 'as.data.frame()'
     ## on a DataFrame ignores the 'stringsAsFactors' arg so we use

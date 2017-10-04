@@ -185,13 +185,13 @@
             ans_d <- c(ans_d, bubble_d)
             ## Format the bubble partitions.
             bubble_partitions <- bubble_variants[ , "partition"]
-            bubble_partitions <- sapply(bubble_partitions, paste, collapse=",")
+            bubble_partitions <- sapply(bubble_partitions, base::paste, collapse=",")
             bubble_partitions <- paste0("{", bubble_partitions, "}")
             ans_partitions <- c(ans_partitions,
                                 CharacterList(bubble_partitions))
             ## Format the bubble paths.
             bubble_paths <- bubble_variants[ , "path"]
-            bubble_paths <- sapply(bubble_paths, paste, collapse=",")
+            bubble_paths <- sapply(bubble_paths, base::paste, collapse=",")
             bubble_paths <- paste0("{", bubble_paths, "}")
             ans_paths <- c(ans_paths, CharacterList(bubble_paths))
             ## Format the bubble AScode.
