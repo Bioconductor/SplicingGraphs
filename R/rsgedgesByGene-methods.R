@@ -164,17 +164,9 @@
     ## Reduce hits metadata cols.
     hits_mcol_idx <- grep("hits$", colnames(edges_mcols))
     if (length(hits_mcol_idx) != 0L) {
-        ## FIXME: endoapply() on a DataFrame object is broken when applying
-        ## a function 'FUN' that modifies the nb of rows. Furthermore, the
-        ## returned object passes validation despite being broken! Fix it
-        ## in IRanges.
         hits_mcols <- endoapply(edges_mcols[hits_mcol_idx],
                                 function(hits)
                                   unname(unique(unlistAndSplit(hits, f))))
-
-        ## Fix the broken DataFrame returned by endoapply().
-        hits_mcols@nrows <- nlevels(f)
-        hits_mcols@rownames <- NULL
 
         ## Combine with 'ans_mcols'.
         ans_mcols <- cbind(ans_mcols, hits_mcols)

@@ -1,7 +1,7 @@
 Package: SplicingGraphs
 Title: Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
 	to them
-Version: 1.19.0
+Version: 1.19.1
 Encoding: UTF-8
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pagès
 License: Artistic-2.0
@@ -14,7 +14,7 @@ Maintainer: H. Pagès <hpages@fredhutch.org>
 Depends: GenomicFeatures (>= 1.17.13), GenomicAlignments (>= 1.1.22),
 	 Rgraphviz (>= 2.3.7)
 Imports: methods, utils, graphics, igraph, BiocGenerics,
-	 S4Vectors (>= 0.9.25), IRanges (>= 2.3.21),
+	 S4Vectors (>= 0.17.5), IRanges (>= 2.3.21),
 	 GenomeInfoDb, GenomicRanges (>= 1.23.21), GenomicFeatures, Rsamtools,
 	 GenomicAlignments, graph, Rgraphviz
 Suggests: igraph, Gviz,
