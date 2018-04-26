@@ -210,7 +210,7 @@ setMethod("[", "SplicingGraphs",
         seqx <- seq_along(x_genes)
         names(seqx) <- names(x_genes)
         i <- seqx[i]
-        ii <- unlist(IRanges(PartitioningByEnd(x_genes))[i], use.names=FALSE)
+        ii <- IRanges:::unlist_as_integer(IRanges(PartitioningByEnd(x_genes))[i])
         x@genes <- x_genes[i]
         x@in_by_tx <- x@in_by_tx[ii]
         x
@@ -501,6 +501,7 @@ setMethod("show", "SplicingGraphs",
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
+    metadata(x) <- list()
     if (is.null(grouping)) {
         if (!identical(min.ntx, 2) || !identical(max.ntx, NA))
             stop("the 'min.ntx' and 'max.ntx' args are not supported ",
