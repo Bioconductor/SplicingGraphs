@@ -312,7 +312,7 @@ setMethod("show", "SplicingGraphs",
 ### transcript of the gene.
 ### Should be able to deal with a GRangesList object of length 0 (i.e. a
 ### gene with no transcripts).
-.setSplicingGraphInfo <- function(gene, check.introns=TRUE)
+.set_splicing_graph_info <- function(gene, check.introns=TRUE)
 {
     if (!is(gene, "GRangesList"))
         stop("'gene' must be a GRangesList object")
@@ -421,7 +421,7 @@ setMethod("show", "SplicingGraphs",
 
 ### Returns a list or IntegerList or CharacterList. Always *named* with the
 ### gene ids.
-.normargGrouping <- function(grouping, x)
+.normarg_grouping <- function(grouping, x)
 {
     ## (b)
     if (is.list(grouping) || is(grouping, "IntegerList")
@@ -506,7 +506,7 @@ setMethod("show", "SplicingGraphs",
         if (!identical(min.ntx, 2) || !identical(max.ntx, NA))
             stop("the 'min.ntx' and 'max.ntx' args are not supported ",
                  "when 'grouping' is not supplied or NULL")
-        ans <- .setSplicingGraphInfo(x, check.introns=check.introns)
+        ans <- .set_splicing_graph_info(x, check.introns=check.introns)
         names(ans) <- NULL
         return(ans)
     }
@@ -527,7 +527,7 @@ setMethod("show", "SplicingGraphs",
     if (!is.na(max.ntx) && max.ntx < min.ntx)
         stop("'max.ntx' must be >= 'min.ntx'")
 
-    grouping <- .normargGrouping(grouping, x)
+    grouping <- .normarg_grouping(grouping, x)
 
     ## Keep genes with nb of transcripts >= min.ntx and <= max.ntx.
     grouping_eltNROWS <- elementNROWS(grouping)
@@ -538,19 +538,19 @@ setMethod("show", "SplicingGraphs",
     if (length(grouping) == 0L) {
         ## We need to return an empty GRangesList but it cannot be simply
         ## made with GRangesList() or it wouldn't have the expected metadata
-        ## cols (outer and inner). So we call .setSplicingGraphInfo() on an
-        ## empty gene instead.
-        ans <- .setSplicingGraphInfo(x[NULL], check.introns=check.introns)
+        ## cols (outer and inner). So we call .set_splicing_graph_info() on
+        ## an empty gene instead.
+        ans <- .set_splicing_graph_info(x[NULL], check.introns=check.introns)
         names(ans) <- character(0)
         return(ans)
     }
 
     ## Main loop.
-    ans <- lapply(seq_along(grouping),
+    ans <- bplapply(seq_along(grouping),
                   function(i) {
                       ii <- grouping[[i]]
                       gene <- x[ii]
-                      gene2 <- try(.setSplicingGraphInfo(gene,
+                      gene2 <- try(.set_splicing_graph_info(gene,
                                        check.introns=check.introns),
                                    silent=TRUE)
                       if (inherits(gene2, "try-error"))
@@ -614,7 +614,7 @@ setMethod("SplicingGraphs", "TxDb",
 
 ### Not exported. Only used in the .onLoad hook (see zzz.R file) for fixing
 ### the prototypes of the GeneModel and SplicingGraphs classes.
-emptySplicingGraphs <- function()
+make_empty_SplicingGraphs <- function()
 {
     ex_by_tx <- GRangesList()
     names(ex_by_tx) <- character(0)
