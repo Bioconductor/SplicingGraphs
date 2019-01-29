@@ -8,6 +8,7 @@ importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
 
 import(BiocGenerics)
 import(S4Vectors)
+import(BiocParallel)
 import(IRanges)
 import(GenomeInfoDb)
 import(GenomicRanges)

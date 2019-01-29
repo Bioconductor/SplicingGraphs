@@ -159,6 +159,27 @@
 #.extract_bubbles_from_txpathmat <- function(txpathmat, outdeg, indeg)
 .extract_bubbles_from_txpathmat <- function(txpathmat)
 {
+    ## The call to .get_bubble_variants() in the inner loop below calls
+    ## order() on a character vector. Unfortunately the behavior of order()
+    ## on a character vector depends on the collating sequence of the locale
+    ## in use!
+    ## So we set LC_COLLATE to C so that (1) the ouput of order() on a
+    ## character vector is platform/country independent, and (2) it will
+    ## behave the same way when called in the context of the unit tests
+    ## run by 'R CMD check' ('R CMD check' also sets the LC_COLLATE to C
+    ## when running the tests) vs when called in the context of an
+    ## interactive session.
+    ## Another advantage of doing this is that order() seems to be at least
+    ## 2x faster when LC_COLLATE is set to C vs to something like en_US.UTF-8,
+    ## which comes as a pleasant surprise!
+    ## TODO: Maybe we should define an strorder() function in
+    ## S4Vectors/R/str-utils.R for portable/deterministic ordering of a
+    ## character vector. See R/utils.R in the GenomicFeatures package
+    ## for a similar discussion about using rank() on a character vector.
+    prev_locale <- Sys.getlocale("LC_COLLATE")
+    Sys.setlocale("LC_COLLATE", "C")
+    on.exit(Sys.setlocale("LC_COLLATE", prev_locale))
+
     sgnodetypes <- .get_sgnodetypes_from_txpathmat(txpathmat)
     ans_source <- ans_sink <- ans_AScode <- character(0)
     ans_d <- integer(0)

@@ -9,7 +9,7 @@ ASCODE2DESC <- NULL
     ##     validObject(new("SplicingGraphs"), complete=TRUE)
     ##
     ## would fail.
-    sg0 <- emptySplicingGraphs()
+    sg0 <- make_empty_SplicingGraphs()
     S4Vectors:::setPrototypeFromObject("GeneModel",
                                        sg0@genes,
                                        where=asNamespace(pkgname))
