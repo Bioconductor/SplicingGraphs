@@ -1,7 +1,7 @@
 Package: SplicingGraphs
 Title: Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
 	to them
-Version: 1.23.2
+Version: 1.23.3
 Encoding: UTF-8
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pagès
 License: Artistic-2.0
