@@ -8,8 +8,8 @@
 ### extends the CompressedList class. This avoids having the SplicingGraphs
 ### class inherit a very rich API (Vector + List), which would be a problem
 ### because many operations (like c() or relist()) would be broken, unless
-### we re-implement them for SplicingGraphs objects. But: (a) that's a lot of
-### work (the API is huge), and (b) we don't need those operations in the
+### we re-implement them for SplicingGraphs objects. But: (a) that's a lot
+### of work (the API is huge), and (b) we don't need those operations in the
 ### first place. All we need are: length(), names(), [, [[, elementNROWS(),
 ### and unlist().
 ### The GeneModel class is an internal class that is not intended to be
@@ -25,7 +25,8 @@ setClass("GeneModel",
         elementMetadata="DataFrame"
     ),
     prototype(
-        elementType="GRangesList"
+        elementType="GRangesList",
+        elementMetadata=new("DFrame")
     )
 )
 
@@ -183,6 +184,25 @@ GeneModel <- function(ex_by_tx)
 }
 
 setValidity2("SplicingGraphs", .valid.SplicingGraphs)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+setMethod("updateObject", "SplicingGraphs",
+    function(object, ..., verbose=FALSE)
+    {
+        object@genes <- updateObject(object@genes, ..., verbose=verbose)
+        object@in_by_tx <- updateObject(object@in_by_tx, ..., verbose=verbose)
+        for (key in ls(object@.bubbles_cache, all.names=TRUE)) {
+            val <- object@.bubbles_cache[[key]]
+            object@.bubbles_cache[[key]] <- updateObject(val, ...,
+                                                         verbose=verbose)
+        }
+        object
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

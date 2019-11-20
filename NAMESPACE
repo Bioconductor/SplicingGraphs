@@ -22,6 +22,11 @@ importFrom(graph, nodeDataDefaults, nodeData,
 importFrom(Rgraphviz, agopen, buildEdgeList, buildNodeList, from, to)
 importMethodsFrom(Rgraphviz, plot)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 classes
+###
+
 exportClasses(GeneModel, SplicingGraphs)
 
 
@@ -30,18 +35,29 @@ exportClasses(GeneModel, SplicingGraphs)
 ###
 
 exportMethods(
-    length,
-    names,
-    show,
-    "[",
-    "[[",
-    elementNROWS,
+    ## Methods for generics defined in the base package:
+    length, names,
+    "[", "[[",
     unlist,
-    seqnames,
+
+    ## Methods for generics defined in the methods package:
+    show,
+
+    ## Methods for generics defined in the graphics package:
+    plot,
+
+    ## Methods for generics defined in the BiocGenerics package:
     strand,
-    seqinfo, "isCircular<-",
-    intronsByTranscript,
-    plot
+    updateObject,
+
+    ## Methods for generics defined in the S4Vectors package:
+    elementNROWS,
+
+    ## Methods for generics defined in the GenomeInfoDb package:
+    seqnames, seqinfo, "isCircular<-",
+
+    ## Methods for generics defined in the GenomicFeatures package:
+    intronsByTranscript
 )
 
 

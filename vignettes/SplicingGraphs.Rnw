@@ -59,7 +59,7 @@ options(width=90)
     path <- file.path(.precomputed_results_path, filename)
     tempenv <- new.env(parent=emptyenv())
     load(path, envir=tempenv)
-    get(objname, envir=tempenv)
+    updateObject(get(objname, envir=tempenv))
 }
 @ 
 
