@@ -1,7 +1,7 @@
 Package: SplicingGraphs
 Title: Create, manipulate, visualize splicing graphs, and assign RNA-seq reads
 	to them
-Version: 1.29.0
+Version: 1.29.1
 Encoding: UTF-8
 Author: D. Bindreither, M. Carlson, M. Morgan, H. Pagès
 License: Artistic-2.0
@@ -10,7 +10,7 @@ Description: This package allows the user to create, manipulate, and visualize
 	organism. Additionally it allows the user to assign RNA-seq reads to
 	the edges of a set of splicing graphs, and to summarize them in
 	different ways.
-Maintainer: H. Pagès <hpages@fredhutch.org>
+Maintainer: H. Pagès <hpages.on.github@gmail.com>
 biocViews: Genetics, Annotation, DataRepresentation, Visualization,
 	Sequencing, RNASeq, GeneExpression, AlternativeSplicing, Transcription,
 	ImmunoOncology
