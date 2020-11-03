@@ -20,7 +20,7 @@ load_TSPC_gene_model <- function(models_path, check.transcripts=TRUE)
     exons_end <- tmp2[c(FALSE, TRUE)]
     exons_ranges <- IRanges(exons_start, exons_end)
     exon_id <- rep.int(NA_integer_, length(exons_ranges))
-    exon_rank <- S4Vectors:::fancy_mseq(runLength(Rle(models[[2L]])))
+    exon_rank <- sequence(runLength(Rle(models[[2L]])))
     unlisted_ans <- GRanges(seqnames=exons_seqnames,
                             ranges=exons_ranges,
                             exon_id=exon_id,
