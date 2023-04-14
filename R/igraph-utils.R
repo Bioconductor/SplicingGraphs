@@ -233,7 +233,7 @@ layout.sgraph <- function(graph)
                             edgeAttrs=list(), subGList=list(),
                             defAttrs=list())
 {
-    ans <- buildEdgeList(graph, recipEdges=recipEdges,
+    ans <- Rgraphviz::buildEdgeList(graph, recipEdges=recipEdges,
                          edgeAttrs=edgeAttrs, subGList=subGList,
                          defAttrs=defAttrs)
     ans_names <- names(ans)  # the edge names
@@ -246,7 +246,8 @@ layout.sgraph <- function(graph)
                   function(i) {
                       pedge <- ans[[i]]
                       ## Check 'from' and 'to' slots.
-                      edge_name <- paste0(from(pedge), "~", to(pedge))
+                      edge_name <- paste0(Rgraphviz::from(pedge), "~",
+                                          Rgraphviz::to(pedge))
                       stopifnot(identical(edge_name, ans_names[i]))
                       ## Get the fixed attribs (as a named list).
                       fixed_attrs <- .get_pEdge_fixed_attrs(pedge@attrs,
@@ -268,13 +269,77 @@ layout.sgraph <- function(graph)
     ## broken when there is more than 1 edge between the same 2 nodes, so we
     ## need to build and pass the lists of pNode and pEdge objects instead.
     #agopen(graph_nel, name=NA, nodeAttrs=node_attrs, edgeAttrs=edge_attrs)
-    nodes <- buildNodeList(graph_nel, nodeAttrs=node_attrs)
+    nodes <- Rgraphviz::buildNodeList(graph_nel, nodeAttrs=node_attrs)
     edges <- .buildEdgeList2(graph_nel, edgeAttrs=edge_attrs)
     agopen(name=NA, nodes=nodes, edges=edges, edgeMode=edgemode(graph_nel))
 }
 
-make_Ragraph_from_igraph <- function(igraph)
+### Goes from igraph to graphNEL to Ragraph.
+make_Ragraph_from_igraph_OLD <- function(igraph)
 {
     .make_Ragraph_from_graphNEL(.igraph.to.graphNEL2(igraph))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### make_Ragraph_from_igraph()
+###
+### NOT exported
+###
+
+.build_pNode_list <- function(igraph)
+{
+    nnodes <- vcount(igraph)
+    attrs_list <- vertex_attr(igraph)
+    stopifnot(all(lengths(attrs_list) == nnodes))  # sanity check
+    node_names <- attrs_list$name
+    if (is.null(node_names)) {
+        node_names <- as.character(seq_len(nnodes))
+    } else {
+        attrs_list$name <- NULL
+    }
+    names(attrs_list) <- .safeTranslateAttrNames(names(attrs_list),
+                             .igraph2Ragraph_NODE_ATTRNAMES)
+    attrs_list <- lapply(attrs_list, as.character)
+    lapply(seq_len(nnodes),
+        function(i) {
+            pNode_attrs <- lapply(attrs_list, `[[`, i)
+            new("pNode", name=node_names[[i]], attrs=pNode_attrs)
+        }
+    )
+}
+
+.build_pEdge_list <- function(igraph)
+{
+    nedges <- ecount(igraph)
+    attrs_list <- edge_attr(igraph)
+    stopifnot(all(lengths(attrs_list) == nedges))  # sanity check
+    edge_list <- as_edgelist(igraph)               # nedges x 2 matrix
+    stopifnot(nrow(edge_list) == nedges)           # sanity check
+    if (storage.mode(edge_list) != "character")
+        storage.mode(edge_list) <- "character"
+    names(attrs_list) <- .safeTranslateAttrNames(names(attrs_list),
+                             .igraph2Ragraph_EDGE_ATTRNAMES)
+    attrs_list <- lapply(attrs_list, as.character)
+    if (is_directed(igraph))
+        attrs_list$dir <- rep.int("forward", nedges)
+    lapply(seq_len(nedges),
+        function(i) {
+            from <- edge_list[i, 1L]
+            to <- edge_list[i, 2L]
+            pEdge_attrs <- lapply(attrs_list, `[[`, i)
+            new("pEdge", from=from, to=to, attrs=pEdge_attrs)
+        }
+    )
+}
+
+### Goes directly from igraph to Ragraph, without going thru the intermediate
+### graphNEL representation.
+make_Ragraph_from_igraph <- function(igraph)
+{
+    pNode_list <- .build_pNode_list(igraph)
+    pEdge_list <- .build_pEdge_list(igraph)
+    edge_mode <- if (is_directed(igraph)) "directed" else "undirected"
+    agopen(name=NA, nodes=pNode_list, edges=pEdge_list, edgeMode=edge_mode)
 }
 

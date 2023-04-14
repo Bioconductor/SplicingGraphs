@@ -2,8 +2,9 @@ import(methods)
 import(utils)
 importFrom(graphics, plot)
 
-importFrom(igraph, graph.data.frame, get.data.frame, layout.kamada.kawai,
-                   plot.igraph, igraph.to.graphNEL)
+importFrom(igraph, vcount, vertex_attr, ecount, edge_attr, as_edgelist,
+                   is_directed, graph.data.frame, get.data.frame,
+                   layout.kamada.kawai, plot.igraph, igraph.to.graphNEL)
 
 
 import(BiocGenerics)
@@ -19,7 +20,7 @@ import(GenomicAlignments)
 importFrom(graph, nodeDataDefaults, nodeData,
                   edgeDataDefaults, edgeNames, edgeData, edgemode)
 
-importFrom(Rgraphviz, agopen, buildEdgeList, buildNodeList, from, to)
+importFrom(Rgraphviz, agopen)
 importMethodsFrom(Rgraphviz, plot)
 
 

@@ -11,9 +11,11 @@
 \alias{seqinfo,GeneModel-method}
 \alias{isCircular<-,GeneModel-method}
 
+\alias{updateObject,SplicingGraphs-method}
+
 \alias{length,SplicingGraphs-method}
 \alias{names,SplicingGraphs-method}
-\alias{[,SplicingGraphs,ANY,ANY-method}
+\alias{[,SplicingGraphs,ANY,ANY,ANY-method}
 \alias{[[,SplicingGraphs,ANY,ANY-method}
 \alias{elementNROWS,SplicingGraphs-method}
 \alias{unlist,SplicingGraphs-method}
@@ -53,7 +55,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 
 \S4method{strand}{SplicingGraphs}(x)
 
-\S4method{[}{SplicingGraphs,ANY,ANY}(x, i, j, ... , drop=TRUE)
+\S4method{[}{SplicingGraphs,ANY,ANY,ANY}(x, i, j, ... , drop=TRUE)
 
 \S4method{[[}{SplicingGraphs,ANY,ANY}(x, i, j, ...)
 
