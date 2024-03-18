@@ -1,5 +1,5 @@
 import(methods)
-import(utils)
+importFrom(utils, read.table)
 importFrom(graphics, plot)
 
 importFrom(igraph, vcount, vertex_attr, ecount, edge_attr, as_edgelist,

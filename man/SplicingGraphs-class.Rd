@@ -240,7 +240,7 @@ SplicingGraphs(x, grouping=NULL, min.ntx=2, max.ntx=NA, check.introns=TRUE)
 ## 1. Load a toy gene model as a TxDb object
 ## ---------------------------------------------------------------------
 
-library(GenomicFeatures)
+library(txdbmaker)
 suppressWarnings(
   toy_genes_txdb <- makeTxDbFromGFF(toy_genes_gff())
 )

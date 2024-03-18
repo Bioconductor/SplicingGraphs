@@ -4,7 +4,7 @@
 
 .make_toy_sg <- function()
 {
-     library(GenomicFeatures)
+     library(txdbmaker)
      suppressWarnings(
        toy_genes_txdb <- makeTxDbFromGFF(toy_genes_gff())
      )

@@ -40,8 +40,10 @@ toy_overlaps()
           \link[GenomicAlignments]{GAlignmentPairs} classes defined
           in the \pkg{GenomicAlignments} package.
 
-    \item The \code{\link[GenomicFeatures]{makeTxDbFromGFF}}
-          function and the \link[GenomicFeatures]{TxDb} class
+    \item The \code{\link[txdbmaker]{makeTxDbFromGFF}}
+          function in the \pkg{txdbmaker} package.
+
+    \item The \link[GenomicFeatures]{TxDb} class
           defined in the \pkg{GenomicFeatures} package.
   }
 }
@@ -55,7 +57,7 @@ toy_genes_gff()
 ## Note that you can display the content of the file with:
 cat(readLines(toy_genes_gff()), sep="\n")
 
-library(GenomicFeatures)
+library(txdbmaker)
 suppressWarnings(
   txdb <- makeTxDbFromGFF(toy_genes_gff())
 )
