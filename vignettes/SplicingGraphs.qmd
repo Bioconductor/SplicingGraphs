@@ -107,6 +107,7 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 ```{r}
 #| label: fig-cib3-graph
+#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of the four transcript variants of gene
 #|   CIB3 (Entrez ID 117286). Left: transcript representation.
@@ -145,6 +146,7 @@ An example of such a splicing graph is shown in Figure 2.
 
 ```{r}
 #| label: fig-znf813-graph
+#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of the two transcript
 #|   variants of Human gene ZNF813 (Entrez ID 126017). Node 3 is a (`-`,`[`)
@@ -183,6 +185,7 @@ illustrated in Figure 3.
 
 ```{r}
 #| label: fig-uninformative-nodes
+#| echo: false
 #| fig-cap: >
 #|   Nodes `1`, `3`, `5`, `6`, `9`, `11`, `12`, and `13`, are uninformative
 #|   and can be removed. Left: before removal of the uninformative nodes.
@@ -419,6 +422,7 @@ dev.off()
 
 ```{r}
 #| label: fig-hnrnpc-transcripts
+#| echo: false
 #| fig-cap: "The 11 transcripts of gene HNRNPC (Entrez ID 3183)."
 #| fig-align: "center"
 #| out-width: "100%"
@@ -553,6 +557,7 @@ dev.off()
 
 ```{r}
 #| label: fig-hnrnpc-sgraph
+#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene HNRNPC (Entrez ID 3183).
 #|   Left: unlabelled edges. Right: edge labelled with the transcript
@@ -591,6 +596,7 @@ dev.off()
 
 ```{r}
 #| label: fig-7597-sgraph
+#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene 7597 (Entrez ID). Valid paths
 #|   between nodes `2` and `L` are: `{2,5,6,7,8,9,10,11,12,13,14,L}`
@@ -796,6 +802,7 @@ dev.off()
 
 ```{r}
 #| label: fig-4287-sgraph
+#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene 4287 (Entrez ID). This is
 #|   the gene with the most observed splicing events on Human
@@ -977,6 +984,7 @@ dev.off()
 
 ```{r}
 #| label: fig-hnrnpc-transcripts-and-reads
+#| echo: false
 #| fig-cap: >
 #|   Plot of the genomic region chr14:21675000-21702000 showing the 11
 #|   transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
@@ -1008,6 +1016,7 @@ dev.off()
 
 ```{r}
 #| label: fig-hnrnpc-transcripts-and-reads-zoom
+#| echo: false
 #| fig-cap: "Zoom on genomic region chr14:21698400-21698600 of figure 8."
 #| fig-align: "center"
 #| out-width: "100%"
