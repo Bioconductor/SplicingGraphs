@@ -212,7 +212,9 @@ First we load the `TxDb.*` package:
 
 ```{r}
 #| label: txdb
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+suppressPackageStartupMessages({
+    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+})
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 ```
 
@@ -249,7 +251,9 @@ can be changed by using the `min.ntx` argument of
 
 ```{r}
 #| label: splicing-graphs-constructor
-library(SplicingGraphs)
+suppressPackageStartupMessages({
+    library(SplicingGraphs)
+})
 sg <- SplicingGraphs(txdb)  # should take between 5 and 10 sec on
                             # a modern laptop
 sg
@@ -817,7 +821,9 @@ Let's start by loading the `RNAseqData.HNRNPC.bam.chr14` package:
 
 ```{r}
 #| label: bam-files
-library(RNAseqData.HNRNPC.bam.chr14)
+suppressPackageStartupMessages({
+    library(RNAseqData.HNRNPC.bam.chr14)
+})
 bam_files <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
 names(bam_files)  # the names of the runs
 ```
