@@ -24,7 +24,8 @@ Imports: methods, utils, graphics, igraph, BiocGenerics,
 Suggests: igraph, Gviz, txdbmaker,
 	 TxDb.Hsapiens.UCSC.hg19.knownGene, RNAseqData.HNRNPC.bam.chr14,
 	 RUnit, knitr
-VignetteBuilder: BiocStyle
+SystemRequirements: quarto
+VignetteBuilder: quarto
 Collate: utils.R
 	 igraph-utils.R
 	 SplicingGraphs-class.R

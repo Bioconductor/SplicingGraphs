@@ -10,11 +10,11 @@ format:
   html:
     toc: true
     number-sections: true
-bibliography: references.bib
-csl: biomed-central.csl
+    csl: biomed-central.csl
+    bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
