@@ -64,17 +64,56 @@ In that study [@Zarnack:2012], the authors performed transcription
 profiling by high throughput sequencing of HNRNPC knockdown and control
 HeLa cells (*Human*).
 
+```{r}
+#| label: setup
+#| cache: true
+#| echo: false
+#| results: hide
+
+suppressPackageStartupMessages({
+    library(SplicingGraphs)
+    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+})
+```
+
+```{r}
+#| label: splicing-graphs-setup
+#| cache: true
+
+## load the TxDb object for Human hg19
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+
+### Extract the exons and transcripts from the TxDb object.
+ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
+tx_by_gn <- transcriptsBy(txdb, by="gene")
+
+### Keep only clean genes (i.e. genes with all transcripts on the same
+### chromosome and strand).
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(seqnames(tx_by_gn))) == 1L]
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(strand(tx_by_gn))) == 1L]
+
+### Keep only genes that are on chr19:
+is_on_chr19 <- as.character(unlist(runValue(seqnames(tx_by_gn)))) == "chr19"
+tx_by_gn <- tx_by_gn[is_on_chr19]
+
+### Compute the splicing graphs (takes less than 1 min.):
+library(SplicingGraphs)
+sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
+```
+
+
 # Splicing graphs
 
-Alternative splicing is a frequently observed complex biological 
-process which modifies the primary RNA transcript and leads to 
-transcript variants of genes. Those variants can be plentiful. 
+Alternative splicing is a frequently observed complex biological
+process which modifies the primary RNA transcript and leads to
+transcript variants of genes. Those variants can be plentiful.
 Especially for large genes it is often difficult to describe their
-structure in a formal, logical, short and convenient way. To capture 
-the full variety of splicing variants of a certain gene in one single 
-data structure, Heber at al [-@Heber:2002] introduced the term 
+structure in a formal, logical, short and convenient way. To capture
+the full variety of splicing variants of a certain gene in one single
+data structure, Heber at al [-@Heber:2002] introduced the term
 *splicing graph* and provided a formal framework for representing
-the different choices of the splicing machinery. 
+the different choices of the splicing machinery.
 
 ## Definitions and example
 
@@ -107,16 +146,21 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 ```{r}
 #| label: fig-cib3-graph
-#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of the four transcript variants of gene
-#|   CIB3 (Entrez ID 117286). Left: transcript representation.
-#|   Right: splicing graph representation. Orange arrows are edges
-#|   corresponding to exons.
-#| fig-align: "center"
-#| out-width: "100%"
-knitr::include_graphics("images/CIB3-transcripts.pdf")
-knitr::include_graphics("images/CIB3-sg.pdf")
+#|   CIB3 (Entrez ID 117286).
+#| fig-subcap: 
+#|   - "Transcript representation"
+#|   - "Splicing graph representation. Orange arrows are edges
+#|     corresponding to exons"
+#| layout-ncol: 2
+
+grl <- sg[["117286"]]
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[c(3L, 2L, 1L, 4L)]
+plotTranscripts(grl)
+plot(sgraph(sg["117286"]))
 ```
 
 ## Details about nodes and edges
@@ -146,16 +190,22 @@ An example of such a splicing graph is shown in Figure 2.
 
 ```{r}
 #| label: fig-znf813-graph
-#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of the two transcript
 #|   variants of Human gene ZNF813 (Entrez ID 126017). Node 3 is a (`-`,`[`)
 #|   dual-type node: *acceptor* (`-`) for transcript `uc002qbu.2`, and
 #|   *transcription start* (`[`) for transcript `uc010eqq.1`.
-#| fig-align: "center"
-#| out-width: "100%"
-knitr::include_graphics("images/ZNF813-transcripts.pdf")
-knitr::include_graphics("images/ZNF813-sg.pdf")
+#| fig-subcap:
+#|   - "Transcript representation"
+#|   - "Splicing graph representation. Orange arrows are edges"
+#| layout-ncol: 2
+
+grl <- sg[["126017"]]
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[2:1]
+plotTranscripts(grl)
+plot(sgraph(sg["126017"]))
 ```
 
 A similar case occurs when the end of an exon, which is not the last
@@ -173,7 +223,7 @@ determined by the types of its two flanking nodes:
 
 ## Uninformative nodes
 
-Not all splicing sites (nodes) on the individual transcripts are alternative 
+Not all splicing sites (nodes) on the individual transcripts are alternative
 splicing sites. Therefore the initial splicing graph outlined above can be
 simplified by removing nodes of in- and out- degree equal to one because
 they are supposed to be non-informative in terms of alternative splicing.
@@ -185,15 +235,16 @@ illustrated in Figure 3.
 
 ```{r}
 #| label: fig-uninformative-nodes
-#| echo: false
 #| fig-cap: >
 #|   Nodes `1`, `3`, `5`, `6`, `9`, `11`, `12`, and `13`, are uninformative
-#|   and can be removed. Left: before removal of the uninformative nodes.
-#|   Right: after their removal.
-#| fig-align: "center"
-#| out-width: "100%"
-knitr::include_graphics("images/CIB3-sg.pdf")
-knitr::include_graphics("images/CIB3-sg2.pdf")
+#|   and can be removed.
+#| fig-subcap:
+#|   - "before removal of uninformative nodes"
+#|   - "after removal of uninformative nodes"
+#| layout-ncol: 2
+
+plot(sgraph(sg["117286"]))
+plot(rsgraph(sg["117286"]))
 ```
 
 # Computing splicing graphs from annotations
@@ -208,18 +259,8 @@ A few prepackaged `TxDb` objects are available as
 repositories. Here the `TxDb.Hsapiens.UCSC.hg19.knownGene`
 package is used. If there is no prepackaged `TxDb`
 object for the genome/track that the user wants to use, such objects can
-easily be created by using tools from the `GenomicFeatures` 
+easily be created by using tools from the `GenomicFeatures`
 package.
-
-First we load the `TxDb.*` package:
-
-```{r}
-#| label: txdb
-suppressPackageStartupMessages({
-    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-})
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-```
 
 Creating the splicing graphs for all genes in the `TxDb`
 object can take a long time (up to 20 minutes or more). In order to keep
@@ -254,11 +295,7 @@ can be changed by using the `min.ntx` argument of
 
 ```{r}
 #| label: splicing-graphs-constructor
-suppressPackageStartupMessages({
-    library(SplicingGraphs)
-})
-sg <- SplicingGraphs(txdb)  # should take between 5 and 10 sec on
-                            # a modern laptop
+sg <- SplicingGraphs(txdb)
 sg
 ```
 
@@ -310,7 +347,7 @@ that returns the lengths of the individual list elements.
 
 At this point you might wonder why `elementNROWS` works on
 `SplicingGraphs` objects. Does this mean that those objects are
-list-like objects? The answer is yes. 
+list-like objects? The answer is yes.
 What do the list elements look like, and how can you access them?
 This is answered in the next subsection.
 
@@ -401,32 +438,16 @@ always consist of an even number of *Splicing Site ids* in
 ascending order.
 
 The transcripts in a `GRangesList` object like `sg[["3183"]]`
-can be plotted with `plotTranscripts`:
-
-```{r}
-#| label: plot-transcripts-sg-3183
-#| eval: false
-plotTranscripts(sg[["3183"]])
-```
+can be plotted with `plotTranscripts`.
 
 The resulting plot is shown on figure 4.
 
 ```{r}
-#| label: plot-transcripts-sg-3183-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("3183-transcripts.pdf", width=6, height=3)
-plotTranscripts(sg[["3183"]])
-dev.off()
-```
-
-```{r}
 #| label: fig-hnrnpc-transcripts
-#| echo: false
 #| fig-cap: "The 11 transcripts of gene HNRNPC (Entrez ID 3183)."
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("3183-transcripts.pdf")
+plotTranscripts(sg[["3183"]])
 ```
 
 `SplicingGraphs` objects, like most list-like objects, can be
@@ -532,40 +553,18 @@ An important difference though is that the artificial edges (i.e., edges
 starting from the root node (`R`) or ending at the leaf node
 (`L`)) are omitted!
 
-Finally, to plot a given splicing graph:
-
-```{r}
-#| label: plot-sg-3183
-#| eval: false
-plot(sg["3183"])
-plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
-```
-
 The resulting plots are shown on figure 5.
 
 ```{r}
-#| label: plot-sg-3183-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("3183-sgraph.pdf", width=3, height=5)
-plot(sgraph(sg["3183"]))
-dev.off()
-pdf("3183-sgraph-labelled.pdf", width=3, height=5)
-plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
-dev.off()
-```
-
-```{r}
 #| label: fig-hnrnpc-sgraph
-#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene HNRNPC (Entrez ID 3183).
 #|   Left: unlabelled edges. Right: edge labelled with the transcript
 #|   ids (or names).
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("3183-sgraph.pdf")
-knitr::include_graphics("3183-sgraph-labelled.pdf")
+plot(sgraph(sg["3183"]))
+plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
 ```
 
 # Splicing graph bubbles
@@ -573,7 +572,7 @@ knitr::include_graphics("3183-sgraph-labelled.pdf")
 ## Some definitions
 
 The definition of a bubble provided in Sammeth's paper [@Sammeth:2010]
-is quite obfuscated. Here we try to give a simpler one. 
+is quite obfuscated. Here we try to give a simpler one.
 We start by introducing the notion of a valid path between 2 nodes of a
 splicing graph: a "valid path" between 2 nodes $s$ and $t$ ($s < t$ )
 of a splicing graph is a path followed by at least 1 transcript (see the
@@ -586,17 +585,7 @@ Let's illustrate this by looking at the splicing graph for gene 7597
 on figure 6.
 
 ```{r}
-#| label: plot-sg-7597-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("7597-sgraph-labelled.pdf", width=5, height=5)
-plot(sgraph(sg["7597"], tx_id.as.edge.label=TRUE))
-dev.off()
-```
-
-```{r}
 #| label: fig-7597-sgraph
-#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene 7597 (Entrez ID). Valid paths
 #|   between nodes `2` and `L` are: `{2,5,6,7,8,9,10,11,12,13,14,L}`
@@ -606,7 +595,7 @@ dev.off()
 #|   not followed by any known transcript and thus are not valid paths.
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("7597-sgraph-labelled.pdf")
+plot(sgraph(sg["7597"], tx_id.as.edge.label=TRUE))
 ```
 
 Path `{2,11,12,15,16,L}` in that graph is followed
@@ -792,24 +781,14 @@ head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
 ```
 
 ```{r}
-#| label: plot-sg-4287-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("4287-sgraph.pdf", width=5, height=5)
-plot(sgraph(sg["4287"]))
-dev.off()
-```
-
-```{r}
 #| label: fig-4287-sgraph
-#| echo: false
 #| fig-cap: >
 #|   Splicing graph representation of gene 4287 (Entrez ID). This is
 #|   the gene with the most observed splicing events on Human
 #|   chromosome 14.
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("4287-sgraph.pdf")
+plot(sgraph(sg["4287"]))
 ```
 
 # Counting reads
@@ -903,8 +882,7 @@ for (i in seq_along(bam_files)) {
     cat("Processing run ", names(bam_file), " ... ", sep="")
     galp <- readGAlignmentPairs(bam_file, use.names=TRUE, param=param0)
     sg <- assignReads(sg, galp, sample.name=names(bam_file))
-    cat("OK
-")
+    cat("OK")
 }
 ```
 
@@ -965,26 +943,10 @@ junction_reads <- reads[njunc(first(reads)) + njunc(last(reads)) != 0L]
 
 and we plot the genomic region chr14:21675000-21702000:
 
-```{r}
-#| label: plot-transcripts-sg-3183-and-reads
-#| eval: false
-plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
-```
-
 The resulting plot is shown on figure 8.
 
 ```{r}
-#| label: plot-transcripts-sg-3183-and-reads-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("3183-transcripts-and-reads.pdf", width=12, height=12)
-plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
-dev.off()
-```
-
-```{r}
 #| label: fig-hnrnpc-transcripts-and-reads
-#| echo: false
 #| fig-cap: >
 #|   Plot of the genomic region chr14:21675000-21702000 showing the 11
 #|   transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
@@ -993,34 +955,18 @@ dev.off()
 #|   blue.
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("3183-transcripts-and-reads.pdf")
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
 ```
 
 Figure 9 is a zoom on genomic region
 chr14:21698400-21698600 that was obtained with:
 
 ```{r}
-#| label: plot-transcripts-sg-3183-and-reads-zoom
-#| eval: false
-plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
-```
-
-```{r}
-#| label: plot-transcripts-sg-3183-and-reads-zoom-as-pdf
-#| echo: false
-#| results: 'hide'
-pdf("3183-transcripts-and-reads-zoom.pdf", width=12, height=12)
-plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
-dev.off()
-```
-
-```{r}
 #| label: fig-hnrnpc-transcripts-and-reads-zoom
-#| echo: false
 #| fig-cap: "Zoom on genomic region chr14:21698400-21698600 of figure 8."
 #| fig-align: "center"
 #| out-width: "100%"
-knitr::include_graphics("3183-transcripts-and-reads-zoom.pdf")
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
 ```
 
 [TODO: To be continued.]
@@ -1067,3 +1013,4 @@ sessionInfo()
 ```
 
 # References
+
