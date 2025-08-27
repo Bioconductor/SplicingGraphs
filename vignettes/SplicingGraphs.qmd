@@ -146,6 +146,7 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 
 ```{r}
 #| label: fig-cib3-graph
+#| layout-ncol: 2
 #| fig-cap: >
 #|   Splicing graph representation of the four transcript variants of gene
 #|   CIB3 (Entrez ID 117286).
@@ -153,7 +154,6 @@ of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
 #|   - "Transcript representation"
 #|   - "Splicing graph representation. Orange arrows are edges
 #|     corresponding to exons"
-#| layout-ncol: 2
 
 grl <- sg[["117286"]]
 ### Put the transcripts in an order that is visually more consistent with
@@ -190,6 +190,7 @@ An example of such a splicing graph is shown in Figure 2.
 
 ```{r}
 #| label: fig-znf813-graph
+#| layout-ncol: 2
 #| fig-cap: >
 #|   Splicing graph representation of the two transcript
 #|   variants of Human gene ZNF813 (Entrez ID 126017). Node 3 is a (`-`,`[`)
@@ -198,7 +199,6 @@ An example of such a splicing graph is shown in Figure 2.
 #| fig-subcap:
 #|   - "Transcript representation"
 #|   - "Splicing graph representation. Orange arrows are edges"
-#| layout-ncol: 2
 
 grl <- sg[["126017"]]
 ### Put the transcripts in an order that is visually more consistent with
@@ -235,13 +235,13 @@ illustrated in Figure 3.
 
 ```{r}
 #| label: fig-uninformative-nodes
+#| layout-ncol: 2
 #| fig-cap: >
 #|   Nodes `1`, `3`, `5`, `6`, `9`, `11`, `12`, and `13`, are uninformative
 #|   and can be removed.
 #| fig-subcap:
 #|   - "before removal of uninformative nodes"
 #|   - "after removal of uninformative nodes"
-#| layout-ncol: 2
 
 plot(sgraph(sg["117286"]))
 plot(rsgraph(sg["117286"]))
@@ -557,6 +557,7 @@ The resulting plots are shown on figure 5.
 
 ```{r}
 #| label: fig-hnrnpc-sgraph
+#| layout-ncol: 2
 #| fig-cap: >
 #|   Splicing graph representation of gene HNRNPC (Entrez ID 3183).
 #|   Left: unlabelled edges. Right: edge labelled with the transcript
