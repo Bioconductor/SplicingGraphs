@@ -1,0 +1,1017 @@
+---
+title: "Splicing graphs and RNA-seq data"
+author:
+  - name: "Hervé Pagès"
+  - name: "Daniel Bindreither"
+  - name: "Marc Carlson"
+  - name: "Martin Morgan"
+date: last-modified
+format:
+  html:
+    toc: true
+    number-sections: true
+    csl: biomed-central.csl
+    bibliography: references.bib
+vignette: >
+  %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| label: settings
+#| echo: false
+options(width=90)
+.precomputed_results_path <- "precomputed_results"
+.loadPrecomputed <- function(objname)
+{
+    filename <- paste0(objname, ".rda")
+    path <- file.path(.precomputed_results_path, filename)
+    tempenv <- new.env(parent=emptyenv())
+    load(path, envir=tempenv)
+    updateObject(get(objname, envir=tempenv))
+}
+```
+
+# Introduction
+
+The `SplicingGraphs` package allows the user to create and
+manipulate splicing graphs [@Sammeth:2010] based on annotations
+for a given organism. Annotations must describe a *gene model*,
+that is, they need to contain the following information:
+
+- The exact exon/intron structure (i.e., genomic coordinates)
+  for the known transcripts.
+- The grouping of transcripts by gene.
+
+Annotations need to be provided as a `TxDb` or
+`GRangesList` object, which is how a gene model is typically
+represented in Bioconductor.
+
+The `SplicingGraphs` package defines the
+`SplicingGraphs` container for storing the splicing graphs
+together with the gene model that they are based on.  Several methods
+are provided for conveniently access the information stored in a
+`SplicingGraphs` object. Most of these methods are described in
+this document.
+
+The package also allows the user to assign RNA-seq reads to
+the edges of a `SplicingGraphs` object and to summarize them.
+This requires that the reads have been previously aligned to the exact
+same reference genome that the gene model is based on. RNA-seq data
+from an already published study is used to illustrate this functionality.
+In that study [@Zarnack:2012], the authors performed transcription
+profiling by high throughput sequencing of HNRNPC knockdown and control
+HeLa cells (*Human*).
+
+```{r}
+#| label: setup
+#| cache: true
+#| echo: false
+#| results: hide
+
+suppressPackageStartupMessages({
+    library(SplicingGraphs)
+    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+})
+```
+
+```{r}
+#| label: splicing-graphs-setup
+#| cache: true
+
+## load the TxDb object for Human hg19
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+
+### Extract the exons and transcripts from the TxDb object.
+ex_by_tx <- exonsBy(txdb, by="tx", use.names=TRUE)
+tx_by_gn <- transcriptsBy(txdb, by="gene")
+
+### Keep only clean genes (i.e. genes with all transcripts on the same
+### chromosome and strand).
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(seqnames(tx_by_gn))) == 1L]
+tx_by_gn <- tx_by_gn[elementNROWS(runValue(strand(tx_by_gn))) == 1L]
+
+### Keep only genes that are on chr19:
+is_on_chr19 <- as.character(unlist(runValue(seqnames(tx_by_gn)))) == "chr19"
+tx_by_gn <- tx_by_gn[is_on_chr19]
+
+### Compute the splicing graphs (takes less than 1 min.):
+library(SplicingGraphs)
+sg <- SplicingGraphs(ex_by_tx, tx_by_gn)
+```
+
+
+# Splicing graphs
+
+Alternative splicing is a frequently observed complex biological
+process which modifies the primary RNA transcript and leads to
+transcript variants of genes. Those variants can be plentiful.
+Especially for large genes it is often difficult to describe their
+structure in a formal, logical, short and convenient way. To capture
+the full variety of splicing variants of a certain gene in one single
+data structure, Heber at al [-@Heber:2002] introduced the term
+*splicing graph* and provided a formal framework for representing
+the different choices of the splicing machinery.
+
+## Definitions and example
+
+For a comprehensive explanation of the splicing graph theory,
+please refer to [@Heber:2002; @Sammeth:2010].
+
+A splicing graph is a directed acyclic graph (DAG) where:
+
+- Vertices (a.k.a. *nodes*) represent the splicing sites
+  for a given gene. Splicing sites are ordered by their position from
+  5' to 3' and numbered from `1` to `n`. This number
+  is the *Splicing Site id*.
+  Splicing graphs are only defined for genes that have all
+  the exons of all their transcripts on the same chromosome and
+  strand. In particular, in its current form, the splicing graph
+  theory cannot describe *trans-splicing* events.
+- Edges are the exons and introns between splicing sites.
+  Their orientation follows the 5' to 3' direction, i.e., they go
+  from low to high *Splicing Site ids*.
+
+Two artificial nodes that don't correspond to any splicing site
+are added to the graph: the *root* (`R`) and the *leaf*
+(`L`). Also artificial edges are added so that all the transcripts are
+represented by a path that goes from `R` to `L`. That way the
+graph is connected. Not all paths in the graph are necessarily
+supported by a transcript.
+
+Figure 1 shows the splicing graph representation
+of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
+
+```{r}
+#| label: fig-cib3-graph
+#| layout-ncol: 2
+#| fig-cap: >
+#|   Splicing graph representation of the four transcript variants of gene
+#|   CIB3 (Entrez ID 117286).
+#| fig-subcap: 
+#|   - "Transcript representation"
+#|   - "Splicing graph representation. Orange arrows are edges
+#|     corresponding to exons"
+
+grl <- sg[["117286"]]
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[c(3L, 2L, 1L, 4L)]
+plotTranscripts(grl)
+plot(sgraph(sg["117286"]))
+```
+
+## Details about nodes and edges
+
+Splicing sites can be of the following types:
+
+- *Acceptor* site (symbol: `-`);
+- *Donor* site (symbol: `^`);
+- *Transcription start* site (symbol: `[`);
+- *Transcription end* site (symbol: `]`).
+
+The symbols associated with individual types of nodes shown in braces
+above are used for the identification of complete alternative splicing
+events. For more information about gathering the alternative splicing
+events and their associated codes, please refer to [@Heber:2002; @Sammeth:2010].
+
+In some cases a given splicing site can be associated with 2 types.
+The combinations of types for such sites is limited.
+Only *acceptor* (`-`) and
+*transcription start* (`[`),
+or *donor* (`^`) and
+*transcription end* (`]`), can occur as a pair of types.
+Such a dual-type node occurs when the start of an exon, which is not
+the first exon of a transcript, falls together with the transcription
+start site of another transcript of the same gene.
+An example of such a splicing graph is shown in Figure 2.
+
+```{r}
+#| label: fig-znf813-graph
+#| layout-ncol: 2
+#| fig-cap: >
+#|   Splicing graph representation of the two transcript
+#|   variants of Human gene ZNF813 (Entrez ID 126017). Node 3 is a (`-`,`[`)
+#|   dual-type node: *acceptor* (`-`) for transcript `uc002qbu.2`, and
+#|   *transcription start* (`[`) for transcript `uc010eqq.1`.
+#| fig-subcap:
+#|   - "Transcript representation"
+#|   - "Splicing graph representation. Orange arrows are edges"
+
+grl <- sg[["126017"]]
+### Put the transcripts in an order that is visually more consistent with
+### the splicing graph plot.
+grl <- grl[2:1]
+plotTranscripts(grl)
+plot(sgraph(sg["126017"]))
+```
+
+A similar case occurs when the end of an exon, which is not the last
+exon of a transcript, falls together with the transcription end site
+of another transcript of the same gene.
+
+Whether a non-artificial edge represents an exon or an intron is
+determined by the types of its two flanking nodes:
+
+- **Exon** if going from *acceptor* (`-`),
+  or (`-`,`[`) dual-type,
+  to *donor* (`^`),
+  or (`^`, `]`) dual-type;
+- **Intron** if the otherway around.
+
+## Uninformative nodes
+
+Not all splicing sites (nodes) on the individual transcripts are alternative
+splicing sites. Therefore the initial splicing graph outlined above can be
+simplified by removing nodes of in- and out- degree equal to one because
+they are supposed to be non-informative in terms of alternative splicing.
+Edges associated with such nodes get sequentially merged with
+the previous ones and result in longer edges capturing adjacent
+exons/introns. The final splicing graph only contains nodes involved in
+alternative splicing. The result of removing uninformative nodes is
+illustrated in Figure 3.
+
+```{r}
+#| label: fig-uninformative-nodes
+#| layout-ncol: 2
+#| fig-cap: >
+#|   Nodes `1`, `3`, `5`, `6`, `9`, `11`, `12`, and `13`, are uninformative
+#|   and can be removed.
+#| fig-subcap:
+#|   - "before removal of uninformative nodes"
+#|   - "after removal of uninformative nodes"
+
+plot(sgraph(sg["117286"]))
+plot(rsgraph(sg["117286"]))
+```
+
+# Computing splicing graphs from annotations
+
+## Choosing and loading a gene model
+
+The starting point for computing splicing graphs is a set of annotations
+describing a *gene model* for a given organism. In Bioconductor,
+a gene model is typically represented as a `TxDb` object.
+A few prepackaged `TxDb` objects are available as
+`TxDb.*` annotation packages in the Bioconductor package
+repositories. Here the `TxDb.Hsapiens.UCSC.hg19.knownGene`
+package is used. If there is no prepackaged `TxDb`
+object for the genome/track that the user wants to use, such objects can
+easily be created by using tools from the `GenomicFeatures`
+package.
+
+Creating the splicing graphs for all genes in the `TxDb`
+object can take a long time (up to 20 minutes or more). In order to keep
+things running in a reasonable time in this vignette, we restrict the gene
+model to the genes located on chromosome 14. Let's use the
+`isActiveSeq` getter/setter for this. By default, all the
+chromosomes in a `TxDb` object are "active":
+
+```{r}
+#| label: is-active-seq
+isActiveSeq(txdb)[1:25]
+```
+
+Next we set all the values in this named logical vector to `FALSE`,
+except the value for `chr14`:
+
+```{r}
+#| label: keep-chr14-only
+isActiveSeq(txdb)[-match("chr14", names(isActiveSeq(txdb)))] <- FALSE
+names(which(isActiveSeq(txdb)))
+```
+
+## Generating a `SplicingGraphs` object
+
+Splicing graphs are computed by calling the `SplicingGraphs`
+function on the gene model. This is the constructor function for
+`SplicingGraphs` objects. It will compute information about all
+the splicing graphs (1 per gene) and store it in the returned object.
+By default, only genes with at least 2 transcripts are considered (this
+can be changed by using the `min.ntx` argument of
+`SplicingGraphs`):
+
+```{r}
+#| label: splicing-graphs-constructor
+sg <- SplicingGraphs(txdb)
+sg
+```
+
+```{r}
+#| label: load-sg-with-bubbles
+#| echo: false
+## We load a precomputed 'sg' that contains all the bubbles in
+## 'sg@.bubbles_cache'.
+sg_with_bubbles <- .loadPrecomputed("sg_with_bubbles")
+sg@.bubbles_cache <- sg_with_bubbles@.bubbles_cache
+## Replace NAs with FALSE in circularity flag (because having the flag set
+## to NA instead of FALSE (or vice-versa) is not considered a significant
+## difference between the 2 objects):
+isCircular(sg) <- isCircular(sg) %in% TRUE
+isCircular(sg_with_bubbles) <- isCircular(sg_with_bubbles) %in% TRUE
+if (!identical(sg, sg_with_bubbles))
+    stop("'sg' is not identical to precomputed version")
+sg <- sg_with_bubbles
+```
+
+`sg` is a `SplicingGraphs` object. It has 1 element per
+gene and `names(sg)` gives the gene ids:
+
+```{r}
+#| label: names-sg
+names(sg)[1:20]
+```
+
+`seqnames(sg)` and `strand(sg)` return the chromosome and
+strand of the genes:
+
+```{r}
+#| label: seqnames-sg
+seqnames(sg)[1:20]
+strand(sg)[1:20]
+table(strand(sg))
+```
+
+The number of transcripts per gene can be obtained with
+`elementNROWS(sg)`:
+
+```{r}
+#| label: element-nrows-sg
+elementNROWS(sg)[1:20]
+```
+
+`elementNROWS` is a core accessor for list-like objects
+that returns the lengths of the individual list elements.
+
+At this point you might wonder why `elementNROWS` works on
+`SplicingGraphs` objects. Does this mean that those objects are
+list-like objects? The answer is yes.
+What do the list elements look like, and how can you access them?
+This is answered in the next subsection.
+
+## Basic manipulation of a `SplicingGraphs` object
+
+The list elements of a list-like object can be accessed **one
+at a time** by subsetting the object with `[[` (a.k.a.
+double-bracket subsetting). On a `SplicingGraphs` object,
+this will extract the transcripts of a given gene. More precisely
+it will return an **unnamed** `GRangesList` object
+containing the exons of the gene grouped by transcript:
+
+```{r}
+#| label: sg-double-bracket-3183
+sg[["3183"]]
+```
+
+The exon-level metadata columns are:
+
+- `exon_id`: The original internal exon id as stored in the
+  `TxDb` object. This id was created and assigned to
+  each exon when the `TxDb` object was created.
+  It's not a public id like, say, an Ensembl, RefSeq, or GenBank id.
+  Furthermore, it's only guaranteed to be unique **within** a
+  `TxDb` object, but not **across** `TxDb` objects.
+- `exon_name`: The original exon name as provided by the
+  annotation resource (e.g., UCSC, Ensembl, or GFF file) and stored
+  in the `TxDb` object when it was created.
+  Set to `NA` if no exon name was provided.
+- `exon_rank`: The rank of the exon in the transcript.
+- `start_SSid`, `end_SSid`: The *Splicing Site
+  ids* corresponding to the *start* and *end* coordinates
+  of the exon. (Please be cautious to not misinterpret the meaning
+  of *start* and *end* here. See IMPORTANT NOTE below.)
+  Those ids were assigned by the `SplicingGraphs` constructor.
+
+IMPORTANT NOTE: Please be aware that the *start* and *end*
+coordinates of an exon, like the *start* and *end*
+coordinates of a genomic range in general, are following the almost
+universal convention that *start* is `<=` *end*, and this
+**regardless of the direction of transcription**.
+
+As mentioned previously, the *Splicing Site ids* are assigned based
+on the order of the site positions from 5' to 3'. This means that, for a
+gene on the plus (resp. minus) strand, the ids in the `start_SSid`
+metadata column are always lower (resp. greater) than those in the
+`end_SSid` metadata column.
+
+However, on both strands, the *Splicing Site id* increases with the
+rank of the exon.
+
+The `show` method for `GRangesList` objects only
+displays the inner metadata columns (which are at the exon level for
+an object like `sg[["3183"]]`). To see the outer metadata columns
+(transcript-level metadata columns for objects like `sg[["3183"]]`),
+we need to extract them explicitely:
+
+```{r}
+#| label: mcols-sg-double-bracket-3183
+mcols(sg[["3183"]])
+```
+
+The transcript-level metadata columns are:
+
+- `tx_id`: The original transcript id as provided by the
+  annotation resource (e.g. UCSC, Ensembl, or GFF file) and stored
+  in the `TxDb` object when it was created.
+- `txpath`: A named list-like object with one list element
+  per transcript in the gene. Each list element is an integer vector
+  that describes the *path* of the transcript, i.e., the
+  *Splicing Site ids* that it goes thru.
+
+```{r}
+#| label: mcols-sg-double-bracket-3183-2
+mcols(sg[["3183"]])$txpath
+```
+
+A more convenient way to extract this information is to use the
+`txpath` accessor:
+
+```{r}
+#| label: txpath-sg-3183
+txpath(sg[["3183"]])
+```
+
+The list elements of the `txpath` metadata column
+always consist of an even number of *Splicing Site ids* in
+ascending order.
+
+The transcripts in a `GRangesList` object like `sg[["3183"]]`
+can be plotted with `plotTranscripts`.
+
+The resulting plot is shown on figure 4.
+
+```{r}
+#| label: fig-hnrnpc-transcripts
+#| fig-cap: "The 11 transcripts of gene HNRNPC (Entrez ID 3183)."
+#| fig-align: "center"
+#| out-width: "100%"
+plotTranscripts(sg[["3183"]])
+```
+
+`SplicingGraphs` objects, like most list-like objects, can be
+unlisted with `unlist`. This will extract the transcripts of
+all the genes and return them as a **named** `GRangesList`
+object. The names on the object are the gene ids:
+
+```{r}
+#| label: unlist-sg
+ex_by_tx <- unlist(sg)
+head(names(ex_by_tx))
+```
+
+Because each element in the object represents a transcript
+(and not a gene), the names are not unique! This means that trying to
+subset the object by name (e.g. with `ex_by_tx["3183"]`
+or `ex_by_tx[["3183"]]`) is probably a bad idea because this
+will only select the first element with that name.
+When the names on a vector-like object `x` are not unique, a safe
+way to select all the elements with some given names is to do something like
+`x[names(x) %in% c("name1", "name2")]`.
+For example, to select all the transcripts from genes 10001 and 100129075:
+
+```{r}
+#| label: unlist-sg-2
+ex_by_tx[names(ex_by_tx) %in% c("10001", "100129075")]
+```
+
+## Extracting and plotting graphs from a `SplicingGraphs` object
+
+The edges (resp. nodes) of the splicing graph of a given gene can be
+extracted with the `sgedges` (resp. `sgnodes`)
+function. An important caveat is that this can only be done for one
+gene at a time, or, said otherwise, these functions only work on a
+`SplicingGraphs` object of length 1. Here is where subsetting
+with `[` (a.k.a. single-bracket subsetting) comes into play.
+
+Using `[` on a `SplicingGraphs` object returns a
+`SplicingGraphs` object containing only the selected genes:
+
+```{r}
+#| label: single-bracket-subsetting
+sg[strand(sg) == "-"]
+sg[1:20]
+tail(sg)  # equivalent to 'sg[tail(seq_along(sg))]'
+sg["3183"]
+```
+
+Let's extract the splicing graph edges for gene HNRNPC (Entrez ID 3183):
+
+```{r}
+#| label: sgedges-sg-3183
+sgedges(sg["3183"])
+```
+
+The `DataFrame` object returned by `sgedges` has 1 row
+per edge. Its columns are explained below.
+
+Let's extract the splicing graph nodes for that gene:
+
+```{r}
+#| label: sgnodes-sg-3183
+sgnodes(sg["3183"])
+```
+
+The character vector returned by `sgnodes` contains the node
+ids, that is, `R` and `L` for the *root* and *leaf*
+nodes, and the *Splicing Site ids* for the other nodes.
+The node ids are always returned in ascending order with `R` and
+`L` being always the first and last nodes, respectively.
+
+The `DataFrame` object returned by `sgedges` has the
+following columns:
+
+- `from`, `to`: The 2 nodes connected by the edge.
+- `sgedge_id`: A *global edge id* of the form
+  `gene_id:from,to`.
+- `ex_or_in`: The type of the edge, i.e., exon, intron, or
+  no type if it's an artificial edge.
+- `tx_id`: The ids of the transcripts that support the edge.
+
+Alternatively the edges and ranges of all the genes can be extracted
+with `sgedgesByGene`:
+
+```{r}
+#| label: sgedges-by-gene-sg
+edges_by_gene <- sgedgesByGene(sg)
+```
+
+In this case the edges are returned in a `GRangesList` object where they
+are grouped by gene. `edges_by_gene` has the length and names of
+`sg`, that is, the names on it are the gene ids and are guaranteed
+to be unique. Let's look at the edges for gene 3183:
+
+```{r}
+#| label: edges-by-gene-3183
+edges_by_gene[["3183"]]
+```
+
+The edge-level metadata columns are the same as the columns of the
+`DataFrame` object returned by `sgedges`.
+An important difference though is that the artificial edges (i.e., edges
+starting from the root node (`R`) or ending at the leaf node
+(`L`)) are omitted!
+
+The resulting plots are shown on figure 5.
+
+```{r}
+#| label: fig-hnrnpc-sgraph
+#| layout-ncol: 2
+#| fig-cap: >
+#|   Splicing graph representation of gene HNRNPC (Entrez ID 3183).
+#|   Left: unlabelled edges. Right: edge labelled with the transcript
+#|   ids (or names).
+#| fig-align: "center"
+#| out-width: "100%"
+plot(sgraph(sg["3183"]))
+plot(sgraph(sg["3183"], tx_id.as.edge.label=TRUE))
+```
+
+# Splicing graph bubbles
+
+## Some definitions
+
+The definition of a bubble provided in Sammeth's paper [@Sammeth:2010]
+is quite obfuscated. Here we try to give a simpler one.
+We start by introducing the notion of a valid path between 2 nodes of a
+splicing graph: a "valid path" between 2 nodes $s$ and $t$ ($s < t$ )
+of a splicing graph is a path followed by at least 1 transcript (see the
+`txpath` function in previous section for how to extract the
+transcript paths).
+
+Let's illustrate this by looking at the splicing graph for gene 7597
+(Entrez ID). This gene is made of 3 transcripts: `uc001xhg.3`,
+`uc001xhc.3`, and `uc001xhf.3`. Its splicing graph is shown
+on figure 6.
+
+```{r}
+#| label: fig-7597-sgraph
+#| fig-cap: >
+#|   Splicing graph representation of gene 7597 (Entrez ID). Valid paths
+#|   between nodes `2` and `L` are: `{2,5,6,7,8,9,10,11,12,13,14,L}`
+#|   (followed by transcript `uc001xhg.3`), and `{2,11,12,15,16,L}`
+#|   (followed by transcript `uc001xhc.3`).
+#|   Paths `{2,5,6,7,8,9,10,11,12,15,16,L}` or `{2,11,12,13,14,L}` are
+#|   not followed by any known transcript and thus are not valid paths.
+#| fig-align: "center"
+#| out-width: "100%"
+plot(sgraph(sg["7597"], tx_id.as.edge.label=TRUE))
+```
+
+Path `{2,11,12,15,16,L}` in that graph is followed
+by transcript `uc001xhc.3` and thus is valid. However path
+`{2,11,12,13,14,L}` is not followed by any known transcript
+and thus is not valid.
+
+Now the definition of a bubble: there is a "bubble" between 2 nodes $s$
+and $t$ ($s < t$ ) of a splicing graph if (a) there are at least 2 distinct
+valid paths between $s$ and $t$, and (b) no other nodes than $s$ and $t$
+are shared by all the valid paths between them.
+Nodes $s$ and $t$ are said to be the "source" and "sink" of the bubble.
+The number of distinct valid paths between $s$ and $t$ is the "dimension"
+of the bubble.
+
+For example, there is a bubble between nodes `R` and `11`
+of gene 7597 (see figure 6) because the 3 valid
+paths between the 2 nodes and these paths share those 2 nodes only.
+The dimension of this bubble is 3.
+However, there is no bubble between nodes `2` and `L`
+because the 2 valid paths between the 2 nodes also share nodes
+`11` and `12`.
+
+The set of all valid paths that form a bubble describes
+a "complete alternative splicing event" (a.k.a. "complete AS event",
+or simply "complete event"). The individual valid paths that form
+the bubble are sometimes called the "variants" of the bubble or event.
+
+## Computing the bubbles of a splicing graph
+
+Like with the `sgedges` and `sgnodes` functions,
+the bubbles can only be computed for one gene (or graph) at a time.
+Let's compute the bubbles for gene 7597 (Entrez ID) (represented on
+figure 6):
+
+```{r}
+#| label: bubbles-sg-7597
+bubbles(sg["7597"])
+```
+
+The `DataFrame` object returned by `bubbles` has 1 row
+per bubble in the graph and the following columns:
+
+- `source`, `sink`: The source and sink of the bubble.
+- `d`: The dimension of the bubble.
+- `partitions`, `paths`: The latter contains the valid
+  paths between the source and sink of the bubble (note that the
+  source and sink nodes are not reported in the paths). The former
+  contains the list of transcripts associated with each of these paths.
+- `AScode`, `description`: The AS code (Alternative Splicing
+  code) and its verbose description. More on these in the next
+  subsection.
+
+Bubbles can be nested, i.e., contain (or be contained in) other
+bubbles of smaller (or higher) dimensions. For example, in gene 7597,
+the bubble between nodes `R` and `11` (1st bubble in the
+`DataFrame` object returned by `bubbles`) is of
+dimension 3 and contains the smaller bubble between nodes `2`
+and `11` (2nd bubble in the `DataFrame` object returned
+by `bubbles`) which is of dimension 2.
+
+Bubbles can also overlap without one containing any of the others.
+
+## AS codes
+
+See [@Sammeth:2010] for how AS codes are generated.
+
+Let's illustrate this by looking at how the AS code for the 2nd bubble
+in gene 7597 is obtained. In 3 steps:
+
+1. The paths reported for this bubble are `{}` and
+   `{5,6,7,8,9,10}`. All the nodes involved in these paths
+   are re-numbered starting at `1` so nodes `5`, `6`,
+   `7`, `8`, `9`, `10` become `1`,
+   `2`, `3`, `4`, `5`, `6`,
+   respectively.
+2. Then, for each path, a string is generated by putting together
+   the new node numbers and node types in that path. By convention,
+   this string is set to `0` if the path is empty. So paths
+   `{}` and `{5,6,7,8,9,10}` generate strings `0`
+   and
+   `1-2^3-4^5-6^`,
+   respectively.
+3. Finally, the strings obtained previously are sorted
+   lexicographically and concatenated together separated
+   by commas (`,`). This gives the final AS code:
+   `0,1-2^3-4^5-6^`.
+
+Verbose descriptions (in the English language) of the AS codes are obtained
+by looking them up through the `ASCODE2DESC` predefined object.
+`ASCODE2DESC` is a named character vector that contains the verbose
+descriptions for the AS codes of the 50 most frequent patterns of internal
+complete events found in Human as reported in Table 1 of Sammeth's paper
+[@Sammeth:2010].
+
+```{r}
+#| label: ascode2desc
+codes <- bubbles(sg["7597"])$AScode
+data.frame(AScode=codes, description=ASCODE2DESC[codes], row.names=NULL)
+
+codes <- bubbles(sg["10202"])$AScode
+data.frame(AScode=codes, description=ASCODE2DESC[codes], row.names=NULL)
+```
+
+`ASCODE2DESC` only contains the 50 code descriptions
+reported in Table 1 of Sammeth's paper [@Sammeth:2010]. Therefore,
+looking up codes through `ASCODE2DESC` will inevitably return an
+`NA` for some codes. For example, even simple codes like
+`0,1[2^` or
+`0,1-2^3-4]` (which
+mean "skip the first exon" or "skip the last 2 exons", respectively)
+are not in Sammeth's table, because, as its title indicates, only
+**internal** complete events are reported in that table (a complete
+event, or bubble, being considered "internal" when its source and sink
+nodes are not `R` or `L`, or, equivalently, when its code has
+no `[` or `]` in it).
+
+## Tabulating all the AS codes for Human chromosome 14
+
+To extract all the bubbles from all the genes on Human chromosome 14
+and tabulate their codes, we do the following:
+
+```{r}
+#| label: ascode-summary
+# NOTE: The blapply() loop below should take less than 30 sec on a modern
+# laptop when the vignette is passed thru Sweave(), because in that case,
+# 'sg' already contains all the precomputed bubbles in 'sg@.bubble_cache'.
+# With a fresh 'sg' however, it would take about 3 or 4 min on a modern
+# laptop. This can generally be reduced to < 1 min by replacing lapply()
+# with BiocParallel::bplapply().
+AScode_list <- lapply(seq_along(sg), function(i) bubbles(sg[i])$AScode)
+names(AScode_list) <- names(sg)
+AScode_table <- table(unlist(AScode_list))
+AScode_table <- sort(AScode_table, decreasing=TRUE)
+AScode_summary <- data.frame(AScode=names(AScode_table),
+                             NbOfEvents=as.vector(AScode_table),
+                             Description=ASCODE2DESC[names(AScode_table)])
+nrow(AScode_summary)
+```
+
+```{r}
+#| label: head-ascode-summary
+head(AScode_summary, n=10)
+```
+
+Amongst the `r nrow(AScode_summary)` distinct complete events we observe
+on Human chromosome 14, the most frequent one is described as "skip 1 exon".
+At this point it should be mentioned that not all splicing
+events have descriptions in the English language since there are a variety
+of different events.
+
+Another interesting question we can ask now is how many complete events
+is observed in each gene. To answer this question we first need to count
+the number of bubbles within each gene.
+
+```{r}
+#| label: nb-bubbles-per-gene
+nb_bubbles_per_gene <- elementNROWS(AScode_list)
+```
+
+Below the genes with the most observed splicing events are shown.
+
+```{r}
+#| label: head-sort-nb-bubbles-per-gene
+head(sort(nb_bubbles_per_gene, decreasing=TRUE))
+```
+
+Next we want to see which genes show the highest heterogeneity of splicing
+events.
+We check for the number of unique splicing events for each gene.
+
+```{r}
+#| label: nb-unique-bubbles-per-gene
+nb_unique_bubbles_per_gene <- elementNROWS(unique(CharacterList(AScode_list)))
+```
+
+Below the genes with the highest heterogeneity in observed splicing events
+are shown
+
+```{r}
+#| label: head-sort-nb-unique-bubbles-per-gene
+head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
+```
+
+```{r}
+#| label: fig-4287-sgraph
+#| fig-cap: >
+#|   Splicing graph representation of gene 4287 (Entrez ID). This is
+#|   the gene with the most observed splicing events on Human
+#|   chromosome 14.
+#| fig-align: "center"
+#| out-width: "100%"
+plot(sgraph(sg["4287"]))
+```
+
+# Counting reads
+
+In this section, we illustrate how RNA-seq reads can be assigned
+to the exonic and intronic edges of a `SplicingGraphs` object, and
+how these assignments can be summarized in a table of counts.
+The reads we're going to assign are stored as BAM files available in the
+`RNAseqData.HNRNPC.bam.chr14` package. They've been aligned
+to the *hg19* reference genome from UCSC, which is also the reference
+genome of the gene model in our `SplicingGraphs` object `sg`.
+As a general rule, the aligned reads and the annotations should always be
+based on the same reference genome.
+
+Let's start by loading the `RNAseqData.HNRNPC.bam.chr14` package:
+
+```{r}
+#| label: bam-files
+suppressPackageStartupMessages({
+    library(RNAseqData.HNRNPC.bam.chr14)
+})
+bam_files <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+names(bam_files)  # the names of the runs
+```
+
+Another important question about RNA-seq reads is whether they are
+single- or paired-end. This can be checked with the
+`quickBamFlagSummary` utility from the `Rsamtools`
+package:
+
+```{r}
+#| label: quick-bam-flag-summary
+quickBamFlagSummary(bam_files[1], main.groups.only=TRUE)
+```
+
+Doing this for the 8 BAM files confirms that all the reads in the
+files are paired-end. This means that they should be loaded with the
+`readGAlignmentPairs` function from the `GenomicAlignments`
+package. As a quick example, we load the reads located on the first 20
+million bases of chromosome 14:
+
+```{r}
+#| label: read-galignment-pairs
+param <- ScanBamParam(which=GRanges("chr14", IRanges(1, 20000000)))
+galp <- readGAlignmentPairs(bam_files[1], param=param)
+length(galp)  # nb of alignment pairs
+galp
+```
+
+The result is a `GAlignmentPairs` object with 1 element per
+alignment pair (alignment pair = pair of BAM records). Although paired-end
+reads could also be loaded with `readGAlignments` (also from the
+`GenomicRanges` package), they should be loaded with the
+`readGAlignmentPairs`: this actually pairs the BAM records
+and returns the pairs in a `GAlignmentPairs` object. Otherwise the
+records won't be paired and will be returned in a `GAlignments` object.
+
+## Assigning reads to the edges of a `SplicingGraphs` object
+
+We can use the `assignReads` function to assign reads to the
+the exonic and intronic edges of `sg`. The same read
+can be assigned to more than one exonic or intronic edge. For example,
+a junction read with 1 junction (i.e., 1 `N` in its CIGAR) can be
+assigned to an intron and its 2 flanking exons, and this can happen for
+one or more transcripts, from the same gene or from different genes.
+
+We're going to loop on the BAM files to assign the reads from 1 run
+at a time. When we load the files, we want to filter out secondary
+alignments, reads not passing quality controls, and PCR or optical
+duplicates. This is done by preparing a `ScanBamParam` object
+that we'll pass to `readGAlignmentPairs` (see
+`ScanBamParam` in the `Rsamtools` package for more
+information about this):
+
+```{r}
+#| label: scan-bam-param
+flag0 <- scanBamFlag(isSecondaryAlignment=FALSE,
+                     isNotPassingQualityControls=FALSE,
+                     isDuplicate=FALSE)
+param0 <- ScanBamParam(flag=flag0)
+```
+
+Loop:
+
+```{r}
+#| label: assign-reads
+#| eval: false
+## The following loop takes about 7 minutes on a modern laptop/desktop...
+for (i in seq_along(bam_files)) {
+    bam_file <- bam_files[i]
+    cat("Processing run ", names(bam_file), " ... ", sep="")
+    galp <- readGAlignmentPairs(bam_file, use.names=TRUE, param=param0)
+    sg <- assignReads(sg, galp, sample.name=names(bam_file))
+    cat("OK")
+}
+```
+
+```{r}
+#| label: load-sg-with-reads
+#| echo: false
+sg_with_reads <- .loadPrecomputed("sg_with_reads")
+## Remove the reads from 'sg_with_reads' and compare with 'sg'.
+if (!isTRUE(all.equal(removeReads(sg_with_reads), sg)))
+    stop("after removal of the hits, precomputed version of 'sg_with_reads' ",
+         "is not identical to 'sg'")
+sg <- sg_with_reads
+```
+
+The assignments to the exonic and intronic edges of a given gene
+can be retrieved by extracting the edges grouped by transcript for
+that gene. This is achieved by calling `sgedgesByTranscript`
+on the subsetted `SplicingGraphs` object.
+`sgedgesByTranscript` is similar to `sgedgesByGene`
+(introduced in Section 3.4), except that
+it groups the edges by transcript instead of by gene.
+By default the edge-level metadata columns are the same as with
+`sgedgesByGene` so we use `with.hits.mcols=TRUE` to
+get the additional metadata columns containing the assignments:
+
+```{r}
+#| label: sg-3183-assignments
+edges_by_tx <- sgedgesByTranscript(sg["3183"], with.hits.mcols=TRUE)
+edge_data <- mcols(unlist(edges_by_tx))
+colnames(edge_data)
+```
+
+There is 1 *hits* column per run (or sample). They appear in the
+order they were created. Each of them is a `CharacterList`
+object that contains the reads from that run (or sample) that were assigned
+to the individual edges. Let's look at the *hits* column for
+the first run (`ERR127306`):
+
+```{r}
+#| label: head-edge-data
+head(edge_data[ , c("sgedge_id", "ERR127306.hits")])
+```
+
+## How does read assignment work?
+
+[TODO: Complete this subsection.]
+
+For the purpose of explaining how reads from run `ERR127306`
+were assigned to the edges of gene 3183, we load the reads that are
+in the region of that gene and contain at least 1 junction:
+
+```{r}
+#| label: load-reads-in-3183-region
+param <- ScanBamParam(flag=flag0, which=range(unlist(sg[["3183"]])))
+reads <- readGAlignmentPairs(bam_files[1], use.names=TRUE, param=param)
+junction_reads <- reads[njunc(first(reads)) + njunc(last(reads)) != 0L]
+```
+
+and we plot the genomic region chr14:21675000-21702000:
+
+The resulting plot is shown on figure 8.
+
+```{r}
+#| label: fig-hnrnpc-transcripts-and-reads
+#| fig-cap: >
+#|   Plot of the genomic region chr14:21675000-21702000 showing the 11
+#|   transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
+#|   region. Reads that are 'compatible' with the splicing of a
+#|   transcript are plotted in dark blue. Incompatible reads are in light
+#|   blue.
+#| fig-align: "center"
+#| out-width: "100%"
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21675000, to=21702000)
+```
+
+Figure 9 is a zoom on genomic region
+chr14:21698400-21698600 that was obtained with:
+
+```{r}
+#| label: fig-hnrnpc-transcripts-and-reads-zoom
+#| fig-cap: "Zoom on genomic region chr14:21698400-21698600 of figure 8."
+#| fig-align: "center"
+#| out-width: "100%"
+plotTranscripts(sg[["3183"]], reads=junction_reads, from=21698400, to=21698600)
+```
+
+[TODO: To be continued.]
+
+## Counting and summarizing the assigned reads
+
+We use `countReads` to count the number of reads assigned to
+each (non-artificial) edge in `sg` for each run:
+
+```{r}
+#| label: count-reads-sg
+sg_counts <- countReads(sg)
+```
+
+The returned object is a `DataFrame` with one row per unique
+splicing graph edge and one column of counts per run. Two additional
+columns contain the splicing graph edge ids and the type of edge (exon
+or intron):
+
+```{r}
+#| label: head-sg-counts
+dim(sg_counts)
+head(sg_counts[1:5])
+```
+
+Total number of hits per run:
+
+```{r}
+#| label: sapply-sg-counts
+sapply(sg_counts[-(1:2)], sum)
+```
+
+[TODO: Suggest some possible downstream statistical analysis that take
+ the output of countReads() as a starting point.]
+
+# Session Information
+
+All of the output in this vignette was produced under the following
+conditions:
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
+
+# References
+

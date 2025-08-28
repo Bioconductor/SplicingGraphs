@@ -23,7 +23,9 @@ Imports: methods, utils, graphics, igraph, BiocGenerics,
 	 Seqinfo, GenomicRanges (>= 1.23.21), Rsamtools, graph
 Suggests: igraph, Gviz, txdbmaker,
 	 TxDb.Hsapiens.UCSC.hg19.knownGene, RNAseqData.HNRNPC.bam.chr14,
-	 RUnit
+	 RUnit, knitr
+SystemRequirements: quarto
+VignetteBuilder: quarto
 Collate: utils.R
 	 igraph-utils.R
 	 SplicingGraphs-class.R
