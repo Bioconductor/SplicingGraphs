@@ -17,6 +17,7 @@
 \alias{names,SplicingGraphs-method}
 \alias{[,SplicingGraphs,ANY,ANY,ANY-method}
 \alias{[[,SplicingGraphs,ANY,ANY-method}
+\alias{lengths,SplicingGraphs-method}
 \alias{elementNROWS,SplicingGraphs-method}
 \alias{unlist,SplicingGraphs-method}
 \alias{seqnames,SplicingGraphs-method}

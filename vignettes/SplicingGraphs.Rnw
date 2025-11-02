@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Splicing graphs and RNA-seq data}
-%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.knownGene,RNAseqData.HNRNPC.bam.chr14,Gviz}
+%\VignetteDepends{SplicingGraphs,TxDb.Hsapiens.UCSC.hg19.refGene,RNAseqData.HNRNPC.bam.chr14,Gviz}
 %\VignetteKeywords{Annotation}
 %\VignettePackage{SplicingGraphs}
 \documentclass{article}
@@ -44,7 +44,7 @@
   Marc Carlson\and
   Martin Morgan}
 
-\date{Last modified: January 2019; Compiled: \today}
+\date{Last modified: November 2025; Compiled: \today}
 
 \begin{document}
 
@@ -52,16 +52,13 @@
 
 <<settings,echo=FALSE>>=
 options(width=90)
-.precomputed_results_path <- "precomputed_results"
 .loadPrecomputed <- function(objname)
 {
-    filename <- paste0(objname, ".rda")
-    path <- file.path(.precomputed_results_path, filename)
-    tempenv <- new.env(parent=emptyenv())
-    load(path, envir=tempenv)
-    updateObject(get(objname, envir=tempenv))
+    filename <- paste0(objname, ".rds")
+    path <- file.path("precomputed_results", filename)
+    updateObject(readRDS(path))
 }
-@ 
+@
 
 \tableofcontents
 
@@ -101,25 +98,25 @@ In that study \cite{Zarnack:2012}, the authors performed transcription
 profiling by high throughput sequencing of HNRNPC knockdown and control
 HeLa cells (\textit{Human}).
 
-%Although there exist several software solutions for RNA-seq 
+%Although there exist several software solutions for RNA-seq
 %based transcriptome analysis, like RSEM \cite{RSEM2011},
-%Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq} 
+%Cufflinks \cite{Roberts:2011} or the R package \Rpackage{DEXSeq}
 %\cite{Anders:2010}, the approach of analyzing splicing events as
-%complete complex structure is still new. 
+%complete complex structure is still new.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Splicing graphs}
 
-Alternative splicing is a frequently observed complex biological 
-process which modifies the primary RNA transcript and leads to 
-transcript variants of genes. Those variants can be plentiful. 
+Alternative splicing is a frequently observed complex biological
+process which modifies the primary RNA transcript and leads to
+transcript variants of genes. Those variants can be plentiful.
 Especially for large genes it is often difficult to describe their
-structure in a formal, logical, short and convenient way. To capture 
-the full variety of splicing variants of a certain gene in one single 
-data structure, Heber at al \cite{Heber:2002} introduced the term 
+structure in a formal, logical, short and convenient way. To capture
+the full variety of splicing variants of a certain gene in one single
+data structure, Heber at al \cite{Heber:2002} introduced the term
 \textit{splicing graph} and provided a formal framework for representing
-the different choices of the splicing machinery. 
+the different choices of the splicing machinery.
 
 \subsection{Definitions and example}
 
@@ -148,22 +145,22 @@ represented by a path that goes from \Rcode{R} to \Rcode{L}. That way the
 graph is connected. Not all paths in the graph are necessarily
 supported by a transcript.
 
-Figure~\ref{img:CIB3} shows the splicing graph representation
-of all known transcript variants of Human gene CIB3 (Entrez ID 117286).
+Figure~\ref{img:LINC01533} shows the splicing graph representation of
+all known transcript variants of Human gene LINC01533 (Entrez ID 100996665).
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=90,origin=lB]{images/CIB3-transcripts.pdf}
+  \includegraphics[width=5in,height=2.25in,angle=-90,origin=rB]{images/LINC01533-transcripts.pdf}
   \hskip 0.5in
-  \raisebox{-0.6in}{\includegraphics[width=2in,height=5.5in]{images/CIB3-sg.pdf}}
+  \raisebox{-0.25in}{\includegraphics[width=2in,height=5.5in]{images/LINC01533-sg.pdf}}
   \end{center}
-  \caption{Splicing graph representation of the four transcript variants
-           of gene CIB3 (Entrez ID 117286).
+  \caption{Splicing graph representation of the three transcript variants
+           of gene LINC01533 (Entrez ID 100996665).
            Left: transcript representation.
            Right: splicing graph representation.
            Orange arrows are edges corresponding to exons.
   }
-  \label{img:CIB3}
+  \label{img:LINC01533}
 \end{figure}
 
 \subsection{Details about nodes and edges}
@@ -191,22 +188,22 @@ or \textit{donor} (\Rcode{\DonorSite}) and
 Such a dual-type node occurs when the start of an exon, which is not
 the first exon of a transcript, falls together with the transcription
 start site of another transcript of the same gene.
-An example of such a splicing graph is shown in Figure~\ref{img:ZNF813}.
+An example of such a splicing graph is shown in Figure~\ref{img:ZNF446}.
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=4in,height=1.5in,angle=-90,origin=rB]{images/ZNF813-transcripts.pdf}
+  \includegraphics[width=5.5in,height=2in,angle=-90,origin=rB]{images/ZNF446-transcripts.pdf}
   \hskip 0.5in
-  \raisebox{-0.6in}{\includegraphics[width=3in,height=5.5in]{images/ZNF813-sg.pdf}}
+  \raisebox{-0.6in}{\includegraphics[width=2in,height=6.5in]{images/ZNF446-sg.pdf}}
   \end{center}
   \caption{Splicing graph representation of the two transcript
-           variants of Human gene ZNF813 (Entrez ID 126017). Node $3$ is a
-           (\Rcode{\AcceptorSite},\Rcode{\TSSite}) dual-type node:
-           \textit{acceptor} (\Rcode{\AcceptorSite})
-           for transcript {\tt uc002qbu.2}, and \textit{transcription start}
-           (\Rcode{\TSSite}) for transcript {\tt uc010eqq.1}.
+           variants of Human gene ZNF446 (Entrez ID 55663).
+           Node $3$ is a (\Rcode{\AcceptorSite},\Rcode{\TSSite}) dual-type
+           node: \textit{acceptor} (\Rcode{\AcceptorSite})
+           for transcript {\tt NM\_017908}, and \textit{transcription start}
+           (\Rcode{\TSSite}) for transcript {\tt NM\_001304453}.
   }
-  \label{img:ZNF813}
+  \label{img:ZNF446}
 \end{figure}
 
 A similar case occurs when the end of an exon, which is not the last
@@ -225,7 +222,7 @@ determined by the types of its two flanking nodes:
 
 \subsection{Uninformative nodes}
 
-Not all splicing sites (nodes) on the individual transcripts are alternative 
+Not all splicing sites (nodes) on the individual transcripts are alternative
 splicing sites. Therefore the initial splicing graph outlined above can be
 simplified by removing nodes of in- and out- degree equal to one because
 they are supposed to be non-informative in terms of alternative splicing.
@@ -233,21 +230,21 @@ Edges associated with such nodes get sequentially merged with
 the previous ones and result in longer edges capturing adjacent
 exons/introns. The final splicing graph only contains nodes involved in
 alternative splicing. The result of removing uninformative nodes is
-illustrated in Figure~\ref{img:CIB3-simplified}.
+illustrated in Figure~\ref{img:LINC01533-simplified}.
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=2in,height=5.5in]{images/CIB3-sg.pdf}
+  \includegraphics[width=2in,height=5.5in]{images/LINC01533-sg.pdf}
   \hskip 0.5in
-  \includegraphics[width=2in,height=5.5in]{images/CIB3-sg2.pdf}
+  \includegraphics[width=2in,height=5.5in]{images/LINC01533-sg2.pdf}
   \end{center}
-  \caption{Nodes \Rcode{1}, \Rcode{3}, \Rcode{5}, \Rcode{6}, \Rcode{9},
-           \Rcode{11}, \Rcode{12}, and \Rcode{13}, are uninformative and can
-           be removed.
+  \caption{Nodes \Rcode{1}, \Rcode{3}, \Rcode{4}, \Rcode{7}, \Rcode{9},
+           \Rcode{10}, \Rcode{11}, \Rcode{12}, and \Rcode{13}, are
+           uninformative and can be removed.
            Left: before removal of the uninformative nodes.
            Right: after their removal.
   }
-  \label{img:CIB3-simplified}
+  \label{img:LINC01533-simplified}
 \end{figure}
 
 
@@ -262,17 +259,17 @@ describing a \textit{gene model} for a given organism. In \Bioconductor,
 a gene model is typically represented as a \Rclass{TxDb} object.
 A few prepackaged \Rclass{TxDb} objects are available as
 \Rpackage{TxDb.*} annotation packages in the \Bioconductor{} package
-repositories. Here the \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
+repositories. Here the \Rpackage{TxDb.Hsapiens.UCSC.hg19.refGene}
 package is used. If there is no prepackaged \Rclass{TxDb}
 object for the genome/track that the user wants to use, such objects can
-easily be created by using tools from the \Rpackage{GenomicFeatures} 
+easily be created by using tools from the \Rpackage{GenomicFeatures}
 package.
 
 First we load the \Rpackage{TxDb.*} package:
 
 <<txdb>>=
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.refGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.refGene
 @
 
 Creating the splicing graphs for all genes in the \Rclass{TxDb}
@@ -308,7 +305,7 @@ can be changed by using the \Rcode{min.ntx} argument of
 
 <<SplicingGraphs_constructor>>=
 library(SplicingGraphs)
-sg <- SplicingGraphs(txdb)  # should take between 5 and 10 sec on
+sg <- SplicingGraphs(txdb)  # should take between 5 and 10 sec. on
                             # a modern laptop
 sg
 @
@@ -343,18 +340,18 @@ table(strand(sg))
 @
 
 The number of transcripts per gene can be obtained with
-\Rcode{elementNROWS(sg)}:
+\Rcode{lengths(sg)}:
 
-<<elementNROWS_sg>>=
-elementNROWS(sg)[1:20]
+<<lengths_sg>>=
+lengths(sg)[1:20]
 @
 
-\Rfunction{elementNROWS} is a core accessor for list-like objects
+\Rfunction{lengths} is a core accessor for list-like objects
 that returns the lengths of the individual list elements.
 
-At this point you might wonder why \Rfunction{elementNROWS} works on
-\Rclass{SplicingGraphs} objects. Does this mean that those objects are
-list-like objects? The answer is yes. 
+At this point you might wonder why \Rfunction{lengths} works on
+\Rclass{SplicingGraphs} objects. Does this mean that those objects
+are list-like objects? The answer is yes.
 What do the list elements look like, and how can you access them?
 This is answered in the next subsection.
 
@@ -454,7 +451,7 @@ plotTranscripts(sg[["3183"]])
 The resulting plot is shown on figure~\ref{img:3183-transcripts}.
 
 <<plotTranscripts_sg_3183_as_pdf,echo=FALSE,results=hide>>=
-pdf("3183-transcripts.pdf", width=6, height=3)
+pdf("3183-transcripts.pdf", width=6, height=4)
 plotTranscripts(sg[["3183"]])
 dev.off()
 @
@@ -462,7 +459,7 @@ dev.off()
   \begin{center}
   \includegraphics[width=6in,height=3in]{3183-transcripts.pdf}
   \end{center}
-  \caption{The 11 transcripts of gene HNRNPC (Entrez ID 3183).}
+  \caption{The 4 transcripts of gene HNRNPC (Entrez ID 3183).}
   \label{img:3183-transcripts}
 \end{figure}
 
@@ -482,13 +479,13 @@ subset the object by name (e.g. with \Rcode{ex\_by\_tx["3183"]}
 or \Rcode{ex\_by\_tx[["3183"]]}) is probably a bad idea because this
 will only select the first element with that name.
 When the names on a vector-like object \Rcode{x} are not unique, a safe
-way to select all the elements with some given names is to do something like
-\Rcode{x[names(x) \%in\% c("name1", "name2")]}.
-For example, to select all the transcripts from genes 10001 and 100129075:
+way to select all the elements with some given names is to do something
+like \Rcode{x[names(x) \%in\% c("name1", "name2")]}.
+For example, to select all the transcripts from genes 10001 and 100128927:
 
 \begin{small}
 <<unlist_sg>>=
-ex_by_tx[names(ex_by_tx) %in% c("10001", "100129075")]
+ex_by_tx[names(ex_by_tx) %in% c("10001", "100128927")]
 @
 \end{small}
 
@@ -605,60 +602,62 @@ dev.off()
 \subsection{Some definitions}
 
 The definition of a bubble provided in Sammeth's paper \cite{Sammeth:2010}
-is quite obfuscated. Here we try to give a simpler one. 
-We start by introducing the notion of a valid path between 2 nodes of a
-splicing graph: a ``valid path'' between 2 nodes $s$ and $t$ ($s < t$ )
-of a splicing graph is a path followed by at least 1 transcript (see the
+is quite obfuscated. Here we try to give a simpler one.
+We start by introducing the notion of a valid path between two nodes of a
+splicing graph: a ``valid path'' between two nodes $s$ and $t$ ($s < t$ )
+of a splicing graph is a path followed by at least one transcript (see the
 \Rfunction{txpath} function in previous section for how to extract the
 transcript paths).
 
-Let's illustrate this by looking at the splicing graph for gene 7597
-(Entrez ID). This gene is made of 3 transcripts: \Rcode{uc001xhg.3},
-\Rcode{uc001xhc.3}, and \Rcode{uc001xhf.3}. Its splicing graph is shown
-on figure~\ref{img:7597-sgraph}.
+Let's illustrate this by looking at the splicing graph for gene 115801414
+(Entrez ID). This gene is made of 3 transcripts: \Rcode{NR\_164308},
+\Rcode{NR\_164309}, and \Rcode{NR\_164310}. Its splicing graph is shown
+on figure~\ref{img:115801414-sgraph}.
 
-<<plot_sg_7597_as_pdf,echo=FALSE,results=hide>>=
-pdf("7597-sgraph-labelled.pdf", width=5, height=5)
-plot(sgraph(sg["7597"], tx_id.as.edge.label=TRUE))
+<<plot_sg_115801414_as_pdf,echo=FALSE,results=hide>>=
+pdf("115801414-sgraph-labelled.pdf", width=5, height=5)
+plot(sgraph(sg["115801414"], tx_id.as.edge.label=TRUE))
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=5in,height=5in]{7597-sgraph-labelled.pdf}
+  \includegraphics[width=5in,height=5in]{115801414-sgraph-labelled.pdf}
   \end{center}
-  \caption{Splicing graph representation of gene 7597 (Entrez ID).
-           Valid paths between nodes \Rcode{2} and \Rcode{L} are:
-           \Rcode{\{2,5,6,7,8,9,10,11,12,13,14,L\}} (followed by
-           transcript \Rcode{uc001xhg.3}), and
-           \Rcode{\{2,11,12,15,16,L\}} (followed by
-           transcript \Rcode{uc001xhc.3}).
-           Paths \Rcode{\{2,5,6,7,8,9,10,11,12,15,16,L\}} or
-           \Rcode{\{2,11,12,13,14,L\}} are not followed by any known
-           transcript and thus are not valid paths.
+  \caption{Splicing graph representation of gene 115801414 (Entrez ID).
+           Valid paths between nodes \Rcode{2} and \Rcode{14} are:
+           \Rcode{\{2,7,8,14\}} (followed by
+           transcript \Rcode{NR\_164308}),
+           \Rcode{\{2,9,11,12,13,14\}} (followed by
+           transcript \Rcode{NR\_164309}), and
+           \Rcode{\{2,3,4,5,6,7,8,10,11,12,13,14\}} (followed by
+           transcript \Rcode{NR\_164310}).
+           Paths \Rcode{\{2,3,4,5,6,7,8,14\}} or
+           \Rcode{\{2,7,8,10,11,12,13,14\}} are not followed by
+           any known transcript and thus are not valid paths.
   }
-  \label{img:7597-sgraph}
+  \label{img:115801414-sgraph}
 \end{figure}
 
-Path \Rcode{\{2,11,12,15,16,L\}} in that graph is followed
-by transcript \Rcode{uc001xhc.3} and thus is valid. However path
-\Rcode{\{2,11,12,13,14,L\}} is not followed by any known transcript
+Path \Rcode{\{2,7,8,14\}} in that graph is followed
+by transcript \Rcode{NR\_164308} and thus is valid. However path
+\Rcode{\{2,3,4,5,6,7,8,14\}} is not followed by any known transcript
 and thus is not valid.
 
-Now the definition of a bubble: there is a ``bubble'' between 2 nodes $s$
-and $t$ ($s < t$ ) of a splicing graph if (a) there are at least 2 distinct
+Now the definition of a bubble: there is a ``bubble'' between two nodes $s$
+and $t$ ($s < t$ ) of a splicing graph if (a) there are at least two distinct
 valid paths between $s$ and $t$, and (b) no other nodes than $s$ and $t$
 are shared by all the valid paths between them.
 Nodes $s$ and $t$ are said to be the ``source'' and ``sink'' of the bubble.
 The number of distinct valid paths between $s$ and $t$ is the ``dimension''
 of the bubble.
 
-For example, there is a bubble between nodes \Rcode{R} and \Rcode{11}
-of gene 7597 (see figure~\ref{img:7597-sgraph}) because the 3 valid
-paths between the 2 nodes and these paths share those 2 nodes only.
-The dimension of this bubble is 3.
+For example, there is a bubble between nodes \Rcode{2} and \Rcode{14}
+of gene 115801414 (see figure~\ref{img:115801414-sgraph}) because there are
+3 valid paths between the two nodes and these paths share those two nodes
+only. The dimension of this bubble is 3.
 However, there is no bubble between nodes \Rcode{2} and \Rcode{L}
-because the 2 valid paths between the 2 nodes also share nodes
-\Rcode{11} and \Rcode{12}.
+because the 3 valid paths between the two nodes also share nodes
+\Rcode{14}, \Rcode{15}, \Rcode{16}, \Rcode{17}, \Rcode{18}, and \Rcode{19}.
 
 The set of all valid paths that form a bubble describes
 a ``complete alternative splicing event'' (a.k.a. ``complete AS event'',
@@ -669,11 +668,11 @@ the bubble are sometimes called the ``variants'' of the bubble or event.
 
 Like with the \Rfunction{sgedges} and \Rfunction{sgnodes} functions,
 the bubbles can only be computed for one gene (or graph) at a time.
-Let's compute the bubbles for gene 7597 (Entrez ID) (represented on
-figure~\ref{img:7597-sgraph}):
+Let's compute the bubbles for gene 115801414 (Entrez ID) (represented on
+figure~\ref{img:115801414-sgraph}):
 
-<<bubbles_sg_7597>>=
-bubbles(sg["7597"])
+<<bubbles_sg_115801414>>=
+bubbles(sg["115801414"])
 @
 
 The \Rclass{DataFrame} object returned by \Rfunction{bubbles} has 1 row
@@ -691,11 +690,11 @@ per bubble in the graph and the following columns:
 \end{itemize}
 
 Bubbles can be nested, i.e., contain (or be contained in) other
-bubbles of smaller (or higher) dimensions. For example, in gene 7597,
-the bubble between nodes \Rcode{R} and \Rcode{11} (1st bubble in the
+bubbles of smaller (or higher) dimensions. For example, in gene 115801414,
+the bubble between nodes \Rcode{2} and \Rcode{14} (3rd bubble in the
 \Rclass{DataFrame} object returned by \Rfunction{bubbles}) is of
-dimension 3 and contains the smaller bubble between nodes \Rcode{2}
-and \Rcode{11} (2nd bubble in the \Rclass{DataFrame} object returned
+dimension 3 and contains the smaller bubble between nodes \Rcode{8}
+and \Rcode{14} (4th bubble in the \Rclass{DataFrame} object returned
 by \Rfunction{bubbles}) which is of dimension 2.
 
 Bubbles can also overlap without one containing any of the others.
@@ -704,26 +703,25 @@ Bubbles can also overlap without one containing any of the others.
 
 See \cite{Sammeth:2010} for how AS codes are generated.
 
-Let's illustrate this by looking at how the AS code for the 2nd bubble
-in gene 7597 is obtained. In 3 steps:
+Let's illustrate this by looking at how the AS code for the 1st bubble
+in gene 115801414 is obtained. In 3 steps:
 \begin{enumerate}
   \item The paths reported for this bubble are \Rcode{\{\}} and
-        \Rcode{\{5,6,7,8,9,10\}}. All the nodes involved in these paths
-        are re-numbered starting at \Rcode{1} so nodes \Rcode{5}, \Rcode{6},
-        \Rcode{7}, \Rcode{8}, \Rcode{9}, \Rcode{10} become \Rcode{1},
-        \Rcode{2}, \Rcode{3}, \Rcode{4}, \Rcode{5}, \Rcode{6},
+        \Rcode{\{3,4,5,6\}}. All the nodes involved in these paths
+        are re-numbered starting at \Rcode{1} so nodes \Rcode{3}, \Rcode{4},
+        \Rcode{5}, \Rcode{6} become \Rcode{1}, \Rcode{2}, \Rcode{3}, \Rcode{4},
         respectively.
   \item Then, for each path, a string is generated by putting together
         the new node numbers and node types in that path. By convention,
         this string is set to \Rcode{0} if the path is empty. So paths
-        \Rcode{\{\}} and \Rcode{\{5,6,7,8,9,10\}} generate strings \Rcode{0}
+        \Rcode{\{\}} and \Rcode{\{3,4,5,6\}} generate strings \Rcode{0}
         and
-        \Rcode{1{\AcceptorSite}2{\DonorSite}3{\AcceptorSite}4{\DonorSite}5{\AcceptorSite}6{\DonorSite}},
+        \Rcode{1{\AcceptorSite}2{\DonorSite}3{\AcceptorSite}4{\DonorSite}},
         respectively.
   \item Finally, the strings obtained previously are sorted
         lexicographically and concatenated together separated
         by commas (\Rcode{,}). This gives the final AS code:
-        \Rcode{0,1{\AcceptorSite}2{\DonorSite}3{\AcceptorSite}4{\DonorSite}5{\AcceptorSite}6{\DonorSite}}.
+        \Rcode{0,1{\AcceptorSite}2{\DonorSite}3{\AcceptorSite}4{\DonorSite}}.
 \end{enumerate}
 
 Verbose descriptions (in the English language) of the AS codes are obtained
@@ -734,7 +732,7 @@ complete events found in Human as reported in Table $1$ of Sammeth's paper
 \cite{Sammeth:2010}.
 
 <<ASCODE2DESC>>=
-codes <- bubbles(sg["7597"])$AScode
+codes <- bubbles(sg["115801414"])$AScode
 data.frame(AScode=codes, description=ASCODE2DESC[codes], row.names=NULL)
 
 codes <- bubbles(sg["10202"])$AScode
@@ -758,8 +756,8 @@ Table $1$ of Sammeth's paper \cite{Sammeth:2010} actually contains AS codes
 that seem to correspond to complete events that are not internal.
 For example, the 16th AS code in the table is
 \Rcode{1*2{\DonorSite},3*4{\DonorSite}} and its description is
-\Rcode{"2 alternative first exons"}, which indicates that the event is
-internal. This raises at least 2 questions: why is it
+\Rcode{"2 alternative first exons"}, which indicates that the event
+is not internal. This raises at least 2 questions: why is it
 in the table? and why does the code contain \Rcode{*} instead of
 \Rcode{\TSSite}? A third question could be: why exclude complete events
 that are not internal in the first place?}
@@ -772,9 +770,8 @@ and tabulate their codes, we do the following:
 % NOTE: The blapply() loop below should take less than 30 sec on a modern
 % laptop when the vignette is passed thru Sweave(), because in that case,
 % 'sg' already contains all the precomputed bubbles in 'sg@.bubble_cache'.
-% With a fresh 'sg' however, it would take about 3 or 4 min on a modern
-% laptop. This can generally be reduced to < 1 min by replacing lapply()
-% with BiocParallel::bplapply().
+% With a fresh 'sg' however, it would take about 1 min on a modern laptop.
+% This can be reduced by replacing lapply() with BiocParallel::bplapply().
 \begin{small}
 <<AScode_summary>>=
 AScode_list <- lapply(seq_along(sg), function(i) bubbles(sg[i])$AScode)
@@ -796,52 +793,52 @@ head(AScode_summary, n=10)
 
 Amongst the \Sexpr{nrow(AScode_summary)} distinct complete events we observe
 on Human chromosome 14, the most frequent one is described as ``skip 1 exon''.
-At this point it should be mentioned that not all splicing
-events have descriptions in the English language since there are a variety
-of different events.
+At this point it should be mentioned that not all splicing events have
+descriptions in the English language since there are a variety of different
+events.
 
 Another interesting question we can ask now is how many complete events
 is observed in each gene. To answer this question we first need to count
 the number of bubbles within each gene.
 
 <<nb_bubbles_per_gene>>=
-nb_bubbles_per_gene <- elementNROWS(AScode_list)
-@ 
+nb_bubbles_per_gene <- lengths(AScode_list)
+@
 
 Below the genes with the most observed splicing events are shown.
 
 <<head_sort_nb_bubbles_per_gene>>=
 head(sort(nb_bubbles_per_gene, decreasing=TRUE))
-@ 
+@
 
-Next we want to see which genes show the highest heterogeneity of splicing
-events.
+Next we want to see which genes show the highest heterogeneity of
+splicing events.
 We check for the number of unique splicing events for each gene.
 
 <<nb_unique_bubbles_per_gene>>=
-nb_unique_bubbles_per_gene <- elementNROWS(unique(CharacterList(AScode_list)))
-@ 
+nb_unique_bubbles_per_gene <- lengths(unique(CharacterList(AScode_list)))
+@
 
-Below the genes with the highest heterogeneity in observed splicing events
-are shown
+Below the genes with the highest heterogeneity in observed splicing
+events are shown.
 
 <<head_sort_nb_unique_bubbles_per_gene>>=
 head(sort(nb_unique_bubbles_per_gene, decreasing=TRUE))
-@ 
+@
 
-<<plot_sg_4287_as_pdf,echo=FALSE,results=hide>>=
-pdf("4287-sgraph.pdf", width=5, height=5)
-plot(sgraph(sg["4287"]))
+<<plot_sg_91833_as_pdf,echo=FALSE,results=hide>>=
+pdf("91833-sgraph.pdf", width=5, height=5)
+plot(sgraph(sg["91833"]))
 dev.off()
 @
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=5in,height=5in]{4287-sgraph.pdf}
+  \includegraphics[width=5in,height=5in]{91833-sgraph.pdf}
   \end{center}
-  \caption{Splicing graph representation of gene 4287 (Entrez ID).
+  \caption{Splicing graph representation of gene WDR20 (Entrez ID 91833).
            This is the gene with the most observed splicing events on
            Human chromosome 14.}
-  \label{img:4287-sgraph}
+  \label{img:91833-sgraph}
 \end{figure}
 
 
@@ -883,9 +880,9 @@ million bases of chromosome 14:
 
 <<readGAlignmentPairs>>=
 param <- ScanBamParam(which=GRanges("chr14", IRanges(1, 20000000)))
-galp <- readGAlignmentPairs(bam_files[1], param=param)
-length(galp)  # nb of alignment pairs
-galp
+gapairs <- readGAlignmentPairs(bam_files[1], param=param)
+length(gapairs)  # nb of alignment pairs
+gapairs
 @
 
 The result is a \Rclass{GAlignmentPairs} object with 1 element per
@@ -923,12 +920,12 @@ param0 <- ScanBamParam(flag=flag0)
 Loop:
 
 <<assignReads,eval=FALSE>>=
-## The following loop takes about 7 minutes on a modern laptop/desktop...
+## The following loop takes about 1 minute on a modern laptop/desktop...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
     cat("Processing run ", names(bam_file), " ... ", sep="")
-    galp <- readGAlignmentPairs(bam_file, use.names=TRUE, param=param0)
-    sg <- assignReads(sg, galp, sample.name=names(bam_file))
+    gapairs <- readGAlignmentPairs(bam_file, use.names=TRUE, param=param0)
+    sg <- assignReads(sg, gapairs, sample.name=names(bam_file))
     cat("OK\n")
 }
 @
@@ -999,7 +996,7 @@ dev.off()
   \begin{center}
   \includegraphics[width=6in,height=4in]{3183-transcripts-and-reads.pdf}
   \end{center}
-  \caption{Plot of the genomic region chr14:21675000-21702000 showing the 11
+  \caption{Plot of the genomic region chr14:21675000-21702000 showing the 4
            transcripts of gene HNRNPC (Entrez ID 3183) and the reads in that
            region. Reads that are ``compatible'' with the splicing of a
            transcript are plotted in dark blue. Incompatible reads are in
