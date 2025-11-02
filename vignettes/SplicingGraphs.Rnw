@@ -919,7 +919,7 @@ param0 <- ScanBamParam(flag=flag0)
 
 Loop:
 
-<<assignReads,eval=FALSE>>=
+<<assignReads>>=
 ## The following loop takes about 1 minute on a modern laptop/desktop...
 for (i in seq_along(bam_files)) {
     bam_file <- bam_files[i]
@@ -929,14 +929,14 @@ for (i in seq_along(bam_files)) {
     cat("OK\n")
 }
 @
-<<load_sg_with_reads,echo=FALSE>>=
-sg_with_reads <- .loadPrecomputed("sg_with_reads")
-## Remove the reads from 'sg_with_reads' and compare with 'sg'.
-if (!isTRUE(all.equal(removeReads(sg_with_reads), sg)))
-    stop("after removal of the hits, precomputed version of 'sg_with_reads' ",
-         "is not identical to 'sg'")
-sg <- sg_with_reads
-@
+%<<load_sg_with_reads,echo=FALSE>>=
+%sg_with_reads <- .loadPrecomputed("sg_with_reads")
+%## Remove the reads from 'sg_with_reads' and compare with 'sg'.
+%if (!isTRUE(all.equal(removeReads(sg_with_reads), sg)))
+%    stop("after removal of the hits, precomputed version of 'sg_with_reads' ",
+%         "is not identical to 'sg'")
+%sg <- sg_with_reads
+%@
 
 The assignments to the exonic and intronic edges of a given gene
 can be retrieved by extracting the edges grouped by transcript for
