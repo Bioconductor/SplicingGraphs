@@ -174,8 +174,8 @@
     ## which comes as a pleasant surprise!
     ## TODO: Maybe we should define an strorder() function in
     ## S4Vectors/R/str-utils.R for portable/deterministic ordering of a
-    ## character vector. See R/utils.R in the GenomicFeatures package
-    ## for a similar discussion about using rank() on a character vector.
+    ## character vector. See R/utils.R in the txdbmaker package for
+    ## a similar discussion about using rank() on a character vector.
     prev_locale <- Sys.getlocale("LC_COLLATE")
     Sys.setlocale("LC_COLLATE", "C")
     on.exit(Sys.setlocale("LC_COLLATE", prev_locale))

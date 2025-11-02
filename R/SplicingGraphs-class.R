@@ -10,7 +10,7 @@
 ### because many operations (like c() or relist()) would be broken, unless
 ### we re-implement them for SplicingGraphs objects. But: (a) that's a lot
 ### of work (the API is huge), and (b) we don't need those operations in the
-### first place. All we need are: length(), names(), [, [[, elementNROWS(),
+### first place. All we need are: length(), names(), [, [[, lengths(),
 ### and unlist().
 ### The GeneModel class is an internal class that is not intended to be
 ### exposed to the user. It's a list-like class where the elements are
@@ -82,7 +82,7 @@ setValidity2("GeneModel", .valid.GeneModel)
 ### GeneModel objects inherit the CompressedList API i.e. anything that works
 ### on a CompressedList object works on a GeneModel object. But the only
 ### things we're using/supporting in the SplicingGraphs package are: length(),
-### names(), [, [[, elementNROWS(), and unlist().
+### names(), [, [[, lengths(), and unlist().
 
 ### From the GRanges API:
 ### We only need seqnames(), strand(), and seqinfo() from the GRanges API.
@@ -246,6 +246,11 @@ setMethod("[[", "SplicingGraphs",
     }
 )
 
+setMethod("lengths", "SplicingGraphs",
+    function(x, use.names=TRUE) lengths(x@genes, use.names=use.names)
+)
+
+### Superseded by lengths().
 setMethod("elementNROWS", "SplicingGraphs",
     function(x) elementNROWS(x@genes)
 )
