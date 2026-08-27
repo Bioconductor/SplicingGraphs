@@ -409,7 +409,7 @@ The \Rfunction{show} method for \Rclass{GRangesList} objects only
 displays the inner metadata columns (which are at the exon level for
 an object like \Rcode{sg[["3183"]]}). To see the outer metadata columns
 (transcript-level metadata columns for objects like \Rcode{sg[["3183"]]}),
-we need to extract them explicitely:
+we need to extract them explicitly:
 
 <<mcols_sg_double_bracket_3183>>=
 mcols(sg[["3183"]])
