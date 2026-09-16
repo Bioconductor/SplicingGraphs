@@ -203,7 +203,7 @@ unique_reported_reads <- lapply(reported_reads, unique)
 stopifnot(identical(unique_reported_reads,
                     rep(unique_reported_reads[1], 4)))
 
-## Extract ambigous reads for each level of resolution:
+## Extract ambiguous reads for each level of resolution:
 ambiguous_reads <- lapply(reported_reads,
                           function(x) unique(x[duplicated(x)]))
 names(ambiguous_reads) <- resolutions
